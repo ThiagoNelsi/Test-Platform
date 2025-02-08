@@ -9,11 +9,13 @@ datasource db {
 
 model User {
   id            Int          @id @default(autoincrement())
+  createdAt     DateTime     @default(now()) @db.Timestamptz(0)
   name          String
   email         String       @unique
   password      String
   posts         Post[]
-  classrooms    Classroom[]
+  ownedClasses  Classroom[]  @relation("Owner")
+  classrooms    Classroom[]  @relation("Student")
   comments      Comment[]
   questionBanks QuestionBank[]
   questions     Question[]
@@ -21,13 +23,15 @@ model User {
 }
 
 model Classroom {
-  id      Int     @id @default(autoincrement())
-  name    String
-  code    String
-  owner   User    @relation(fields: [ownerId], references: [id])
-  ownerId Int
-  posts   Post[]
-  tests   Test[]
+  id        Int     @id @default(autoincrement())
+  createdAt DateTime @default(now()) @db.Timestamptz(0)
+  name      String
+  code      String
+  owner     User    @relation("Owner", fields: [ownerId], references: [id])
+  ownerId   Int
+  posts     Post[]
+  tests     Test[]
+  students  User[]  @relation("Student")
 }
 
 model Post {
@@ -55,11 +59,12 @@ model Comment {
 
 model QuestionBank {
   id          Int     @id @default(autoincrement())
+  createdAt   DateTime @default(now()) @db.Timestamptz(0)
   owner       User    @relation(fields: [ownerId], references: [id])
   ownerId     Int
   name        String
   tags        String[]
-  description String
+  description String?
   questions   Question[]
 
   @@unique([ownerId, name])
@@ -67,22 +72,24 @@ model QuestionBank {
 
 model Question {
   id            Int       @id @default(autoincrement())
+  createdAt     DateTime  @default(now()) @db.Timestamptz(0)
   type          String
   author        User      @relation(fields: [authorId], references: [id])
   authorId      Int
-  level         Int
+  level         Int?
   tags          String[]
   questionBanks QuestionBank[]
 }
 
 model Test {
   id          Int            @id @default(autoincrement())
+  createdAt   DateTime       @default(now()) @db.Timestamptz(0)
   name        String
   classroom   Classroom      @relation(fields: [classroomId], references: [id])
   classroomId Int
-  dueDate     DateTime       @db.Timestamptz(0)
-  timer       Int
-  value       Int
+  dueDate     DateTime?      @db.Timestamptz(0)
+  timer       Int?
+  value       Int            @default(10)
   instances   TestInstance[]
 }
 
@@ -92,7 +99,7 @@ model TestInstance {
   userId      Int
   test        Test      @relation(fields: [testId], references: [id])
   testId      Int
-  startTime   DateTime  @default(now()) @db.Timestamptz(0)
-  finishTime  DateTime  @db.Timestamptz(0)
-  score       Float
+  startTime   DateTime?  @default(now()) @db.Timestamptz(0)
+  finishTime  DateTime?  @db.Timestamptz(0)
+  score       Float?
 }

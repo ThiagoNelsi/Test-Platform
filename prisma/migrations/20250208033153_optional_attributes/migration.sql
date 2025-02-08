@@ -1,0 +1,15 @@
+-- AlterTable
+ALTER TABLE "Question" ALTER COLUMN "level" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "QuestionBank" ALTER COLUMN "description" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "Test" ALTER COLUMN "dueDate" DROP NOT NULL,
+ALTER COLUMN "timer" DROP NOT NULL,
+ALTER COLUMN "value" SET DEFAULT 10;
+
+-- AlterTable
+ALTER TABLE "TestInstance" ALTER COLUMN "startTime" DROP NOT NULL,
+ALTER COLUMN "finishTime" DROP NOT NULL,
+ALTER COLUMN "score" DROP NOT NULL;
