@@ -16,7 +16,7 @@ export default function Component({ ownedClasses, classrooms }: Props) {
     return (
         <div className="size-full py-6 px-40 overflow-auto">
             <Switcher />
-            <ClassroomList classrooms={switchState ? ownedClasses : classrooms} />
+            <ClassroomList isTeacher={switchState} classrooms={switchState ? ownedClasses : classrooms} />
         </div>
     );
 }

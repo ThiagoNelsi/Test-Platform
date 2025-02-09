@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { SidebarProvider } from "./context/SidebarContext";
+import { NewClassroomModalProvider } from "./context/NewClassroomModalContext";
+import { Toaster } from "@/app/components/ui/sonner";
 
 const montserrat = Montserrat({
     weight: ['400', '500', '600', '700'],
@@ -22,11 +24,14 @@ export default function RootLayout({
 }>) {
   return (
     <SidebarProvider>
-      <html>
-        <body className={`${montserrat.variable} antialiased`}>
-          {children}
-        </body>
-      </html>
+      <NewClassroomModalProvider>
+        <html>
+          <body className={`${montserrat.variable} antialiased`}>
+            {children}
+            <Toaster position="top-center" />
+          </body>
+        </html>
+      </NewClassroomModalProvider>
     </SidebarProvider>
   );
 }

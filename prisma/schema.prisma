@@ -26,12 +26,14 @@ model Classroom {
   id        Int     @id @default(autoincrement())
   createdAt DateTime @default(now()) @db.Timestamptz(0)
   name      String
-  code      String
+  code      String  @unique
   owner     User    @relation("Owner", fields: [ownerId], references: [id])
   ownerId   Int
   posts     Post[]
   tests     Test[]
   students  User[]  @relation("Student")
+
+  @@unique([ownerId, name])
 }
 
 model Post {
