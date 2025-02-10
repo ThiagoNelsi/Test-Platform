@@ -249,7 +249,7 @@ export default function MultipleChoiceForm() {
                     {statement.map((item, index) => (
                         <div key={index} className="flex flex-col gap-2">
                             {item.type === "text" 
-                                ? <p>{item.value}</p> 
+                                ? <p className="whitespace-pre-wrap">{item.value}</p> 
                                 : <img src={item.value} alt="Imagem" className="object-cover" />
                             }
                         </div>

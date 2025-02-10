@@ -1,22 +1,36 @@
-"use client"
-
-import { Button } from "@/app/components/ui/button";
-import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
-import { MdAdd } from "react-icons/md";
-import NewQuestionModal from "../../components/NewQuestionModal";
 import { QuestionDataProvider } from "@/app/context/QuestionDataContext";
+import { getQuestions } from "@/lib/questionService";
+import { getUserId } from "@/lib/auth";
+import { columns, QuestionData } from "./columns";
+import { DataTable } from "@/app/components/ui/data-table";
+import TableActions from "./table-actions";
+import { TableProvider } from "@/app/context/TableContext";
 
-export default function Page() {
+export default async function Page() {
+    const userId = await getUserId();
+    if (!userId) return null;
+
+    const questions: QuestionData[] = await getQuestions(userId)
+
+    const formattedQuestions = questions.map((question) => {
+        return {
+            ...question,
+            data: question.data,
+            type: question.type,
+            level: question.level,
+            tags: question.tags,
+            createdAt: question.createdAt,
+        }
+    })
+
     return (
         <QuestionDataProvider>
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button>
-                        <MdAdd /> Criar questão
-                    </Button>
-                </DialogTrigger>
-                <NewQuestionModal />
-            </Dialog>
+            <TableProvider>
+                <div className="container mx-auto py-10">
+                    <TableActions />
+                    <DataTable columns={columns} data={formattedQuestions} />
+                </div>
+            </TableProvider>
         </QuestionDataProvider>
     );
 }

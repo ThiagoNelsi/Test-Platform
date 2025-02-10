@@ -1,3 +1,5 @@
+"use client"
+
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import MultipleChoiceForm from "./MultipleChoiceForm";
