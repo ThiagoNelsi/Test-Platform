@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { getUserId } from "./auth";
 
 export type Todo = {
     id: number;
@@ -8,14 +9,17 @@ export type Todo = {
     finishTime?: Date;
 }
 
-export const getUnfinishedTests = async (userId: number) => {
+export const getUnfinishedTests = async () => {
+    const userId = await getUserId()
+    if (!userId) return null
+
     const unfinishedTests = await prisma.test.findMany({
         where: {
             OR: [
             {
                 instances: {
                     some: {
-                        userId,
+                        id: userId,
                         finishTime: null, // Test is not finished
                     },
                 },
@@ -23,7 +27,7 @@ export const getUnfinishedTests = async (userId: number) => {
             {
                 instances: {
                     none: {
-                        userId,
+                        id: userId,
                     }, // Test is not started
                 },
             },
@@ -34,7 +38,7 @@ export const getUnfinishedTests = async (userId: number) => {
             name: true,
             dueDate: true,
             instances: {
-                where: { userId },
+                where: { id: userId },
                 select: {
                     startTime: true,
                     finishTime: true,

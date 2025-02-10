@@ -8,15 +8,15 @@ interface Props {
 }
 
 export default async function Layout({ children }: Props) {
-    const userId = 1;
+    const todos = await getUnfinishedTests();
 
-    const todos = await getUnfinishedTests(userId);
+    if (!todos) return null;
 
     return (
         <>
-            <Header userId={1} />
+            <Header />
             <Sidebar todos={todos} />
-            <NewClassroomModal userId={userId} />
+            <NewClassroomModal />
             <main className="fixed w-full top-16 h-[calc(100vh-4rem)]">
                 {children}
             </main>

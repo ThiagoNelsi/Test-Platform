@@ -12,6 +12,7 @@ import { Loader } from "lucide-react"
 import { FaRegCopy } from "react-icons/fa";
 import { Classroom } from "@prisma/client"
 import { toast } from "sonner"
+import { useSession } from "next-auth/react"
 
 const SuccessMessage = ({ createdClassroom }: { createdClassroom: Classroom }) => {
     const { setOpen } = useNewClassroomModal()
@@ -40,7 +41,10 @@ const SuccessMessage = ({ createdClassroom }: { createdClassroom: Classroom }) =
     )
 }
 
-export default function NewClassroomModal({ userId }: { userId: number }) {
+export default function NewClassroomModal() {
+    const { data } = useSession()
+    const userId = data?.user.id
+
     const { open, setOpen } = useNewClassroomModal()
     const [createdClassroom, setCreatedClassroom] = useState<Classroom | null>(null)
     const [loading, setLoading] = useState(false)

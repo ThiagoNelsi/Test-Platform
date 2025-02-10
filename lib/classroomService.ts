@@ -3,12 +3,16 @@
 import { prisma } from "@/lib/prisma";
 import { Classroom, User } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { getUserId } from "./auth";
 
 type Owner = Pick<User, 'name' | 'id' | 'email'>
 
 export type ClassroomWithOwner = { owner: Owner } & Classroom
 
-export async function getClassrooms(userId: number) {
+export async function getClassrooms() {
+    const userId = await getUserId()
+    if (!userId) return null
+
     const include = {
         owner: {
             select: {
@@ -48,8 +52,10 @@ export async function getClassrooms(userId: number) {
 }
 
 export async function createClassroom(formData: FormData) {
+    const userId = await getUserId()
+    if (!userId) return null
+
     const name = formData.get('name') as string
-    const userId = Number(formData.get('userId'))
 
     const existingClassroom = await prisma.classroom.findFirst({
         where: {
@@ -84,14 +90,16 @@ export async function createClassroom(formData: FormData) {
         }
     });
 
-    revalidatePath(`/home/${userId}`)
+    revalidatePath(`/home`)
 
     return classroom
 }
 
 export async function joinClassroom(formData: FormData) {
+    const userId = await getUserId()
+    if (!userId) return null
+
     const code = (formData.get('code') as string).toUpperCase()
-    const userId = Number(formData.get('userId'))
 
     const classroom = await prisma.classroom.findFirst({
         where: {
@@ -117,5 +125,5 @@ export async function joinClassroom(formData: FormData) {
         }
     })
 
-    revalidatePath(`/home/${userId}`)
+    revalidatePath(`/home`)
 }
