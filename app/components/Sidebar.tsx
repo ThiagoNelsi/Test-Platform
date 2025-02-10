@@ -8,6 +8,8 @@ import SidebarButton from "./SidebarButton";
 import SidebarTodoItem from "./SidebarTodoItem";
 import { Todo } from "@/lib/testService";
 import { useNewClassroomModal } from "../context/NewClassroomModalContext";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 type SidebarProps = {
     todos: Todo[]
@@ -15,8 +17,14 @@ type SidebarProps = {
 
 export default function Sidebar({ todos }: SidebarProps) {
   const sidebarContext = useSidebar();
-  const isOpen = sidebarContext ? sidebarContext.isOpen : false;
+  const pathname = usePathname();
   const { setOpen } = useNewClassroomModal();
+
+  const isOpen = sidebarContext ? sidebarContext.isOpen : false;
+
+  useEffect(() => {
+    sidebarContext?.setIsOpen(false);
+  }, [pathname])
 
   return (
       <motion.aside
@@ -31,7 +39,11 @@ export default function Sidebar({ todos }: SidebarProps) {
                 text="Nova turma"
                 onClick={() => setOpen(true)}
               />
-              <SidebarButton icon={<HiOutlineInboxStack className="text-2xl" />} text="Bancos de questões" />
+              <SidebarButton
+                href="/questions"
+                icon={<HiOutlineInboxStack className="text-2xl" />}
+                text="Banco de questões"
+              />
 
               <h3 className="mt-5 font-bold">A fazer</h3>
               <ul className="flex flex-col gap-5">

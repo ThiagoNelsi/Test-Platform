@@ -1,8 +1,16 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient as PrismaPostgresClient } from "@/prisma/generated/postgres";
+import { PrismaClient as PrismaMongoClient } from "@/prisma/generated/mongodb";  // Cliente para MongoDB (presumindo que você configurou o MongoDB no seu schema)
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+const globalForPostgres = global as unknown as { prismaPostgres: PrismaPostgresClient };
+const globalForMongo = global as unknown as { prismaMongo: PrismaMongoClient };
 
 export const prisma =
-  globalForPrisma.prisma || new PrismaClient();
+  globalForPostgres.prismaPostgres || new PrismaPostgresClient();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+export const prismaMongo =
+  globalForMongo.prismaMongo || new PrismaMongoClient();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPostgres.prismaPostgres = prisma;
+  globalForMongo.prismaMongo = prismaMongo;
+}
