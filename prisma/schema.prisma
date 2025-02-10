@@ -17,7 +17,6 @@ model User {
   ownedClasses  Classroom[]  @relation("Owner")
   classrooms    Classroom[]  @relation("Student")
   comments      Comment[]
-  questionBanks QuestionBank[]
   questions     Question[]
   testInstances TestInstance[]
 }
@@ -59,19 +58,6 @@ model Comment {
   parentId    Int?
 }
 
-model QuestionBank {
-  id          Int     @id @default(autoincrement())
-  createdAt   DateTime @default(now()) @db.Timestamptz(0)
-  owner       User    @relation(fields: [ownerId], references: [id])
-  ownerId     Int
-  name        String
-  tags        String[]
-  description String?
-  questions   Question[]
-
-  @@unique([ownerId, name])
-}
-
 model Question {
   id            Int       @id @default(autoincrement())
   createdAt     DateTime  @default(now()) @db.Timestamptz(0)
@@ -80,7 +66,6 @@ model Question {
   authorId      Int
   level         Int?
   tags          String[]
-  questionBanks QuestionBank[]
 }
 
 model Test {
