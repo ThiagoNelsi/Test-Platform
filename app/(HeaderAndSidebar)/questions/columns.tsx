@@ -1,10 +1,13 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
+import { ColumnDef, Table } from "@tanstack/react-table"
 import { QuestionType } from "@/app/types"
 import { Checkbox } from "@/app/components/ui/checkbox"
 import { Button } from "@/app/components/ui/button"
 import { ArrowUpDown, Edit, Trash } from "lucide-react"
+import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm"
+import { deleteQuestion } from "@/lib/questionService"
+import { useTable } from "@/app/context/TableContext"
 
 export type QuestionData = {
     id: number,
@@ -94,14 +97,40 @@ export const columns: ColumnDef<QuestionData>[] = [
         header: "Ações",
         accessorKey: "actions",
         cell: ({ row }) => {
+            const { rowSelection, setRowSelection } = useTable()
+            const handleDelete = async () => {
+                const res = await deleteQuestion([row.original.id]);
+                if (res) {
+                    if (rowSelection[row.id]) {
+                        const newSelection = { ...rowSelection }
+                        delete newSelection[row.id]
+                        setRowSelection(newSelection)
+                    }
+                }
+            }
+
             return (
                 <div>
                     <Button className="hover:bg-verdigris" variant="ghost" size="sm" onClick={() => console.log(`Edit question ${row.original.id}`)}>
                         <Edit /> Editar
                     </Button>
-                    <Button className="hover:bg-red-400" variant="ghost" size="sm" onClick={() => console.log(`Delete question ${row.original.id}`)}>
-                        <Trash /> Deletar
-                    </Button>
+                    <Confirm
+                        title={`Tem certeza que deseja apagar a questão?`}
+                        description="Esta ação é irreversível."
+                        confirmText="Apagar"
+                        onConfirm={handleDelete}
+                        confirmBtnStyle="bg-red-500 text-white hover:bg-red-600"
+                    >
+                        <ConfirmTrigger>
+                            <Button
+                                className="hover:bg-red-400"
+                                variant="ghost"
+                                size="sm"
+                            >
+                                <Trash /> Deletar
+                            </Button>
+                        </ConfirmTrigger>
+                    </Confirm>
                 </div>
             )
         }

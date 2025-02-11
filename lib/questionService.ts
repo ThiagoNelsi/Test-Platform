@@ -82,3 +82,31 @@ export const createQuestion = async (formData: FormData) => {
         return false
     }
 }
+
+export const deleteQuestion = async (questionIds: number[]) => {
+    try {
+        const userId = await getUserId();
+        if (!userId) return false;
+
+        const [deletedQuestions] = await prisma.$transaction([
+            prisma.question.deleteMany({
+                where: {
+                    id: { in: questionIds },
+                    authorId: userId,
+                },
+            }),
+            prismaMongo.questionData.deleteMany({
+                where: { questionId: { in: questionIds } },
+            }),
+        ]);
+
+        if (deletedQuestions.count === 0) return false;
+
+        revalidatePath('/questions');
+
+        return true;
+    } catch (error) {
+        console.error("Erro ao deletar questões:", error);
+        return false;
+    }
+};

@@ -3,6 +3,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table"
 import { useTable } from "@/app/context/TableContext"
 import { ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table"
+import { useEffect } from "react"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -15,7 +16,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
     const { table, setTable, rowSelection, setRowSelection } = useTable<TData>();
 
-    setTable(useReactTable({
+    const tableInstance = useReactTable({
         data,
         columns,
 
@@ -25,7 +26,11 @@ export function DataTable<TData, TValue>({
         state: {
             rowSelection,
         }
-    }));
+    });
+
+    useEffect(() => {
+        setTable({ ...tableInstance });
+    }, [data, columns, setTable, tableInstance]); 
 
     if (!table) return null;
 

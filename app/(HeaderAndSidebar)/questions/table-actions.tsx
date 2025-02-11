@@ -6,16 +6,31 @@ import NewQuestionModal from "../../components/NewQuestionModal";
 import { Button } from "@/app/components/ui/button";
 import { Trash } from "lucide-react";
 import { useTable } from "@/app/context/TableContext";
-import { useEffect } from "react";
+import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm";
+import { deleteQuestion } from "@/lib/questionService";
 
 export default function TableActions() {
-    const { rowSelection } = useTable();
-
-    useEffect(() => {
-        console.log(rowSelection)
-    }, [rowSelection])
+    const { table, rowSelection, setRowSelection } = useTable();
 
     const selectedCount = Object.keys(rowSelection).length;
+
+    const getSelectedQuestionIds = () => {
+        const tableRows = table?.getRowModel().rows
+        const rows = tableRows?.filter((row) => rowSelection[row.id])
+        return rows?.map((row) => (row.original as { id: number }).id)
+    }
+
+    const handleDelete = async (questionIds: number[]) => {
+        if (questionIds.length === 0) return;
+
+        const res = await deleteQuestion(questionIds);
+        if (res) {
+            setRowSelection({});
+        }
+    }
+
+    console.log('rowSelection')
+    console.log(rowSelection)
 
     return (
         <menu className="flex justify-between mb-4">
@@ -31,9 +46,19 @@ export default function TableActions() {
             </div>
             <div>
                 {selectedCount > 0 &&
-                <Button variant="ghost" className="text-red-500">
-                    <Trash /> Excluir selecionados
-                </Button>
+                    <Confirm
+                        title={`Tem certeza que deseja apagar ${selectedCount} questões?`}
+                        description="Esta ação é irreversível."
+                        confirmText="Apagar"
+                        onConfirm={() => handleDelete(getSelectedQuestionIds() || [])}
+                        confirmBtnStyle="bg-red-500 text-white hover:bg-red-600"
+                    >
+                        <ConfirmTrigger>
+                            <Button>
+                                <Trash /> Apagar questões
+                            </Button>
+                        </ConfirmTrigger>
+                    </Confirm>
                 }
             </div>
         </menu>

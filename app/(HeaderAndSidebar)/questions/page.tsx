@@ -26,6 +26,7 @@ export default async function Page() {
     return (
         <QuestionDataProvider>
             <TableProvider>
+
                 <div className="container mx-auto py-10">
                     <TableActions />
                     <DataTable columns={columns} data={formattedQuestions} />

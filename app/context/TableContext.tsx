@@ -1,11 +1,11 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { RowSelectionState, Table } from "@tanstack/react-table";
 
 type TableContextType<TData> = {
     table: Table<TData> | null;
-    setTable: (table: Table<TData>) => void;
+    setTable: (table: any) => void;
     rowSelection: RowSelectionState;
     setRowSelection: (rows: RowSelectionState) => void;
 };
