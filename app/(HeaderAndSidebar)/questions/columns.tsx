@@ -1,6 +1,6 @@
 "use client"
 
-import { ColumnDef, Table } from "@tanstack/react-table"
+import { ColumnDef } from "@tanstack/react-table"
 import { QuestionType } from "@/app/types"
 import { Checkbox } from "@/app/components/ui/checkbox"
 import { Button } from "@/app/components/ui/button"
@@ -8,6 +8,7 @@ import { ArrowUpDown, Edit, Trash } from "lucide-react"
 import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm"
 import { deleteQuestion } from "@/lib/questionService"
 import { useTable } from "@/app/context/TableContext"
+import { extractTextFromHTML } from "@/lib/utils"
 
 export type QuestionData = {
     id: number,
@@ -60,11 +61,11 @@ export const columns: ColumnDef<QuestionData>[] = [
         ),
         cell: ({ row }) => {
             const statementText = row.original.data.statement
-                ?.map((s: any) => (s.type === "text" ? s.value : ""))
-                .filter(Boolean)
-                .join(" ")
-                .slice(0, 300) + "...";
-            return statementText
+            return (
+                <div className="whitespace-pre-wrap">
+                    {extractTextFromHTML(statementText).slice(0,200) + "..."}
+                </div>
+            );
         },
     },
     {

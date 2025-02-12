@@ -1,0 +1,52 @@
+import { Dispatch, SetStateAction } from "react";
+import { FaArrowDown, FaArrowUp, FaTrash } from "react-icons/fa";
+
+type MovableItemProps<T> = {
+    children: React.ReactNode;
+    index: number;
+    list: T[];
+    setList: Dispatch<SetStateAction<T[]>>;
+}
+
+export default function MovableItem<T>({ children, index, list, setList }: MovableItemProps<T>) {
+    const handleMoveSection = (event: React.MouseEvent<SVGElement, MouseEvent>, index: number, direction: "up" | "down") => {
+        console.log("move section", index, direction);
+        event.preventDefault();
+        const newStatement = [...list];
+        const movedItem = newStatement.splice(index, 1)[0];
+        newStatement.splice(direction === "up" ? index - 1 : index + 1, 0, movedItem);
+        setList(newStatement);
+    }
+
+    const removeItem = (index: number) => {
+        if (list.length === 1) {
+            return
+        }
+
+        const newStatement = [...list];
+        newStatement.splice(index, 1);
+        setList(newStatement);
+    }
+
+    return (
+        <div className="flex items-center gap-2">
+            {children}
+            <div className="text-sm text-neutral-700 flex items-center gap-4">
+                <div>
+                    <FaArrowUp
+                        className="mb-2 hover:text-neutral-900 cursor-pointer"
+                        onClick={(e) => handleMoveSection(e, index, "up")}
+                    />
+                    <FaArrowDown
+                        className="hover:text-neutral-900 cursor-pointer"
+                        onClick={(e) => handleMoveSection(e, index, "down")}
+                    />
+                </div>
+                <FaTrash
+                    className="text-red-400 hover:text-red-500 cursor-pointer"
+                    onClick={() => removeItem(index)}
+                />
+            </div>
+        </div>
+    )
+}

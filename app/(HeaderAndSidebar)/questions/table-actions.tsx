@@ -29,21 +29,16 @@ export default function TableActions() {
         }
     }
 
-    console.log('rowSelection')
-    console.log(rowSelection)
-
     return (
         <menu className="flex justify-between mb-4">
-            <div>
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button>
-                            <MdAdd /> Criar questão
-                        </Button>
-                    </DialogTrigger>
-                    <NewQuestionModal />
-                </Dialog>
-            </div>
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button className="bg-ash_gray-300 text-white hover:bg-ash_gray-200">
+                        <MdAdd /> Criar questão
+                    </Button>
+                </DialogTrigger>
+                <NewQuestionModal />
+            </Dialog>
             <div>
                 {selectedCount > 0 &&
                     <Confirm
@@ -54,7 +49,7 @@ export default function TableActions() {
                         confirmBtnStyle="bg-red-500 text-white hover:bg-red-600"
                     >
                         <ConfirmTrigger>
-                            <Button>
+                            <Button variant="ghost" className="text-red-600 hover:text-red-600">
                                 <Trash /> Apagar questões
                             </Button>
                         </ConfirmTrigger>

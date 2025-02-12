@@ -1,14 +1,12 @@
 "use client"
 
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
-import MultipleChoiceForm from "./MultipleChoiceForm";
-import { Button } from "@/app/components/ui/button";
 import { ReactNode } from "react";
-import { QuestionType } from "@/app/types";
-import { useQuestionData } from "@/app/context/QuestionDataContext";
 import { createQuestion } from "@/lib/questionService";
 import { toast } from "sonner";
+import QuestionEditor from "./QuestionEditor";
+import { useQuestionEditor } from "../context/QuestionEditorContext";
+import { valitadeMultipleChoice } from "./QuestionTypes/MultipleChoice/utils";
 
 type NewQuestionModalProps = { }
 
@@ -18,16 +16,31 @@ export const FormSection = ({ children }: { children: ReactNode }) => (
     </div>
 )
 
-export default function NewQuestionModal({ }: NewQuestionModalProps) {
-    const { type, setType, data } = useQuestionData()
+export default function NewQuestionModal({}: NewQuestionModalProps) {
+    const { data } = useQuestionEditor()
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
+        const { errors, ...validatedData } = valitadeMultipleChoice(data)
+
+        if (errors) {
+            toast.error("- " + errors.join("\n- "), {
+                position: "top-center",
+                duration: 3000,
+                style: {
+                    background: "#ef4444", // --red-500
+                    color: '#fff',
+                    border: 0,
+                }
+            })
+            return
+        }
+
         const formData = new FormData()
-        formData.append('type', type)
+        formData.append('type', e.currentTarget.type.value)
         formData.append('level', e.currentTarget.level.value)
-        formData.append('data', JSON.stringify(data))
+        formData.append('data', JSON.stringify(validatedData))
 
         const res = await createQuestion(formData)
 
@@ -54,46 +67,17 @@ export default function NewQuestionModal({ }: NewQuestionModalProps) {
     }
 
     return (
-        <DialogContent className="max-h-[90vh] md:min-w-[700px] overflow-auto">
+        <DialogContent className="max-h-[95vh] md:max-w-[1000px] overflow-auto">
             <DialogHeader>
                 <DialogTitle>Criar questão</DialogTitle>
                 <DialogDescription>
                     Preencha os campos abaixo para criar uma nova questão.
                 </DialogDescription>
             </DialogHeader>
-            <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
-                <div className="flex flex-col gap-10 ">
-                    <FormSection>
-                        <p className="text-sm mb-2">Tipo</p>
-                        <Select required defaultValue={type} onValueChange={(value: string) => setType(value as QuestionType)}>
-                            <SelectTrigger className="w-fit">
-                                <SelectValue placeholder="Selecione um tipo" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="multiple_choice">Múltipla escolha</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </FormSection>
-                    {
-                        type === "multiple_choice" && <MultipleChoiceForm />
-
-                    }
-                    <FormSection>
-                        <p className="text-sm mb-2">Dificuldade</p>
-                        <Select name="level">
-                            <SelectTrigger className="w-fit">
-                                <SelectValue placeholder="Selecione uma dificuldade" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="easy">Fácil</SelectItem>
-                                <SelectItem value="medium">Médio</SelectItem>
-                                <SelectItem value="hard">Difícil</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </FormSection>
-                </div>
-                <Button className="bg-verdigris mt-10" type="submit">Criar questão</Button>
-            </form>
+            <QuestionEditor
+                submitAction={handleSubmit}
+                submitButtonText="Criar questão"
+            />
         </DialogContent>
     )
 }

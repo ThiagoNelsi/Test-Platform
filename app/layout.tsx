@@ -7,6 +7,7 @@ import { Toaster } from "@/app/components/ui/sonner";
 import SessionProvider from "./components/SessionProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/route";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 const montserrat = Montserrat({
     weight: ['400', '500', '600', '700'],
@@ -28,12 +29,21 @@ export default async function RootLayout({
   const session = await getServerSession(authOptions);
   return (
         <html>
+          <head>
+            <script
+              crossOrigin="anonymous"
+              src="//unpkg.com/react-scan/dist/auto.global.js"
+            />
+            {/* rest of your scripts go under */}
+          </head>
           <body className={`${montserrat.variable} antialiased`}>
             <SessionProvider session={session}>
               <SidebarProvider>
                 <NewClassroomModalProvider>
-                  {children}
-                  <Toaster position="top-center" />
+                  <TooltipProvider>
+                    {children}
+                    <Toaster position="top-center" className="whitespace-pre-wrap" />
+                  </TooltipProvider>
                 </NewClassroomModalProvider>
               </SidebarProvider>
             </SessionProvider>
