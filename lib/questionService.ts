@@ -5,6 +5,8 @@ import { getUserId } from "./auth"
 import { prisma, prismaMongo } from "./prisma"
 import { QuestionType } from "@/app/types"
 
+const levelOptions = ['easy', 'medium', 'hard']
+
 export const getQuestions = async (userId: number) => {
     const postgresData = await prisma.question.findMany({
         where: {
@@ -45,8 +47,6 @@ export const createQuestion = async (formData: FormData) => {
     const level = formData.get('level') as string
     const data = formData.get('data') as string
 
-    const levelOptions = ['easy', 'medium', 'hard']
-
     let question
 
     try {
@@ -79,6 +79,61 @@ export const createQuestion = async (formData: FormData) => {
                 id: question.id
             }
         })
+        return false
+    }
+}
+
+export const updateQuestion = async (questionId: number, formData: FormData) => {
+    const userId = await getUserId()
+    if (!userId) return null
+
+    const type = formData.get('type') as string
+    const level = formData.get('level') as string
+    const data = formData.get('data') as string
+
+    try {
+        await prisma.question.update({
+            where: {
+                id: questionId,
+                authorId: userId,
+            },
+            data: {
+                type,
+                level: levelOptions.indexOf(level),
+            }
+        });
+    } catch (err) {
+        return false
+    }
+
+    try {
+        const questionData = await prismaMongo.questionData.findFirst({
+            where: {
+                questionId,
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        if (!questionData) {
+            return false;
+        }
+
+        await prismaMongo.questionData.update({
+            where: {
+                id: questionData.id,
+            },
+            data: {
+                data,
+                type,
+            },
+        });
+
+        revalidatePath("/questions");
+
+        return true;
+    } catch (err) {
         return false
     }
 }

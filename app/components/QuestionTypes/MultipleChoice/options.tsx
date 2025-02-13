@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { FormSection } from "../../NewQuestionModal";
 import MovableItem from "../../MovableItem";
 import { MinimalTiptapEditor } from "../../minimal-tiptap";
@@ -14,6 +14,14 @@ type OptionProps = {
 
 export default function Options({ options, setOptions }: OptionProps) {
     const [focusedOption, setFocusedOption] = useState<number | undefined>();
+
+    useEffect(() => {
+        options.forEach(option => {
+            if (!option.id) option.id = Math.random().toString();
+        })
+    }, [options])
+
+    if (options.some(option => !option.id)) return null
 
     return (
         <FormSection>

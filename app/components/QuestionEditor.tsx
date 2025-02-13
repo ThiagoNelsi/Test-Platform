@@ -9,7 +9,6 @@ import { useQuestionEditor } from "../context/QuestionEditorContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import MultipleChoiceRenderer from "./QuestionTypes/MultipleChoice/renderer";
 
-
 type QuestionEditorProps = {
     submitAction: (e: React.FormEvent<HTMLFormElement>) => void
     submitButtonText?: string
@@ -62,7 +61,7 @@ export default function QuestionEditor({ submitAction, submitButtonText }: Quest
                     {type === "multiple_choice" && <MultipleChoiceRenderer content={data} />}
                 </TabsContent>
             </Tabs>
-            <Button className="bg-verdigris mt-10" type="submit">{submitButtonText}</Button>
+            <Button className="bg-verdigris hover:bg-verdigris-400 mt-10" type="submit">{submitButtonText}</Button>
         </form>
     )
 }

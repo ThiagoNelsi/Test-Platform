@@ -1,13 +1,13 @@
 "use client"
 
-import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
-import { MdAdd } from "react-icons/md";
-import NewQuestionModal from "../../components/NewQuestionModal";
+
 import { Button } from "@/app/components/ui/button";
 import { Trash } from "lucide-react";
+import { MdAdd } from "react-icons/md";
 import { useTable } from "@/app/context/TableContext";
 import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm";
 import { deleteQuestion } from "@/lib/questionService";
+import QuestionDialogTrigger from './question-dialog-trigger'
 
 export default function TableActions() {
     const { table, rowSelection, setRowSelection } = useTable();
@@ -31,14 +31,11 @@ export default function TableActions() {
 
     return (
         <menu className="flex justify-between mb-4">
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button className="bg-ash_gray-300 text-white hover:bg-ash_gray-200">
-                        <MdAdd /> Criar questão
-                    </Button>
-                </DialogTrigger>
-                <NewQuestionModal />
-            </Dialog>
+            <QuestionDialogTrigger type="create" initialData={null}>
+                <Button className="bg-ash_gray-300 text-white hover:bg-ash_gray-200">
+                    <MdAdd /> Criar questão
+                </Button>
+            </QuestionDialogTrigger>
             <div>
                 {selectedCount > 0 &&
                     <Confirm

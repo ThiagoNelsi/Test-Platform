@@ -201,6 +201,7 @@ export const useMinimalTiptapEditor = ({
     onUpdate: ({ editor }) => handleUpdate(editor),
     onCreate: ({ editor }) => handleCreate(editor),
     onBlur: ({ editor }) => handleBlur(editor),
+    immediatelyRender: false, // Add this line to avoid hydration mismatches
     ...props
   })
 

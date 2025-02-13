@@ -2,13 +2,15 @@
 
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
 import { ReactNode } from "react";
-import { createQuestion } from "@/lib/questionService";
-import { toast } from "sonner";
+import { createQuestion, updateQuestion } from "@/lib/questionService";
 import QuestionEditor from "./QuestionEditor";
 import { useQuestionEditor } from "../context/QuestionEditorContext";
 import { valitadeMultipleChoice } from "./QuestionTypes/MultipleChoice/utils";
+import { errorToast, successToast } from "@/lib/toasters";
 
-type NewQuestionModalProps = { }
+type NewQuestionModalProps = {
+    type: "create" | "edit"
+}
 
 export const FormSection = ({ children }: { children: ReactNode }) => (
     <div className="border-l-2 border-gray-200 pl-4">
@@ -16,8 +18,8 @@ export const FormSection = ({ children }: { children: ReactNode }) => (
     </div>
 )
 
-export default function NewQuestionModal({}: NewQuestionModalProps) {
-    const { data } = useQuestionEditor()
+export default function NewQuestionModal({ type }: NewQuestionModalProps) {
+    const { data, id } = useQuestionEditor()
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -25,16 +27,7 @@ export default function NewQuestionModal({}: NewQuestionModalProps) {
         const { errors, ...validatedData } = valitadeMultipleChoice(data)
 
         if (errors) {
-            toast.error("- " + errors.join("\n- "), {
-                position: "top-center",
-                duration: 3000,
-                style: {
-                    background: "#ef4444", // --red-500
-                    color: '#fff',
-                    border: 0,
-                }
-            })
-            return
+            return errorToast("- " + errors.join("\n- "))
         }
 
         const formData = new FormData()
@@ -42,28 +35,22 @@ export default function NewQuestionModal({}: NewQuestionModalProps) {
         formData.append('level', e.currentTarget.level.value)
         formData.append('data', JSON.stringify(validatedData))
 
-        const res = await createQuestion(formData)
+        let res = null
+        let messageWord = "criar"
 
-        if (!res) {
-            toast.error('Erro ao criar questão', {
-                position: "top-center",
-                style: {
-                    background: "#ef4444", // --red-500
-                    color: '#fff',
-                    border: 0
-                }
-            })
-            return
+        if (type === "create") {
+            res = await createQuestion(formData)
+        } else {
+            messageWord = "editada"
+            if (!id) return errorToast("Erro ao editar questão")
+            res = await updateQuestion(id, formData)
         }
 
-        toast.success('Questão criada com sucesso', {
-            position: "top-center",
-            style: {
-                background: "#10b981", // --green-500
-                color: '#fff',
-                border: 0
-            }
-        })
+        if (!res) {
+            return errorToast(`Erro ao ${messageWord} questão`)
+        }
+
+        successToast(`Questão ${messageWord} com sucesso`)
     }
 
     return (
@@ -76,7 +63,7 @@ export default function NewQuestionModal({}: NewQuestionModalProps) {
             </DialogHeader>
             <QuestionEditor
                 submitAction={handleSubmit}
-                submitButtonText="Criar questão"
+                submitButtonText={type === "create" ? "Criar questão" : "Editar questão"}
             />
         </DialogContent>
     )

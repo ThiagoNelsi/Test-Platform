@@ -9,6 +9,7 @@ import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm"
 import { deleteQuestion } from "@/lib/questionService"
 import { useTable } from "@/app/context/TableContext"
 import { extractTextFromHTML } from "@/lib/utils"
+import QuestionDialogTrigger from "./question-dialog-trigger"
 
 export type QuestionData = {
     id: number,
@@ -99,6 +100,7 @@ export const columns: ColumnDef<QuestionData>[] = [
         accessorKey: "actions",
         cell: ({ row }) => {
             const { rowSelection, setRowSelection } = useTable()
+
             const handleDelete = async () => {
                 const res = await deleteQuestion([row.original.id]);
                 if (res) {
@@ -112,9 +114,15 @@ export const columns: ColumnDef<QuestionData>[] = [
 
             return (
                 <div>
-                    <Button className="hover:bg-verdigris" variant="ghost" size="sm" onClick={() => console.log(`Edit question ${row.original.id}`)}>
-                        <Edit /> Editar
-                    </Button>
+                    <QuestionDialogTrigger type="edit" initialData={row.original}>
+                        <Button
+                            className="hover:bg-verdigris"
+                            variant="ghost"
+                            size="sm"
+                        >
+                            <Edit /> Editar
+                        </Button>
+                    </QuestionDialogTrigger>
                     <Confirm
                         title={`Tem certeza que deseja apagar a questão?`}
                         description="Esta ação é irreversível."

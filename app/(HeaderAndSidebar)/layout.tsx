@@ -17,7 +17,7 @@ export default async function Layout({ children }: Props) {
             <Header />
             <Sidebar todos={todos} />
             <NewClassroomModal />
-            <main className="fixed w-full top-16 h-[calc(100vh-4rem)]">
+            <main className="fixed w-full top-16 h-[calc(100vh-4rem)] overflow-auto">
                 {children}
             </main>
         </>
