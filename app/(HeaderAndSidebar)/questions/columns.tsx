@@ -1,13 +1,13 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { QuestionType } from "@/app/types"
+import { QuestionType, Tag } from "@/app/types"
 import { Checkbox } from "@/app/components/ui/checkbox"
 import { Button } from "@/app/components/ui/button"
 import { ArrowUpDown, Edit, Trash } from "lucide-react"
 import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm"
 import { deleteQuestion } from "@/lib/questionService"
-import { useTable } from "@/app/context/TableContext"
+import { Filter, useTable } from "@/app/context/TableContext"
 import { extractTextFromHTML } from "@/lib/utils"
 import QuestionDialogTrigger from "./question-dialog-trigger"
 
@@ -16,7 +16,7 @@ export type QuestionData = {
     createdAt: Date,
     type: QuestionType,
     level: number | null,
-    tags: string[],
+    tags: Tag[],
     data: any
 }
 
@@ -68,6 +68,24 @@ export const columns: ColumnDef<QuestionData>[] = [
                 </div>
             );
         },
+        filterFn: (row, id, value: Filter) => {
+            if (!value) return true
+
+            const { text, tags } = value
+
+            const tagNames = tags.map((tag) => tag.name)
+
+            const statement = extractTextFromHTML(row.original.data.statement)
+            const options = row.original.data.options.map((option: any) => extractTextFromHTML(option.value)).join(" ")
+
+            const textMatches = (statement + options)
+                .toLowerCase()
+                .includes((text as string).toLowerCase()) || !text
+
+            const tagsMatches = tags.length === 0 || row.original.tags.some((tag) => tagNames.includes(tag.name))
+
+            return textMatches && tagsMatches
+        }
     },
     {
         header: "Tipo",
@@ -88,12 +106,32 @@ export const columns: ColumnDef<QuestionData>[] = [
         ),
         accessorKey: "level",
         cell: ({ row }) => {
-            return ["-", "Fácil", "Médio", "Difícil"][(row.original.level ?? -1) + 1]
+            const levels = ["-", "Fácil", "Médio", "Difícil"]
+            const index = (row.original.level ?? -1) + 1
+            const level = levels[index]
+            const colors = ["", "text-green-500", "text-yellow-500", "text-red-500"]
+            return <p className={colors[index]}>{level}</p>
         }
     },
     {
         header: "Tags",
-        accessorKey: "tags"
+        accessorKey: "tags",
+        minSize: 100,
+        maxSize: 200,
+        size: 150,
+        cell: ({ row }) => {
+            const tags = row.original.tags
+
+            return (
+                <div className="flex flex-wrap gap-2">
+                    {tags && tags.map((tag) => (
+                        <span key={tag.id} className={`px-2 py-1 mr-1 rounded-md`} style={{ backgroundColor: tag.color, color: 'white' }}>
+                            {tag.name}
+                        </span>
+                    ))}
+                </div>
+            )
+        }
     },
     {
         header: "Ações",

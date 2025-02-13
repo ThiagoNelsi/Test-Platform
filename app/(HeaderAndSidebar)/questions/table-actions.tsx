@@ -1,6 +1,5 @@
 "use client"
 
-
 import { Button } from "@/app/components/ui/button";
 import { Trash } from "lucide-react";
 import { MdAdd } from "react-icons/md";
@@ -8,11 +7,92 @@ import { useTable } from "@/app/context/TableContext";
 import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm";
 import { deleteQuestion } from "@/lib/questionService";
 import QuestionDialogTrigger from './question-dialog-trigger'
+import { IoMdClose } from "react-icons/io";
+import { Input } from "@/app/components/ui/input";
+import { useEffect, useState } from "react";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+  } from "@/app/components/ui/command"
+  import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+  } from "@/app/components/ui/popover"
+import { Tag } from "@/app/types";
+
+type SearchTagsProps = {
+    items: Tag[],
+}
+
+const SearchTags = ({ items }: SearchTagsProps) => {
+    const { addTagFilter } = useTable()
+    const [open, setOpen] = useState(false);
+    const [searchTerm] = useState("");
+
+    const filteredItems = items.filter(item =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+                <Button
+                    variant="outline"
+                    size="sm"
+                >
+                    Filtrar tags
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-0" side="right" align="start">
+            <Command>
+                <CommandInput placeholder="Buscar tags..." />
+                <CommandList>
+                <CommandEmpty>No results found.</CommandEmpty>
+                <CommandGroup>
+                    {filteredItems.map((item) => (
+                    <CommandItem
+                        key={item.id}
+                        onSelect={() => addTagFilter(item)}
+                        className="flex items-center gap-2"
+                    >
+                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} ></div>
+                        <div>{item.name}</div>
+                    </CommandItem>
+                    ))}
+                </CommandGroup>
+                </CommandList>
+            </Command>
+            </PopoverContent>
+        </Popover>
+    )
+}
 
 export default function TableActions() {
-    const { table, rowSelection, setRowSelection } = useTable();
+    const { table, rowSelection, setRowSelection, filter, setFilter, removeTagFilter } = useTable();
+    const [tags, setTags] = useState<Tag[]>([]);
+    const selectedRowsCount = Object.keys(rowSelection).length;
+    const selectedTags = filter?.tags;
 
-    const selectedCount = Object.keys(rowSelection).length;
+    useEffect(() => {
+        if (table) {
+            const tags = table.getRowModel().rows.map((row) => {
+                const question = row.original as { tags: Tag[] }
+                return question.tags
+            }).flat()
+            const uniqueTags: Tag[] = []
+            tags.forEach((tag) => {
+                if (!uniqueTags.some((t) => t.id === tag.id)) {
+                    uniqueTags.push(tag)
+                }
+            })
+            setTags(uniqueTags)
+        }
+    }, [table])
 
     const getSelectedQuestionIds = () => {
         const tableRows = table?.getRowModel().rows
@@ -20,7 +100,7 @@ export default function TableActions() {
         return rows?.map((row) => (row.original as { id: number }).id)
     }
 
-    const handleDelete = async (questionIds: number[]) => {
+    const handleDeleteQuestion = async (questionIds: number[]) => {
         if (questionIds.length === 0) return;
 
         const res = await deleteQuestion(questionIds);
@@ -29,30 +109,52 @@ export default function TableActions() {
         }
     }
 
+    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setFilter({
+            text: event.target.value,
+            tags: filter?.tags ?? []
+        })
+    }
+
     return (
-        <menu className="flex justify-between mb-4">
+        <menu className="flex items-center gap-4 justify-between mb-4">
             <QuestionDialogTrigger type="create" initialData={null}>
                 <Button className="bg-ash_gray-300 text-white hover:bg-ash_gray-200">
                     <MdAdd /> Criar questão
                 </Button>
             </QuestionDialogTrigger>
-            <div>
-                {selectedCount > 0 &&
-                    <Confirm
-                        title={`Tem certeza que deseja apagar ${selectedCount} questões?`}
-                        description="Esta ação é irreversível."
-                        confirmText="Apagar"
-                        onConfirm={() => handleDelete(getSelectedQuestionIds() || [])}
-                        confirmBtnStyle="bg-red-500 text-white hover:bg-red-600"
-                    >
-                        <ConfirmTrigger>
-                            <Button variant="ghost" className="text-red-600 hover:text-red-600">
-                                <Trash /> Apagar questões
-                            </Button>
-                        </ConfirmTrigger>
-                    </Confirm>
-                }
+            <div className="flex flex-1 item-center gap-1 shadow p-1 rounded-md">
+                <div className="flex gap-1 items-center">
+                    {selectedTags && selectedTags.map((tag) => (
+                        <span key={tag.id} className={`flex items-center gap-2 text-xs px-2 h-7 mr-1 rounded-full text-black`} style={{ backgroundColor: tag.color }}>
+                            {tag.name}
+                            <IoMdClose className="cursor-pointer" onClick={() => removeTagFilter(tag)} />
+                        </span>
+                    ))}
+                </div>
+                <Input
+                    placeholder="Buscar questões..."
+                    value={(filter?.text ?? "") as string}
+                    onChange={handleSearch}
+                    className="border-0 shadow-none focus-visible:ring-0"
+                />
+                <SearchTags items={tags} />
             </div>
+            {selectedRowsCount > 0 &&
+                <Confirm
+                    title={`Tem certeza que deseja apagar ${selectedRowsCount} questões?`}
+                    description="Esta ação é irreversível."
+                    confirmText="Apagar"
+                    onConfirm={() => handleDeleteQuestion(getSelectedQuestionIds() || [])}
+                    confirmBtnStyle="bg-red-500 text-white hover:bg-red-600"
+                >
+                    <ConfirmTrigger>
+                        <Button variant="ghost" className="text-red-600 hover:text-red-600">
+                            <Trash /> Apagar questões
+                        </Button>
+                    </ConfirmTrigger>
+                </Confirm>
+            }
         </menu>
     )
 }

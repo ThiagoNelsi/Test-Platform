@@ -2,7 +2,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table"
 import { useTable } from "@/app/context/TableContext"
-import { ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table"
+import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table"
 import { useEffect } from "react"
 
 interface DataTableProps<TData, TValue> {
@@ -14,7 +14,7 @@ export function DataTable<TData, TValue>({
     columns,
     data,
 }: DataTableProps<TData, TValue>) {
-    const { table, setTable, rowSelection, setRowSelection } = useTable<TData>();
+    const { table, setTable, rowSelection, setRowSelection, filter } = useTable<TData>();
 
     const tableInstance = useReactTable({
         data,
@@ -22,15 +22,17 @@ export function DataTable<TData, TValue>({
 
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
         onRowSelectionChange: (updaterOrValue) => setRowSelection(updaterOrValue as any),
         state: {
             rowSelection,
-        }
+        },
     });
 
     useEffect(() => {
+        tableInstance.getColumn("data")?.setFilterValue(filter);
         setTable({ ...tableInstance });
-    }, [data, columns, setTable, tableInstance]); 
+    }, [data, columns, filter, setTable, tableInstance]); 
 
     if (!table) return null;
 
@@ -71,9 +73,9 @@ export function DataTable<TData, TValue>({
                     ))
                 ) : (
                     <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                        No results.
-                    </TableCell>
+                        <TableCell colSpan={columns.length} className="h-24 text-center">
+                            No results.
+                        </TableCell>
                     </TableRow>
                 )}
                 </TableBody>

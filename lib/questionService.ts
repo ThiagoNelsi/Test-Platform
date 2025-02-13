@@ -32,7 +32,8 @@ export const getQuestions = async (userId: number) => {
         return {
             ...question,
             type: question.type as QuestionType,
-            data: parsed
+            data: parsed,
+            tags: []
         }
     })
 
