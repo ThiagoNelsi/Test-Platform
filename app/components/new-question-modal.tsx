@@ -10,6 +10,7 @@ import { errorToast, successToast } from "@/lib/toasters";
 
 type NewQuestionModalProps = {
     type: "create" | "edit"
+    closeDialog(): void
 }
 
 export const FormSection = ({ children }: { children: ReactNode }) => (
@@ -18,8 +19,30 @@ export const FormSection = ({ children }: { children: ReactNode }) => (
     </div>
 )
 
-export default function NewQuestionModal({ type }: NewQuestionModalProps) {
-    const { data, id } = useQuestionEditor()
+const CreateQuestionHeader = () => {
+    return (
+        <DialogHeader>
+            <DialogTitle>Criar questão</DialogTitle>
+            <DialogDescription>
+                Preencha os campos abaixo para criar uma nova questão.
+            </DialogDescription>
+        </DialogHeader>
+    )
+}
+
+const EditQuestionHeader = () => {
+    return (
+        <DialogHeader>
+            <DialogTitle>Editar questão</DialogTitle>
+            <DialogDescription>
+                Edite os campos abaixo para alterar a questão.
+            </DialogDescription>
+        </DialogHeader>
+    )
+}
+
+export default function NewQuestionModal({ type, closeDialog }: NewQuestionModalProps) {
+    const { data, id, tags } = useQuestionEditor()
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -33,6 +56,7 @@ export default function NewQuestionModal({ type }: NewQuestionModalProps) {
         const formData = new FormData()
         formData.append('type', e.currentTarget.type.value)
         formData.append('level', e.currentTarget.level.value)
+        formData.append('tags', JSON.stringify(tags.map((tag) => tag.id)))
         formData.append('data', JSON.stringify(validatedData))
 
         let res = null
@@ -51,19 +75,17 @@ export default function NewQuestionModal({ type }: NewQuestionModalProps) {
         }
 
         successToast(`Questão ${messageWord} com sucesso`)
+        closeDialog()
     }
+
+    const buttonText = type === "create" ? "Criar questão" : "Salvar alterações"
 
     return (
         <DialogContent className="max-h-[95vh] md:max-w-[1000px] overflow-auto">
-            <DialogHeader>
-                <DialogTitle>Criar questão</DialogTitle>
-                <DialogDescription>
-                    Preencha os campos abaixo para criar uma nova questão.
-                </DialogDescription>
-            </DialogHeader>
+            {type === "create" ? <CreateQuestionHeader /> : <EditQuestionHeader />}
             <QuestionEditor
                 submitAction={handleSubmit}
-                submitButtonText={type === "create" ? "Criar questão" : "Editar questão"}
+                submitButtonText={buttonText}
             />
         </DialogContent>
     )

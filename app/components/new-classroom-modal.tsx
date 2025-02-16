@@ -10,7 +10,7 @@ import { TabsContent } from "@radix-ui/react-tabs"
 import { createClassroom, joinClassroom } from "@/lib/classroomService"
 import { Loader } from "lucide-react"
 import { FaRegCopy } from "react-icons/fa";
-import { Classroom } from "@prisma/client"
+import { Classroom } from "@/prisma/generated/postgres"
 import { toast } from "sonner"
 import { useSession } from "next-auth/react"
 

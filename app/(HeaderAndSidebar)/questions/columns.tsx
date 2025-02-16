@@ -10,6 +10,7 @@ import { deleteQuestion } from "@/lib/questionService"
 import { Filter, useTable } from "@/app/context/table-context"
 import { extractTextFromHTML } from "@/lib/utils"
 import QuestionDialogTrigger from "./question-dialog-trigger"
+import { tagColors } from "@/lib/tag-colors"
 
 export type QuestionData = {
     id: number,
@@ -125,10 +126,7 @@ export const columns: ColumnDef<QuestionData>[] = [
 
             const selectedTags = filter?.tags
 
-            console.log(selectedTags)
-
             const handleClick = (tag: Tag) => {
-                console.log(tag)
                 if (selectedTags?.some((t) => t.id === tag.id)) {
                     removeTagFilter(tag)
                 } else {
@@ -141,8 +139,8 @@ export const columns: ColumnDef<QuestionData>[] = [
                     {tags && tags.map((tag) => (
                         <Button
                             key={tag.id}
-                            className={`h-fit shadow-none px-2 py-1 mr-1 rounded-md ${selectedTags?.some((t) => t.id === tag.id) && "border-2 border-neutral-800"}`}
-                            style={{ backgroundColor: tag.color, color: 'white' }}
+                            className={`h-fit shadow-none px-2 py-1 mr-1 rounded-md ${selectedTags?.some((t) => t.id === tag.id) && "border-2"}`}
+                            style={{ backgroundColor: tagColors[tag.color].background, color: tagColors[tag.color].text, borderColor: tagColors[tag.color].border }}
                             onClick={() => handleClick(tag)}
                         >
                             {tag.name}

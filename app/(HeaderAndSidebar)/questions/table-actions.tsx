@@ -24,12 +24,14 @@ import {
     PopoverTrigger,
   } from "@/app/components/ui/popover"
 import { Tag } from "@/app/types";
+import { RemovableTag } from "@/app/components/removable-tag";
+import { tagColors } from "@/lib/tag-colors";
 
 type SearchTagsProps = {
     items: Tag[],
 }
 
-const SearchTags = ({ items }: SearchTagsProps) => {
+export const SearchTags = ({ items }: SearchTagsProps) => {
     const { addTagFilter } = useTable()
     const [open, setOpen] = useState(false);
     const [searchTerm] = useState("");
@@ -60,8 +62,8 @@ const SearchTags = ({ items }: SearchTagsProps) => {
                         onSelect={() => addTagFilter(item)}
                         className="flex items-center gap-2"
                     >
-                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} ></div>
-                        <div>{item.name}</div>
+                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: tagColors[item.color].background }} ></div>
+                        <div style={{ color: tagColors[item.color].text }}>{item.name}</div>
                     </CommandItem>
                     ))}
                 </CommandGroup>
@@ -126,10 +128,7 @@ export default function TableActions() {
             <div className="flex flex-1 item-center gap-1 shadow p-1 rounded-md">
                 <div className="flex gap-1 items-center">
                     {selectedTags && selectedTags.map((tag) => (
-                        <span key={tag.id} className={`flex items-center gap-2 text-xs px-2 h-7 mr-1 rounded-full text-black`} style={{ backgroundColor: tag.color }}>
-                            {tag.name}
-                            <IoMdClose className="cursor-pointer" onClick={() => removeTagFilter(tag)} />
-                        </span>
+                        <RemovableTag key={tag.id} tag={tag} onRemove={() => removeTagFilter(tag)} />
                     ))}
                 </div>
                 <Input

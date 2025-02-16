@@ -13,9 +13,15 @@ export type MultipleChoiceQuestion = {
     }[];
 }
 
+export type TagColor = {
+    background: string;
+    text: string;
+    border: string;
+}
+
 export type Tag = {
     id: number;
     userId: number;
     name: string;
-    color: string;
+    color: number;
 }

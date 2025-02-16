@@ -1,4 +1,4 @@
-import type { Classroom } from "@prisma/client";
+import type { Classroom } from "@/prisma/generated/postgres";
 import Component from "./component";
 import { getClassrooms } from "@/lib/classroomService";
 import { SwitcherProvider } from "@/app/context/switcher-context";

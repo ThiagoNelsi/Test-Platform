@@ -28,7 +28,6 @@ export default function MultipleChoiceForm({}: MultipleChoiceFormProps) {
     }
 
     const setOptions: Dispatch<SetStateAction<Option[]>> = (newOptions) => {
-        console.log("setOptions", newOptions);
         setData((prevData: MultipleChoiceQuestionData) => ({
             ...prevData,
             options: newOptions

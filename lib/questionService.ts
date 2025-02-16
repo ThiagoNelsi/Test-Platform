@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { getUserId } from "./auth"
 import { prisma, prismaMongo } from "./prisma"
-import { QuestionType } from "@/app/types"
+import { QuestionType, Tag } from "@/app/types"
 
 const levelOptions = ['easy', 'medium', 'hard']
 
@@ -11,6 +11,9 @@ export const getQuestions = async (userId: number) => {
     const postgresData = await prisma.question.findMany({
         where: {
             authorId: userId
+        },
+        include: {
+            tags: true
         }
     })
 
@@ -33,7 +36,6 @@ export const getQuestions = async (userId: number) => {
             ...question,
             type: question.type as QuestionType,
             data: parsed,
-            tags: []
         }
     })
 
@@ -47,6 +49,7 @@ export const createQuestion = async (formData: FormData) => {
     const type = formData.get('type') as string
     const level = formData.get('level') as string
     const data = formData.get('data') as string
+    const tags = JSON.parse(formData.get('tags') as string) as number[]
 
     let question
 
@@ -56,6 +59,9 @@ export const createQuestion = async (formData: FormData) => {
                 type,
                 level: levelOptions.indexOf(level),
                 authorId: userId,
+                tags: {
+                    connect: tags.map((tagId) => ({ id: tagId }))
+                }
             }
         });
     } catch (err) {
@@ -91,8 +97,31 @@ export const updateQuestion = async (questionId: number, formData: FormData) => 
     const type = formData.get('type') as string
     const level = formData.get('level') as string
     const data = formData.get('data') as string
+    const tags = JSON.parse(formData.get('tags') as string) as number[]
 
     try {
+        const questionTags = await prisma.question.findUnique({
+            where: {
+                id: questionId
+            },
+            select: {
+                tags: {
+                    select: {
+                        id: true
+                    }
+                }
+            }
+        });
+
+        let disconnectTags: { id: number}[] = [];
+
+        if (questionTags) {
+            disconnectTags = questionTags.tags.filter(tag => {
+                return !tags.includes(tag.id)
+            })
+        }
+
+
         await prisma.question.update({
             where: {
                 id: questionId,
@@ -101,6 +130,10 @@ export const updateQuestion = async (questionId: number, formData: FormData) => 
             data: {
                 type,
                 level: levelOptions.indexOf(level),
+                tags: {
+                    connect: tags.map((tagId) => ({ id: tagId })),
+                    disconnect: disconnectTags,
+                }
             }
         });
     } catch (err) {

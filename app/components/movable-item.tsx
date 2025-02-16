@@ -10,7 +10,6 @@ type MovableItemProps<T> = {
 
 export default function MovableItem<T>({ children, index, list, setList }: MovableItemProps<T>) {
     const handleMoveSection = (event: React.MouseEvent<SVGElement, MouseEvent>, index: number, direction: "up" | "down") => {
-        console.log("move section", index, direction);
         event.preventDefault();
         const newStatement = [...list];
         const movedItem = newStatement.splice(index, 1)[0];
