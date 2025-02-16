@@ -39,7 +39,7 @@ export function TableProvider<TData>({ children }: { children: React.ReactNode }
     const removeTagFilter = (tag: Tag) => {
         setFilter({
             text: filter?.text ?? "",
-            tags: filter?.tags.filter((t) => t !== tag) ?? []
+            tags: filter?.tags.filter((t) => t.id !== tag.id) ?? []
         })
     }
 

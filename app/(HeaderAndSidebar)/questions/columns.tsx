@@ -121,13 +121,32 @@ export const columns: ColumnDef<QuestionData>[] = [
         size: 150,
         cell: ({ row }) => {
             const tags = row.original.tags
+            const { addTagFilter, removeTagFilter, filter } = useTable()
+
+            const selectedTags = filter?.tags
+
+            console.log(selectedTags)
+
+            const handleClick = (tag: Tag) => {
+                console.log(tag)
+                if (selectedTags?.some((t) => t.id === tag.id)) {
+                    removeTagFilter(tag)
+                } else {
+                    addTagFilter(tag)
+                }
+            }
 
             return (
                 <div className="flex flex-wrap gap-2">
                     {tags && tags.map((tag) => (
-                        <span key={tag.id} className={`px-2 py-1 mr-1 rounded-md`} style={{ backgroundColor: tag.color, color: 'white' }}>
+                        <Button
+                            key={tag.id}
+                            className={`h-fit shadow-none px-2 py-1 mr-1 rounded-md ${selectedTags?.some((t) => t.id === tag.id) && "border-2 border-neutral-800"}`}
+                            style={{ backgroundColor: tag.color, color: 'white' }}
+                            onClick={() => handleClick(tag)}
+                        >
                             {tag.name}
-                        </span>
+                        </Button>
                     ))}
                 </div>
             )
