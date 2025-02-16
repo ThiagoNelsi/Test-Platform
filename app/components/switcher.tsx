@@ -1,7 +1,7 @@
 "use client"
 
 import { PiChalkboardTeacherLight, PiStudent } from "react-icons/pi"
-import { useSwitch } from "../context/SwitcherContext"
+import { useSwitch } from "../context/switcher-context"
 
 type SwitcherButtonProps = {
     isActive: boolean

@@ -3,8 +3,8 @@ import { getUserId } from "@/lib/auth";
 import { columns, QuestionData } from "./columns";
 import { DataTable } from "@/app/components/ui/data-table";
 import TableActions from "./table-actions";
-import { TableProvider } from "@/app/context/TableContext";
-import { QuestionEditorProvider } from "@/app/context/QuestionEditorContext";
+import { TableProvider } from "@/app/context/table-context";
+import { QuestionEditorProvider } from "@/app/context/question-editor-context";
 import { Tag } from "@/app/types";
 
 export default async function Page() {

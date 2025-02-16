@@ -1,8 +1,8 @@
 "use client"
 
-import ClassroomList from "@/app/components/ClassroomList";
-import Switcher from "@/app/components/Switcher";
-import { useSwitch } from "@/app/context/SwitcherContext";
+import ClassroomList from "@/app/components/classroom-list";
+import Switcher from "@/app/components/switcher";
+import { useSwitch } from "@/app/context/switcher-context";
 import { ClassroomWithOwner } from "@/lib/classroomService";
 
 type Props ={

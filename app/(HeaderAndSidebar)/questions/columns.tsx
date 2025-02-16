@@ -7,7 +7,7 @@ import { Button } from "@/app/components/ui/button"
 import { ArrowUpDown, Edit, Trash } from "lucide-react"
 import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm"
 import { deleteQuestion } from "@/lib/questionService"
-import { Filter, useTable } from "@/app/context/TableContext"
+import { Filter, useTable } from "@/app/context/table-context"
 import { extractTextFromHTML } from "@/lib/utils"
 import QuestionDialogTrigger from "./question-dialog-trigger"
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { MdMenu } from 'react-icons/md'
-import { useSidebar } from '../context/SidebarContext'
+import { useSidebar } from '../context/sidebar-context'
 import Link from 'next/link'
 import { signOut, useSession } from 'next-auth/react'
 import Image from 'next/image'

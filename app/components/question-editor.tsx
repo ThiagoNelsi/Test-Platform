@@ -1,13 +1,13 @@
 "use client"
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
-import MultipleChoiceForm from "./QuestionTypes/MultipleChoice/form";
+import MultipleChoiceForm from "./question-types/multiple-choice/form";
 import { Button } from "@/app/components/ui/button";
 import { QuestionType } from "@/app/types";
-import { FormSection } from "./NewQuestionModal";
-import { useQuestionEditor } from "../context/QuestionEditorContext";
+import { FormSection } from "./new-question-modal";
+import { useQuestionEditor } from "../context/question-editor-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import MultipleChoiceRenderer from "./QuestionTypes/MultipleChoice/renderer";
+import MultipleChoiceRenderer from "./question-types/multiple-choice/renderer";
 
 type QuestionEditorProps = {
     submitAction: (e: React.FormEvent<HTMLFormElement>) => void

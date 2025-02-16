@@ -1,7 +1,7 @@
 "use client"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table"
-import { useTable } from "@/app/context/TableContext"
+import { useTable } from "@/app/context/table-context"
 import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table"
 import { useEffect } from "react"
 

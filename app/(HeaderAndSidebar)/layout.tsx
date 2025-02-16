@@ -1,7 +1,7 @@
-import Header from "@/app/components/Header";
-import Sidebar from "@/app/components/Sidebar";
+import Header from "@/app/components/header";
+import Sidebar from "@/app/components/sidebar";
 import { getUnfinishedTests } from "@/lib/testService";
-import NewClassroomModal from "../components/NewClassroomModal";
+import NewClassroomModal from "../components/new-classroom-modal";
 
 interface Props {
     children: React.ReactNode;

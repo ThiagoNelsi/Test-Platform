@@ -1,13 +1,13 @@
 "use client";
 
-import { useSidebar } from "../context/SidebarContext";
+import { useSidebar } from "../context/sidebar-context";
 import { MdAdd } from "react-icons/md";
 import { HiOutlineInboxStack } from "react-icons/hi2";
 import { motion } from "framer-motion";
-import SidebarButton from "./SidebarButton";
-import SidebarTodoItem from "./SidebarTodoItem";
+import SidebarButton from "./sidebar-button";
+import SidebarTodoItem from "./sidebar-todo-item";
 import { Todo } from "@/lib/testService";
-import { useNewClassroomModal } from "../context/NewClassroomModalContext";
+import { useNewClassroomModal } from "../context/new-classroom-modal-context";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 

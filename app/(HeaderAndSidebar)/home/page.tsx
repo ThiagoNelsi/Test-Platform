@@ -1,7 +1,7 @@
 import type { Classroom } from "@prisma/client";
-import Component from "./Component";
+import Component from "./component";
 import { getClassrooms } from "@/lib/classroomService";
-import { SwitcherProvider } from "@/app/context/SwitcherContext";
+import { SwitcherProvider } from "@/app/context/switcher-context";
 
 export default async function Classroom() {
     const response = await getClassrooms()

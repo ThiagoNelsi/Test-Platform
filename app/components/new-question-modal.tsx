@@ -3,9 +3,9 @@
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
 import { ReactNode } from "react";
 import { createQuestion, updateQuestion } from "@/lib/questionService";
-import QuestionEditor from "./QuestionEditor";
-import { useQuestionEditor } from "../context/QuestionEditorContext";
-import { valitadeMultipleChoice } from "./QuestionTypes/MultipleChoice/utils";
+import QuestionEditor from "./question-editor";
+import { useQuestionEditor } from "../context/question-editor-context";
+import { valitadeMultipleChoice } from "./question-types/multiple-choice/utils";
 import { errorToast, successToast } from "@/lib/toasters";
 
 type NewQuestionModalProps = {

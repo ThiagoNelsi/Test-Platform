@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { FormSection } from "../../NewQuestionModal";
-import MovableItem from "../../MovableItem";
+import { FormSection } from "../../new-question-modal";
+import MovableItem from "../../movable-item";
 import { MinimalTiptapEditor } from "../../minimal-tiptap";
 import { Button } from "../../ui/button";
 import { MultipleChoiceQuestion } from "@/app/types";

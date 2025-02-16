@@ -1,6 +1,6 @@
 import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
-import NewQuestionModal from "../../components/NewQuestionModal";
-import { useQuestionEditor } from "@/app/context/QuestionEditorContext";
+import NewQuestionModal from "../../components/new-question-modal";
+import { useQuestionEditor } from "@/app/context/question-editor-context";
 import { useEffect } from "react";
 
 type QuestionDialogTriggerProps = {

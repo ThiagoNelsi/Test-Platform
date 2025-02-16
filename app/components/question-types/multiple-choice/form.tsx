@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-import { FormSection } from "../../NewQuestionModal";
-import { useQuestionEditor } from "../../../context/QuestionEditorContext";
+import { FormSection } from "../../new-question-modal";
+import { useQuestionEditor } from "../../../context/question-editor-context";
 import { MinimalTiptapEditor } from '../../minimal-tiptap'
 import { Content } from '@tiptap/react'
 import Options, { Option } from "./options";

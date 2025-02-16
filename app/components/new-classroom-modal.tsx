@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogTitle } from "@/app/components/ui/dialog"
-import { useNewClassroomModal } from "../context/NewClassroomModalContext"
+import { useNewClassroomModal } from "../context/new-classroom-modal-context"
 import { Input } from "@/app/components/ui/input"
 import { Button } from "@/app/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/app/components/ui/tabs"

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
-import { SidebarProvider } from "./context/SidebarContext";
-import { NewClassroomModalProvider } from "./context/NewClassroomModalContext";
+import { SidebarProvider } from "./context/sidebar-context";
+import { NewClassroomModalProvider } from "./context/new-classroom-modal-context";
 import { Toaster } from "@/app/components/ui/sonner";
-import SessionProvider from "./components/SessionProvider";
+import SessionProvider from "./components/session-provider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import { TooltipProvider } from "./components/ui/tooltip";

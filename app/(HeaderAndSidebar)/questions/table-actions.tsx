@@ -3,7 +3,7 @@
 import { Button } from "@/app/components/ui/button";
 import { Trash } from "lucide-react";
 import { MdAdd } from "react-icons/md";
-import { useTable } from "@/app/context/TableContext";
+import { useTable } from "@/app/context/table-context";
 import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm";
 import { deleteQuestion } from "@/lib/questionService";
 import QuestionDialogTrigger from './question-dialog-trigger'
