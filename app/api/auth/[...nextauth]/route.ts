@@ -30,7 +30,7 @@ export const authOptions: AuthOptions = {
             }
 
             return true;
-          },
+        },
 
         async session({ session }) {
             if (!session?.user?.email) return session;
