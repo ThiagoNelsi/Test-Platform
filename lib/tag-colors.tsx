@@ -1,4 +1,4 @@
-import { TagColor } from "@/app/types";
+import { TagColor } from "@/lib/types";
 import {
     amber,
     blue,

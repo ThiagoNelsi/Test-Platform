@@ -1,5 +1,5 @@
 import { IoMdClose } from "react-icons/io"
-import { Tag } from "../types"
+import { Tag } from "@/lib/types"
 import { tagColors } from "@/lib/tag-colors"
 
 type RemovableTagProps = {

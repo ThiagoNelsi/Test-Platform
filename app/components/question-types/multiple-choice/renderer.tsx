@@ -1,14 +1,14 @@
-import { MultipleChoiceQuestion } from "@/app/types";
+import { MultipleChoiceQuestionData } from "@/lib/multiple-choice-question";
 import { Separator } from "../../ui/separator";
 
-export default function MultipleChoiceRenderer({ content }: { content: MultipleChoiceQuestion }) {
+export default function MultipleChoiceRenderer({ content }: { content: MultipleChoiceQuestionData }) {
     const { statement, options } = content
 
     return (
         <div>
             <div className="flex flex-col gap-5">
                 <p className="font-medium text-sm">Enunciado</p>
-                <div dangerouslySetInnerHTML={{ __html: statement }} />
+                <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: statement }} />
             </div>
             <Separator className="my-5" />
             <p className="font-medium text-sm mb-5">Alternativas</p>
@@ -16,7 +16,7 @@ export default function MultipleChoiceRenderer({ content }: { content: MultipleC
                 {options && options.map((option: any, index: number) => (
                     <div key={index} className="flex items-center gap-2">
                         <input type="checkbox" checked={option.isCorrect} onChange={() => {}} />
-                        <div dangerouslySetInnerHTML={{ __html: option.value || "" }} />
+                        <div className="whitespaces-pre-wrap" dangerouslySetInnerHTML={{ __html: option.value || "" }} />
                     </div>
                 ))}
             </div>

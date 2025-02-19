@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { RowSelectionState, Table } from "@tanstack/react-table";
-import { Tag } from "../types";
+import { Tag } from "@/lib/types";
 
 export type Filter = {
     text: string;

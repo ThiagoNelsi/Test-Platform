@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, ReactNode, useContext, useState } from "react";
-import { QuestionType, Tag } from "../types";
+import { QuestionType, Tag } from "@/lib/types";
 
 type EditorContextType = {
     id: number | undefined;

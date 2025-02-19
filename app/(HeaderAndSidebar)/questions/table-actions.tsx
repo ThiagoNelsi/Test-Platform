@@ -7,75 +7,14 @@ import { useTable } from "@/app/context/table-context";
 import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm";
 import { deleteQuestion } from "@/lib/questionService";
 import QuestionDialogTrigger from './question-dialog-trigger'
-import { IoMdClose } from "react-icons/io";
 import { Input } from "@/app/components/ui/input";
 import { useEffect, useState } from "react";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-  } from "@/app/components/ui/command"
-  import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-  } from "@/app/components/ui/popover"
-import { Tag } from "@/app/types";
+import { Tag } from "@/lib/types";
 import { RemovableTag } from "@/app/components/removable-tag";
-import { tagColors } from "@/lib/tag-colors";
-
-type SearchTagsProps = {
-    items: Tag[],
-}
-
-export const SearchTags = ({ items }: SearchTagsProps) => {
-    const { addTagFilter } = useTable()
-    const [open, setOpen] = useState(false);
-    const [searchTerm] = useState("");
-
-    const filteredItems = items.filter(item =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <Button
-                    variant="outline"
-                    size="sm"
-                >
-                    Filtrar tags
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="p-0" side="right" align="start">
-            <Command>
-                <CommandInput placeholder="Buscar tags..." />
-                <CommandList>
-                <CommandEmpty>No results found.</CommandEmpty>
-                <CommandGroup>
-                    {filteredItems.map((item) => (
-                    <CommandItem
-                        key={item.id}
-                        onSelect={() => addTagFilter(item)}
-                        className="flex items-center gap-2"
-                    >
-                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: tagColors[item.color].background }} ></div>
-                        <div style={{ color: tagColors[item.color].text }}>{item.name}</div>
-                    </CommandItem>
-                    ))}
-                </CommandGroup>
-                </CommandList>
-            </Command>
-            </PopoverContent>
-        </Popover>
-    )
-}
+import { SearchTags } from "@/app/components/search-tags";
 
 export default function TableActions() {
-    const { table, rowSelection, setRowSelection, filter, setFilter, removeTagFilter } = useTable();
+    const { table, rowSelection, setRowSelection, filter, setFilter, removeTagFilter, addTagFilter } = useTable();
     const [tags, setTags] = useState<Tag[]>([]);
     const selectedRowsCount = Object.keys(rowSelection).length;
     const selectedTags = filter?.tags;
@@ -137,7 +76,7 @@ export default function TableActions() {
                     onChange={handleSearch}
                     className="border-0 shadow-none focus-visible:ring-0"
                 />
-                <SearchTags items={tags} />
+                <SearchTags items={tags} onSelect={(tag) => addTagFilter(tag)} />
             </div>
             {selectedRowsCount > 0 &&
                 <Confirm

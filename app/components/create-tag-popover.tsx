@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { Tag } from "../types"
+import { Tag } from "@/lib/types"
 import { errorToast, successToast } from "@/lib/toasters"
 import { createTag } from "@/lib/tag-service"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";

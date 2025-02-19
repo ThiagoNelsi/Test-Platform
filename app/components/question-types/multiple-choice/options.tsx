@@ -3,9 +3,9 @@ import { FormSection } from "../../new-question-modal";
 import MovableItem from "../../movable-item";
 import { MinimalTiptapEditor } from "../../minimal-tiptap";
 import { Button } from "../../ui/button";
-import { MultipleChoiceQuestion } from "@/app/types";
+import { MultipleChoiceQuestionOption } from "@/lib/multiple-choice-question";
 
-export type Option = MultipleChoiceQuestion['options'][0] & { id: string };
+export type Option = MultipleChoiceQuestionOption & { id: string };
 
 type OptionProps = {
     options: Option[];

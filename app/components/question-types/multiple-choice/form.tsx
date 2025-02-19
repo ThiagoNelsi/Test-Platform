@@ -4,13 +4,7 @@ import { useQuestionEditor } from "../../../context/question-editor-context";
 import { MinimalTiptapEditor } from '../../minimal-tiptap'
 import { Content } from '@tiptap/react'
 import Options, { Option } from "./options";
-
-type Statement = string;
-
-type MultipleChoiceQuestionData = {
-    statement: Statement[];
-    options: Option[];
-}
+import { MultipleChoiceQuestionData } from "@/lib/multiple-choice-question";
 
 type MultipleChoiceFormProps = {}
 

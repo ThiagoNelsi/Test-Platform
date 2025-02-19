@@ -1,6 +1,6 @@
 "use server"
 
-import { Tag } from "@/app/types"
+import { Tag } from "@/lib/types"
 import { prisma } from "./prisma"
 import { getUserId } from "./auth"
 
@@ -43,4 +43,25 @@ export const getTags = async () => {
             userId
         }
     })
+}
+
+export const getQuestionsPerTag = async () => {
+    const userId = await getUserId()
+    if (!userId) return []
+
+    const questionsPerTag = await prisma.tag.findMany({
+        select: {
+            id: true,
+            questions: {
+                select: {
+                    id: true
+                }
+            }
+        }
+    });
+
+    return questionsPerTag.map(tag => ({
+        tagId: tag.id,
+        questions: tag.questions.map(q => q.id)
+    }))
 }

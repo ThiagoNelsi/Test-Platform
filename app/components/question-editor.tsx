@@ -3,11 +3,10 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import MultipleChoiceForm from "./question-types/multiple-choice/form";
 import { Button } from "@/app/components/ui/button";
-import { QuestionType, Tag } from "@/app/types";
+import { Question, QuestionType, Tag } from "@/lib/types";
 import { FormSection } from "./new-question-modal";
 import { useQuestionEditor } from "../context/question-editor-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import MultipleChoiceRenderer from "./question-types/multiple-choice/renderer";
 import { Separator } from "./ui/separator";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command";
 import { useEffect, useRef, useState } from "react";
@@ -16,6 +15,7 @@ import { RemovableTag } from "./removable-tag";
 import { tagColors } from "@/lib/tag-colors";
 import { CreateTagPopover } from "./create-tag-popover";
 import { getTags } from "@/lib/tag-service";
+import QuestionRenderer from "./question-renderer";
 
 type QuestionEditorProps = {
     submitAction: (e: React.FormEvent<HTMLFormElement>) => void
@@ -134,7 +134,7 @@ export default function QuestionEditor({ submitAction, submitButtonText }: Quest
                     }
                 </TabsContent>
                 <TabsContent value="result">
-                    {type === "multiple_choice" && <MultipleChoiceRenderer content={data} />}
+                    <QuestionRenderer question={{ type, data } as Question} />
                 </TabsContent>
             </Tabs>
             <Button className="bg-verdigris hover:bg-verdigris-400 mt-10" type="submit">{submitButtonText}</Button>

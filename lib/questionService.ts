@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache"
 import { getUserId } from "./auth"
 import { prisma, prismaMongo } from "./prisma"
-import { QuestionType, Tag } from "@/app/types"
+import { Question, QuestionType } from "@/lib/types"
 
 const levelOptions = ['easy', 'medium', 'hard']
 
-export const getQuestions = async (userId: number) => {
+export const getQuestions = async (userId: number): Promise<Question[]> => {
     const postgresData = await prisma.question.findMany({
         where: {
             authorId: userId

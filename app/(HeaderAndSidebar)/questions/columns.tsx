@@ -1,32 +1,23 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { QuestionType, Tag } from "@/app/types"
+import { Question, QuestionType, Tag } from "@/lib/types"
 import { Checkbox } from "@/app/components/ui/checkbox"
 import { Button } from "@/app/components/ui/button"
 import { ArrowUpDown, Edit, Trash } from "lucide-react"
 import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm"
 import { deleteQuestion } from "@/lib/questionService"
 import { Filter, useTable } from "@/app/context/table-context"
-import { extractTextFromHTML } from "@/lib/utils"
 import QuestionDialogTrigger from "./question-dialog-trigger"
 import { tagColors } from "@/lib/tag-colors"
-
-export type QuestionData = {
-    id: number,
-    createdAt: Date,
-    type: QuestionType,
-    level: number | null,
-    tags: Tag[],
-    data: any
-}
+import { QuestionFactory } from "@/lib/question"
 
 const questionTypeTranslations: { [key in QuestionType]: string } = {
     multiple_choice: "Múltipla escolha",
     true_or_false: "Verdadeiro ou falso"
 }
 
-export const columns: ColumnDef<QuestionData>[] = [
+export const columns: ColumnDef<Question>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -62,10 +53,10 @@ export const columns: ColumnDef<QuestionData>[] = [
             </Button>
         ),
         cell: ({ row }) => {
-            const statementText = row.original.data.statement
+            const question = QuestionFactory.from([row.original])[0]
             return (
                 <div className="whitespace-pre-wrap">
-                    {extractTextFromHTML(statementText).slice(0,200) + "..."}
+                    {question.getText().slice(0,200) + "..."}
                 </div>
             );
         },
@@ -76,10 +67,8 @@ export const columns: ColumnDef<QuestionData>[] = [
 
             const tagNames = tags.map((tag) => tag.name)
 
-            const statement = extractTextFromHTML(row.original.data.statement)
-            const options = row.original.data.options.map((option: any) => extractTextFromHTML(option.value)).join(" ")
-
-            const textMatches = (statement + options)
+            const question = QuestionFactory.from([row.original])[0]
+            const textMatches = question.getText()
                 .toLowerCase()
                 .includes((text as string).toLowerCase()) || !text
 
