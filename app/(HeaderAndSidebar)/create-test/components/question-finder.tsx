@@ -53,14 +53,14 @@ export const QuestionFinder = ({ section, selected, searchTerm, selectedTags, ma
         if (allocated && allocated !== section.id) return
 
         if (selected.some(q => q.id === question.id)) {
-            setSelected(selected.filter((q) => q.id !== question.id))
-            allocatedQuestions.delete(question.id)
+            removeQuestion(section, question)
             return
         }
 
         if (maxSelections && selected.length >= maxSelections) return
 
-        removeQuestion(section, question)
+        allocatedQuestions.set(question.id, section.id)
+        setSelected([...selected, question])
     }
 
     if (questions.length === 0) return <div>Carregando questões...</div>
