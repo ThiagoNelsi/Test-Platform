@@ -17,6 +17,16 @@ body {
   font-family: var(--font-montserrat);
 }
 
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* Para o Internet Explorer e Edge */
+    scrollbar-width: none;  /* Para o Firefox */
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

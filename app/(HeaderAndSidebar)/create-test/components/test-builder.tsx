@@ -1,93 +1,79 @@
 "use client"
 
 import { Button } from "@/app/components/ui/button";
-import { Tag } from "@/lib/types";
-import { createContext, useContext, useEffect, useState } from "react";
-import { MdAdd } from "react-icons/md";
+import { IQuestion, Tag } from "@/lib/types";
+import { createContext, useEffect, useState } from "react";
 import { TestSection } from "./test-section";
-import { RandomQuestionsSection } from "./random-questions-section";
-import { SpecificQuestionsSection } from "./specific-questions-section";
-import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
+import { QuestionSection } from "./question-section";
+import { QuestionTags } from "../page";
+import SectionQuestions from "./section-questions";
 
-type Section = RandomQuestionsSection | SpecificQuestionsSection;
+export type Section = {
+    id: string;
+    shuffle: boolean;
+    questions: IQuestion[];
+};
 
 type TestBuilderProps = {
     tags: Tag[];
-    questionsGroupedByTag: {
-        tagId: number;
-        questions: number[];
-    }[];
-}
-
-type SectionRendererProps = {
-    section: Section;
+    questionTags: QuestionTags[]
 }
 
 type TestBuilderContextType = {
     tags: Tag[];
-    questionsGroupedByTag: {
-        tagId: number;
-        questions: number[];
-    }[];
     updateSection: (section: Section) => void;
     sections: Section[];
+    questionTags: QuestionTags[];
+    allocatedQuestions: Map<number, string>;
+    setAllocatedQuestions: (allocatedQuestion: Map<number, string>) => void;
+    removeQuestion: (section: Section, question: IQuestion) => void;
 }
 
 export const TestBuilderContext = createContext<TestBuilderContextType>({} as TestBuilderContextType);
 
-const SectionRenderer = ({ section }: SectionRendererProps) => {
-    if (section.type === "random") {
-        return <RandomQuestionsSection section={section} />
-    } else {
-        return <SpecificQuestionsSection section={section} />
-    }
-}
+const createEmptySection = () => ({
+    id: Math.random().toString(),
+    shuffle: false,
+    questions: [] as IQuestion[]
+})
 
-export const TestBuilder = ({ tags, questionsGroupedByTag }: TestBuilderProps) => {
-    const [sections, setSections] = useState<Section[]>([])
+export const TestBuilder = ({ tags, questionTags }: TestBuilderProps) => {
+    const [allocatedQuestions, setAllocatedQuestions] = useState(new Map<number, string>())
 
-    const addRandomSection = () => {
-        const newSection: RandomQuestionsSection = {
-            id: Math.random().toString(),
-            type: "random",
-            numberOfQuestions: 3,
-        }
-        setSections([...sections, newSection])
-    }
+    const [sections, setSections] = useState<Section[]>([createEmptySection()])
 
-    const addSpecificSection = () => {
-        const newSection: SpecificQuestionsSection = {
-            id: Math.random().toString(),
-            type: "specific",
-            shuffle: false,
-            questions: []
-        }
-        setSections([...sections, newSection])
+    const addSection = () => {
+        setSections([...sections, createEmptySection()])
     }
 
     const updateSection = (section: Section) => {
         setSections(sections.map(s => s.id === section.id ? section : s))
     }
 
-    const contextValue = { sections, tags, questionsGroupedByTag, updateSection }
+    const removeSection = (section: Section) => {
+        section.questions.forEach(q => {
+            allocatedQuestions.delete(q.id)
+        })
+        setSections(sections.filter(s => s.id !== section.id))
+    }
+
+    const removeQuestion = (section: Section, question: IQuestion) => {
+        allocatedQuestions.delete(question.id)
+        section.questions = section.questions.filter(q => q.id !== question.id)
+        updateSection(section)
+    }
+
+    const contextValue = { sections, tags, updateSection, questionTags, allocatedQuestions, setAllocatedQuestions, removeQuestion }
 
     return (
         <TestBuilderContext.Provider value={contextValue}>
             <div className="flex flex-col gap-8">
                 {sections.map((section, index) => (
-                    <TestSection key={index} number={index + 1} removeSection={() => {
-                        setSections(sections.filter((_, i) => i !== index))
-                    }}>
-                        <SectionRenderer section={section} />
+                    <TestSection key={index} number={index + 1} removeSection={() => removeSection(section)}>
+                        <QuestionSection section={section} key={index} />
                     </TestSection>
                 ))}
-                <div className="flex flex-col gap-4">
-                    <p className="text-sm">Nova seção</p>
-                    <div className="flex gap-4">
-                        <Button className="bg-blue-500 hover:bg-blue-600" onClick={addSpecificSection}>Escolher questões manualmente</Button>
-                        <Button className="bg-blue-500 hover:bg-blue-600" onClick={addRandomSection}>Adicionar seção de questões aleatórias</Button>
-                    </div>
-                </div>
+                <Button className="w-64 bg-blue-500 hover:bg-blue-600" onClick={addSection}>Nova seção de questões</Button>
             </div>
         </TestBuilderContext.Provider>
     )

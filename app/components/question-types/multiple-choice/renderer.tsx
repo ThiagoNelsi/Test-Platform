@@ -5,9 +5,8 @@ export default function MultipleChoiceRenderer({ content }: { content: MultipleC
     const { statement, options } = content
 
     return (
-        <div>
+        <div className="p-1">
             <div className="flex flex-col gap-5">
-                <p className="font-medium text-sm">Enunciado</p>
                 <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: statement }} />
             </div>
             <Separator className="my-5" />

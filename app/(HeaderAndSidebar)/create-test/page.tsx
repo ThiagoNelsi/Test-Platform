@@ -5,13 +5,21 @@ import { Input } from "@/app/components/ui/input";
 import { IoIosRocket, IoMdStopwatch } from "react-icons/io";
 import { SlNote } from "react-icons/sl";
 import { TestBuilder } from "./components/test-builder";
-import { getQuestionsPerTag, getTags } from "@/lib/tag-service";
+import { getTags } from "@/lib/tag-service";
+import { getQuestionTags } from "@/lib/questionService";
 
 type InputBlockProps = {
     label: string;
     required?: boolean;
     children: React.ReactNode;
 };
+
+export type QuestionTags = {
+    id: number;
+    tags: {
+        id: number;
+    }[];
+}
 
 const InputBlock = ({ label, children, required }: InputBlockProps) => (
     <div className="flex flex-col gap-2">
@@ -44,7 +52,7 @@ const DurationInput = () => {
 
 export default async function CreateTest() {
     const tags = await getTags();
-    const questionsGroupedByTag = await getQuestionsPerTag();
+    const questionTags = await getQuestionTags()
 
     return (
         <div className="flex flex-col gap-5 max-w-[800px] mx-auto py-6">
@@ -76,7 +84,7 @@ export default async function CreateTest() {
             </div>
             <h1>Questões</h1>
             <div className="flex flex-col gap-6 bg-gray-100 p-6 rounded-lg">
-                <TestBuilder tags={tags} questionsGroupedByTag={questionsGroupedByTag} />
+                {questionTags && <TestBuilder tags={tags} questionTags={questionTags} />}
             </div>
             <h1>Publicação</h1>
             <div className="flex flex-col gap-6 bg-gray-100 p-6 rounded-lg">
