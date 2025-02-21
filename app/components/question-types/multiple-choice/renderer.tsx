@@ -10,11 +10,10 @@ export default function MultipleChoiceRenderer({ content }: { content: MultipleC
                 <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: statement }} />
             </div>
             <Separator className="my-5" />
-            <p className="font-medium text-sm mb-5">Alternativas</p>
             <div className="flex flex-col gap-2">
                 {options && options.map((option: any, index: number) => (
                     <div key={index} className="flex items-center gap-2">
-                        <input type="checkbox" checked={option.isCorrect} onChange={() => {}} />
+                        <input type="radio" checked={option.isCorrect} onChange={() => {}} />
                         <div className="whitespaces-pre-wrap" dangerouslySetInnerHTML={{ __html: option.value || "" }} />
                     </div>
                 ))}

@@ -12,6 +12,8 @@ export type Section = {
     id: string;
     shuffle: boolean;
     questions: IQuestion[];
+    selectionMode?: "all" | "random";
+    randomQuestionCount?: number;
 };
 
 type TestBuilderProps = {
@@ -31,10 +33,11 @@ type TestBuilderContextType = {
 
 export const TestBuilderContext = createContext<TestBuilderContextType>({} as TestBuilderContextType);
 
-const createEmptySection = () => ({
+const createEmptySection = (): Section => ({
     id: Math.random().toString(),
     shuffle: false,
-    questions: [] as IQuestion[]
+    questions: [] as IQuestion[],
+    selectionMode: "all"
 })
 
 export const TestBuilder = ({ tags, questionTags }: TestBuilderProps) => {
@@ -67,13 +70,13 @@ export const TestBuilder = ({ tags, questionTags }: TestBuilderProps) => {
 
     return (
         <TestBuilderContext.Provider value={contextValue}>
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-4">
                 {sections.map((section, index) => (
                     <TestSection key={index} number={index + 1} removeSection={() => removeSection(section)}>
                         <QuestionSection section={section} key={index} />
                     </TestSection>
                 ))}
-                <Button className="w-64 bg-blue-500 hover:bg-blue-600" onClick={addSection}>Nova seção de questões</Button>
+                <Button className="bg-blue-500 hover:bg-blue-600 mb-4" onClick={addSection}>Adicionar seção de questões</Button>
             </div>
         </TestBuilderContext.Provider>
     )

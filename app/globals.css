@@ -25,6 +25,9 @@ body {
     -ms-overflow-style: none;  /* Para o Internet Explorer e Edge */
     scrollbar-width: none;  /* Para o Firefox */
   }
+  .text-node {
+    min-height: 1.5em;
+  }
 }
 
 @layer base {

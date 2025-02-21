@@ -188,10 +188,6 @@
   background: transparent;
 }
 
-.text-node {
-  min-height: 1.5em;
-}
-
 .text-node a.link {
   @apply cursor-pointer text-blue-500;
 }

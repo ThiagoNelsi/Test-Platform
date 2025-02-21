@@ -16,7 +16,7 @@ type QuestionSectionProps = {
 }
 
 export const QuestionSection = ({ section }: QuestionSectionProps) => {
-    const { updateSection, removeQuestion } = useContext(TestBuilderContext)
+    const { removeQuestion } = useContext(TestBuilderContext)
 
     const [open, setOpen] = useState<boolean>(false);
 
@@ -31,7 +31,7 @@ export const QuestionSection = ({ section }: QuestionSectionProps) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="w-fit my-4 bg-blue-500 hover:bg-blue-600">
+                <Button className="w-fit mt-2 bg-verdigris-400 hover:bg-verdigris-300">
                     <MdAdd /> Escolher questões
                 </Button>
             </DialogTrigger>

@@ -82,10 +82,8 @@ export default async function CreateTest() {
                     <AutosizeTextarea placeholder="Descrição da prova..." />
                 </InputBlock>
             </div>
-            <h1>Questões</h1>
-            <div className="flex flex-col gap-6 bg-gray-100 p-6 rounded-lg">
-                {questionTags && <TestBuilder tags={tags} questionTags={questionTags} />}
-            </div>
+            <h1 className="font-medium mt-4">Questões</h1>
+            {questionTags && <TestBuilder tags={tags} questionTags={questionTags} />}
             <h1>Publicação</h1>
             <div className="flex flex-col gap-6 bg-gray-100 p-6 rounded-lg">
                 <div className="flex gap-10">
