@@ -19,7 +19,7 @@ type QuestionFinderProps = {
 }
 
 export const QuestionFinder = ({ section, selected, searchTerm, selectedTags, maxSelections = Infinity }: QuestionFinderProps) => {
-    const { allocatedQuestions, sections, updateSection, removeQuestion }  = useContext(TestBuilderContext)
+    const { allocatedQuestions, sections, updateSection, removeQuestion, addQuestion }  = useContext(TestBuilderContext)
 
     const userId = useSession().data?.user.id
     const [questions, setQuestions] = useState<IQuestion[]>([])
@@ -63,11 +63,18 @@ export const QuestionFinder = ({ section, selected, searchTerm, selectedTags, ma
         setSelected([...selected, question])
     }
 
+    const handleBringQuestion = (question: IQuestion, sectionNumber: number | null) => {
+        if (sectionNumber === null) return
+
+        removeQuestion(sections[sectionNumber - 1], question)
+        addQuestion(section, question)
+    }
+
     if (questions.length === 0) return <div>Carregando questões...</div>
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="grid gap-10 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
+            <div className="grid gap-10 xl:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
                 {filteredQuestions.map((question) => {
                     const allocated = allocatedQuestions.get(question.id)
                     const allocatedSection = sections.find(s => s.id === allocated)
@@ -102,7 +109,7 @@ export const QuestionFinder = ({ section, selected, searchTerm, selectedTags, ma
                                             <p className="text-sm font-normal p-4 mb-5">
                                                 Esta questão já foi reservada na seção {sectionNumber}, para utilizá-la aqui será necessário removê-la da outra seção.
                                             </p>
-                                            <Button>Mover para cá</Button>
+                                            <Button onClick={() => handleBringQuestion(question, sectionNumber)}>Mover para cá</Button>
                                         </div>
                                     </div>
                                 )}

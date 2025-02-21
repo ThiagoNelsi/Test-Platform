@@ -31,8 +31,8 @@ export const QuestionSection = ({ section }: QuestionSectionProps) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="w-fit mt-2 bg-verdigris-400 hover:bg-verdigris-300">
-                    <MdAdd /> Escolher questões
+                <Button className="w-full mt-4 bg-transparent shadow-none text-primary border-[1px] p-10 border-primary hover:bg-blue-100 hover:border-blue-500">
+                    Clique para escolher questões
                 </Button>
             </DialogTrigger>
             <QuestionFinderDialog section={section} setOpen={setOpen} />

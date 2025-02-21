@@ -19,9 +19,10 @@ import { Tag } from "@/lib/types";
 type SearchTagsProps = {
     items: Tag[]
     onSelect: (tag: Tag) => void
+    children?: React.ReactNode
 }
 
-export const SearchTags = ({ items, onSelect }: SearchTagsProps) => {
+export const SearchTags = ({ items, onSelect, children }: SearchTagsProps) => {
     const [open, setOpen] = useState(false);
     const [searchTerm] = useState("");
 
@@ -32,13 +33,16 @@ export const SearchTags = ({ items, onSelect }: SearchTagsProps) => {
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="shadow-none border-0"
-                >
-                    Filtrar tags
-                </Button>
+                {children ?
+                    children :
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="shadow-none border-0"
+                    >
+                        Filtrar tags
+                    </Button>
+                }
             </PopoverTrigger>
             <PopoverContent className="p-0" side="right" align="start">
             <Command>

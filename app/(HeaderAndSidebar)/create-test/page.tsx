@@ -55,45 +55,54 @@ export default async function CreateTest() {
     const questionTags = await getQuestionTags()
 
     return (
-        <div className="flex flex-col gap-5 max-w-[800px] mx-auto py-6">
-            <h1 className="font-semibold">Nova prova</h1>
-            <div className="flex flex-col gap-6 bg-gray-100 p-6 rounded-lg">
-                <div className="flex gap-10">
-                    <div className="flex-[2]">
-                        <InputBlock label="Nome da prova" required>
-                            <Input className="bg-white" placeholder="Ex.: Prova I do semestre..." />
+        <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-6">
+            <div>
+                <h1 className="font-semibold mb-2">Nova prova</h1>
+                <div className="flex flex-col gap-6 bg-gray-100 p-6 rounded-lg">
+                    <div className="flex gap-10">
+                        <div className="flex-[2]">
+                            <InputBlock label="Nome da prova" required>
+                                <Input className="bg-white" placeholder="Ex.: Prova I do semestre..." />
+                            </InputBlock>
+                        </div>
+                        <div className="flex-[1]">
+                            <InputBlock label="Valor" required>
+                                <Input className="bg-white" defaultValue={10} type="number" min={0} />
+                            </InputBlock>
+                        </div>
+                    </div>
+                    <div className="flex gap-10">
+                        <InputBlock label="Data de entrega">
+                            <DatePicker />
+                        </InputBlock>
+                        <InputBlock label="Duração">
+                            <DurationInput />
                         </InputBlock>
                     </div>
-                    <div className="flex-[1]">
-                        <InputBlock label="Valor" required>
-                            <Input className="bg-white" defaultValue={10} type="number" min={0} />
-                        </InputBlock>
-                    </div>
-                </div>
-                <div className="flex gap-10">
-                    <InputBlock label="Data de entrega">
-                        <DatePicker />
-                    </InputBlock>
-                    <InputBlock label="Duração">
-                        <DurationInput />
-                    </InputBlock>
-                </div>
-                <InputBlock label="Descrição / Instrução aos alunos">
-                    <AutosizeTextarea placeholder="Descrição da prova..." />
-                </InputBlock>
-            </div>
-            <h1 className="font-medium mt-4">Questões</h1>
-            {questionTags && <TestBuilder tags={tags} questionTags={questionTags} />}
-            <h1>Publicação</h1>
-            <div className="flex flex-col gap-6 bg-gray-100 p-6 rounded-lg">
-                <div className="flex gap-10">
-                    <InputBlock label="Agendar publicação">
-                        <DatePicker />
+                    <InputBlock label="Descrição / Instrução aos alunos">
+                        <AutosizeTextarea placeholder="Descrição da prova..." />
                     </InputBlock>
                 </div>
             </div>
+
+            <div>
+                <h1 className="font-semibold mb-2">Questões</h1>
+                {questionTags && <TestBuilder tags={tags} questionTags={questionTags} />}
+            </div>
+
+            <div>
+                <h1 className="font-semibold mb-2">Publicação</h1>
+                <div className="flex flex-col gap-6 bg-gray-100 p-6 rounded-lg">
+                    <div className="flex gap-10">
+                        <InputBlock label="Agendar publicação">
+                            <DatePicker />
+                        </InputBlock>
+                    </div>
+                </div>
+            </div>
+
             <div className="flex flex-col gap-6">
-                <Button className="flex-[3] bg-verdigris hover:bg-verdigris-400"><IoIosRocket /> Publicar</Button>
+                <Button className="flex-[3] bg-verdigris-400 hover:bg-verdigris-300"><IoIosRocket /> Publicar</Button>
                 <Button className="flex-[1] bg-gray-400 hover:bg-gray-500"><SlNote /> Salvar rascunho</Button>
             </div>
         </div>
