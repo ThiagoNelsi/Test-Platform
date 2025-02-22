@@ -1,15 +1,14 @@
 import { Button } from "@/app/components/ui/button";
 import { MdAutorenew } from "react-icons/md";
-import { Section, TestBuilderContext } from "./test-builder";
 import { IoClose } from "react-icons/io5";
 import QuestionRenderer from "@/app/components/question-renderer";
 import { IQuestion } from "@/lib/types";
 import { ScrollArea } from "@/app/components/ui/scroll-area";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { Separator } from "@/app/components/ui/separator";
 import { Input } from "@/app/components/ui/input";
-import { useContext } from "react";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
+import { Section, useCreateTest } from "@/app/context/create-test-context";
+import { memo } from "react";
 
 type SectionQuestionsProps = {
     section: Section;
@@ -17,45 +16,52 @@ type SectionQuestionsProps = {
     onRemove: (question: IQuestion) => void;
 }
 
-const Card = ({ children, onSelect, isSelected }: { children: React.ReactNode, onSelect: () => void, isSelected: boolean }) => (
+const Card = memo(({ children, onSelect, isSelected }: { children: React.ReactNode, onSelect: () => void, isSelected: boolean }) => (
     <div
         onClick={onSelect}
         className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 hover:bg-blue-100 ${isSelected ? "bg-green-100 border-green-500 hover:bg-green-100 hover:border-green-500" : "border-gray-300 "}`}
     >
         {children}
     </div>
-)
+))
 
 export default function SectionQuestions({ section, setOpen, onRemove }: SectionQuestionsProps) {
-    const { updateSection } = useContext(TestBuilderContext)
+    const { updateSection, moveQuestion } = useCreateTest()
 
     const handleSelectAll = () => {
+        if (section.selectionMode === "all") return
         updateSection({
             ...section,
             selectionMode: "all",
-            randomQuestionCount: undefined
-        })
+        }, 'handleSelectAll - sectionQuestions')
     }
 
     const handleSelectRandom = () => {
+        if (section.selectionMode === "random") return
         updateSection({
             ...section,
             selectionMode: "random",
-            randomQuestionCount: 1
-        })
+            randomQuestionCount: section.randomQuestionCount || 1
+        }, 'handleSelectRandom - sectionQuestions')
     }
 
-    const moveQuestion = (question: IQuestion, direction: "up" | "down") => {
-        const index = section.questions.indexOf(question)
-        const newIndex = direction === "up" ? index - 1 : index + 1
-        const newQuestions = [...section.questions]
-        newQuestions.splice(index, 1)
-        newQuestions.splice(newIndex, 0, question)
+    const handleShuffle = () => {
         updateSection({
             ...section,
-            questions: newQuestions
-        })
+            shuffle: !section.shuffle
+        }, 'handleShuffle - sectionQuestions')
     }
+
+    const handleSetRandomQuestionCount = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (Number(e.target.value) > section.questions.length || Number(e.target.value) < 1) return
+
+        updateSection({
+            ...section,
+            randomQuestionCount: Number(e.target.value)
+        }, 'handleSetRandomQuestionCount - sectionQuestions')
+    }
+
+    console.log(section)
 
     return (
         <div className="flex flex-col gap-8">
@@ -73,6 +79,8 @@ export default function SectionQuestions({ section, setOpen, onRemove }: Section
                                     id="shuffle"
                                     type="checkbox"
                                     className="cursor-pointer"
+                                    checked={section.shuffle}
+                                    onChange={handleShuffle}
                                 />
                                 <label className="cursor-pointer" htmlFor="shuffle">Embaralhar questões para cada aluno</label>
                             </div>
@@ -93,6 +101,9 @@ export default function SectionQuestions({ section, setOpen, onRemove }: Section
                                     max={section.questions.length}
                                     className="bg-white mt-2 p-2 border rounded w-52"
                                     placeholder="Número de questões"
+                                    value={section.randomQuestionCount}
+                                    onChange={handleSetRandomQuestionCount}
+                                    onClick={(e) => e.stopPropagation()}
                                 />
                                 <p className="text-xs mt-2 text-gray-800">Max: {section.questions.length}</p>
                             </div>
@@ -134,11 +145,11 @@ export default function SectionQuestions({ section, setOpen, onRemove }: Section
                                 <div className="ml-2">
                                     <FaArrowUp
                                         className="mb-2 text-neutral-700 cursor-pointer"
-                                        onClick={() => moveQuestion(question, "up")}
+                                        onClick={() => moveQuestion(section, question, "up")}
                                     />
                                     <FaArrowDown
                                         className="text-neutral-700 cursor-pointer"
-                                        onClick={() => moveQuestion(question, "down")}
+                                        onClick={() => moveQuestion(section, question, "down")}
                                     />
                                 </div>
                             </div>

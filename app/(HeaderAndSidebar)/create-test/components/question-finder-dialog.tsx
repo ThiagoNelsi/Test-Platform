@@ -1,14 +1,14 @@
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
 import { QuestionFinder } from "./question-finder";
-import { QuestionSearchbar } from "./questions-searchbar";
-import { Section, TestBuilderContext } from "./test-builder";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { Tag } from "@/lib/types";
 import { Button } from "@/app/components/ui/button";
 import { ScrollArea } from "@/app/components/ui/scroll-area";
 import { RemovableTag } from "@/app/components/removable-tag";
 import { SearchTags } from "@/app/components/search-tags";
 import { MdAdd } from "react-icons/md";
+import { Section, useCreateTest } from "@/app/context/create-test-context";
+import { AutosizeTextarea } from "@/app/components/ui/auto-resize-textarea";
 
 type QuestionFinderDialogProps = {
     section: Section;
@@ -16,7 +16,7 @@ type QuestionFinderDialogProps = {
 }
 
 export default function QuestionFinderDialog({ section, setOpen }: QuestionFinderDialogProps) {
-    const { tags } = useContext(TestBuilderContext)
+    const { tags } = useCreateTest()
     const [searchTerm, setSearchTerm] = useState<string>("")
     const [selectedTags, setSelectedTags] = useState<Tag[]>([])
 
@@ -46,15 +46,17 @@ export default function QuestionFinderDialog({ section, setOpen }: QuestionFinde
                                     <RemovableTag key={tag.id} tag={tag} onRemove={() => handleRemoveTag(tag)} />
                                 ))
                             }
-                            <SearchTags items={tags} onSelect={(tag) => handleAddTag(tag)}>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-primary shadow-none bg-transparent border-[1px] border-neutral-400 rounded-full w-20 h-7 hover:bg-blue-100 hover:border-blue-500"
-                                >
-                                    <MdAdd />
-                                </Button>
-                            </SearchTags>
+                            {tags && (
+                                <SearchTags items={tags} onSelect={(tag) => handleAddTag(tag)}>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-primary shadow-none bg-transparent border-[1px] border-neutral-400 rounded-full w-20 h-7 hover:bg-blue-100 hover:border-blue-500"
+                                    >
+                                        <MdAdd />
+                                    </Button>
+                                </SearchTags>
+                            )}
                         </div>
                     </div>
                 </DialogDescription>
@@ -65,13 +67,15 @@ export default function QuestionFinderDialog({ section, setOpen }: QuestionFinde
             </ScrollArea>
 
             <footer className="bg-neutral-200 fixed flex flex-col gap-3 bottom-0 left-0 w-full shadow-lg p-4 rounded-b-lg">
-                <QuestionSearchbar
-                    tags={tags}
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    selectedTags={selectedTags}
-                    setSelectedTags={setSelectedTags}
-                />
+                <div className="flex gap-2 items-center p-1 rounded-lg pr-2 bg-white">
+                    <AutosizeTextarea
+                        placeholder="Buscar questão..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        maxHeight={150}
+                        className="border-0 shadow-none focus-visible:ring-0"
+                    />
+                </div>
                 <div className="flex items-center gap-2 justify-between">
                     <Button onClick={() => setOpen(false)} className="w-52 bg-blue-400 hover:bg-blue-300 text-white px-4 py-2 rounded-lg flex items-center gap-2">
                         Pronto

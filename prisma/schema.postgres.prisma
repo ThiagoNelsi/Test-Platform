@@ -86,11 +86,15 @@ model Test {
   id          Int            @id @default(autoincrement())
   createdAt   DateTime       @default(now()) @db.Timestamptz(0)
   name        String
-  classroom   Classroom      @relation(fields: [classroomId], references: [id])
-  classroomId Int
+  value       Int            @default(10)
   dueDate     DateTime?      @db.Timestamptz(0)
   timer       Int?
-  value       Int            @default(10)
+  description String?
+  publishDate DateTime?      @db.Timestamptz(0)
+  status      String         @default("draft")
+  sections    Json[]
+  classroom   Classroom      @relation(fields: [classroomId], references: [id])
+  classroomId Int
   instances   TestInstance[]
 }
 

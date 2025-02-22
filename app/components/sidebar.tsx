@@ -6,7 +6,7 @@ import { HiOutlineInboxStack } from "react-icons/hi2";
 import { motion } from "framer-motion";
 import SidebarButton from "./sidebar-button";
 import SidebarTodoItem from "./sidebar-todo-item";
-import { Todo } from "@/lib/testService";
+import { Todo } from "@/lib/test-service";
 import { useNewClassroomModal } from "../context/new-classroom-modal-context";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";

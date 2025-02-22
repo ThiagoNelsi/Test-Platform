@@ -1,14 +1,11 @@
 "use client"
 
 import { IQuestion, Tag } from "@/lib/types";
-import { getQuestions } from "@/lib/questionService";
-import { useSession } from "next-auth/react";
-import { useContext, useEffect, useState } from "react";
-import { QuestionFactory } from "@/lib/question";
+import { useEffect, useState } from "react";
 import QuestionRenderer from "@/app/components/question-renderer";
 import { ScrollArea } from "@/app/components/ui/scroll-area";
-import { Section, TestBuilderContext } from "./test-builder";
 import { Button } from "@/app/components/ui/button";
+import { Section, useCreateTest } from "@/app/context/create-test-context";
 
 type QuestionFinderProps = {
     selected: IQuestion[];
@@ -19,17 +16,13 @@ type QuestionFinderProps = {
 }
 
 export const QuestionFinder = ({ section, selected, searchTerm, selectedTags, maxSelections = Infinity }: QuestionFinderProps) => {
-    const { allocatedQuestions, sections, updateSection, removeQuestion, addQuestion }  = useContext(TestBuilderContext)
+    const { allocatedQuestions, sections, removeQuestion, questions, addQuestion }  = useCreateTest()
 
-    const userId = useSession().data?.user.id
-    const [questions, setQuestions] = useState<IQuestion[]>([])
     const [filteredQuestions, setFilteredQuestions] = useState<IQuestion[]>([])
 
     useEffect(() => {
-        fetchQuestions()
-    }, [])
+        if (!questions) return
 
-    useEffect(() => {
         const filteredByTag = questions.filter((question) => {
             return selectedTags.every((tag) => question.tags.some((t) => t.id === tag.id))
         })
@@ -38,15 +31,6 @@ export const QuestionFinder = ({ section, selected, searchTerm, selectedTags, ma
         })
         setFilteredQuestions(filteredBySearch)
     }, [searchTerm, selectedTags, questions])
-
-    const fetchQuestions = async () => {
-        const res = await getQuestions(userId)
-        setQuestions(QuestionFactory.from(res))
-    }
-
-    const setSelected = (questions: IQuestion[]) => {
-        updateSection({ ...section, questions })
-    }
 
     const handleSelect = (question: IQuestion) => {
         const allocated = allocatedQuestions.get(question.id)
@@ -59,8 +43,7 @@ export const QuestionFinder = ({ section, selected, searchTerm, selectedTags, ma
 
         if (maxSelections && selected.length >= maxSelections) return
 
-        allocatedQuestions.set(question.id, section.id)
-        setSelected([...selected, question])
+        addQuestion(section, question)
     }
 
     const handleBringQuestion = (question: IQuestion, sectionNumber: number | null) => {
@@ -70,7 +53,7 @@ export const QuestionFinder = ({ section, selected, searchTerm, selectedTags, ma
         addQuestion(section, question)
     }
 
-    if (questions.length === 0) return <div>Carregando questões...</div>
+    if (!questions) return <div>Carregando questões...</div>
 
     return (
         <div className="flex flex-col gap-4">

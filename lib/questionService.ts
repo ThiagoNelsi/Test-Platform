@@ -7,7 +7,10 @@ import { Question, QuestionType } from "@/lib/types"
 
 const levelOptions = ['easy', 'medium', 'hard']
 
-export const getQuestions = async (userId: number): Promise<Question[]> => {
+export const getQuestions = async (): Promise<Question[]> => {
+    const userId = await getUserId()
+    if (!userId) return []
+
     const postgresData = await prisma.question.findMany({
         where: {
             authorId: userId
@@ -199,22 +202,3 @@ export const deleteQuestion = async (questionIds: number[]) => {
         return false;
     }
 };
-
-export const getQuestionTags = async () => {
-    const userId = await getUserId()
-    if (!userId) return null
-
-    return prisma.question.findMany({
-        where: {
-            authorId: userId
-        },
-        select: {
-            id: true,
-            tags: {
-                select: {
-                    id: true,
-                }
-            }
-        }
-    })
-}

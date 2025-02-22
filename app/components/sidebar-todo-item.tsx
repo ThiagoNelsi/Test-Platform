@@ -1,4 +1,4 @@
-import { Todo } from "@/lib/testService";
+import { Todo } from "@/lib/test-service";
 import moment from "moment";
 
 type ListItemProps = {

@@ -1,22 +1,19 @@
 "use client"
 
 import { Button } from "@/app/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/app/components/ui/dialog";
-import { IQuestion, Tag } from "@/lib/types";
-import { useContext, useState } from "react";
-import { MdAdd } from "react-icons/md";
-import { QuestionFinder } from "./question-finder";
-import { QuestionSearchbar } from "./questions-searchbar";
-import { Section, TestBuilderContext } from "./test-builder";
+import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
+import { IQuestion } from "@/lib/types";
+import { useState } from "react";
 import SectionQuestions from "./section-questions";
 import QuestionFinderDialog from "./question-finder-dialog";
+import { Section, useCreateTest } from "@/app/context/create-test-context";
 
 type QuestionSectionProps = {
     section: Section;
 }
 
 export const QuestionSection = ({ section }: QuestionSectionProps) => {
-    const { removeQuestion } = useContext(TestBuilderContext)
+    const { removeQuestion } = useCreateTest()
 
     const [open, setOpen] = useState<boolean>(false);
 

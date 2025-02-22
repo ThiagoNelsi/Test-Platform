@@ -4,17 +4,16 @@ import { IoClose } from "react-icons/io5"
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md"
 import { motion } from 'framer-motion';
 import { FaArrowDown, FaArrowUp } from "react-icons/fa"
-import { Section } from "./test-builder"
+import { Section, useCreateTest } from "@/app/context/create-test-context";
+import { QuestionSection } from "./question-section";
 
 type TestSectionProps = {
-    children: React.ReactNode;
     number: number;
-    removeSection: () => void;
-    moveSection: (section: Section, direction: "up" | "down") => void;
     section: Section;
 }
 
-export const TestSection = ({ children, number, removeSection, moveSection, section }: TestSectionProps) => {
+export const TestSection = ({ number, section }: TestSectionProps) => {
+    const { removeSection, moveSection } = useCreateTest()
     const [open, setOpen] = useState(true)
 
     return (
@@ -29,7 +28,7 @@ export const TestSection = ({ children, number, removeSection, moveSection, sect
                 </div>
                 <div className="flex items-center gap-8" onClick={(e) => e.stopPropagation()}>
                     <span
-                        onClick={removeSection}
+                        onClick={() => removeSection(section)}
                         className="flex items-center text-sm gap-2 hover:underline cursor-pointer"
                     >
                         <IoClose /> Remover esta seção
@@ -59,7 +58,7 @@ export const TestSection = ({ children, number, removeSection, moveSection, sect
                     animate={{ opacity: open ? 1 : 0, height: open ? 'auto' : 0 }}
                     transition={{ duration: 0.3 }}
                 >
-                    {children}
+                    <QuestionSection section={section} />
                 </motion.div>
             </CollapsibleContent>
         </Collapsible>
