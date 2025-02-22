@@ -3,7 +3,7 @@
 import { getTags } from "@/lib/tag-service";
 import { useEffect, useState } from "react";
 import { IQuestion, Tag } from "@/lib/types";
-import { getQuestions } from "@/lib/questionService";
+import { getQuestions } from "@/lib/question-service";
 import { QuestionFactory } from "@/lib/question";
 import { CreateTestProvider } from "@/app/context/create-test-context";
 import CreateTestForm from "./create-test-form";

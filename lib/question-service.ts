@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { getUserId } from "./auth"
-import { prisma, prismaMongo } from "./prisma"
+import { prisma } from "./prisma"
 import { Question, QuestionType } from "@/lib/types"
 
 const levelOptions = ['easy', 'medium', 'hard']
@@ -20,29 +20,13 @@ export const getQuestions = async (): Promise<Question[]> => {
         }
     })
 
-    const questionIds = postgresData.map((question) => question.id)
-
-    const mongoData = await prismaMongo.questionData.findMany({
-        where: {
-            questionId: {
-                in: questionIds
-            }
-        }
-    });
-
-    const questions = postgresData.map((question) => {
-        const { data } = mongoData.find((data) => data.questionId === question.id) || {}
-
-        const parsed = typeof data === 'string' ? JSON.parse(data) : data
-
+    return postgresData.map((question) => {
         return {
             ...question,
             type: question.type as QuestionType,
-            data: parsed,
+            data: question.content,
         }
     })
-
-    return questions
 }
 
 export const createQuestion = async (formData: FormData) => {
@@ -54,41 +38,21 @@ export const createQuestion = async (formData: FormData) => {
     const data = formData.get('data') as string
     const tags = JSON.parse(formData.get('tags') as string) as number[]
 
-    let question
-
     try {
-        question = await prisma.question.create({
+        const question = await prisma.question.create({
             data: {
                 type,
                 level: levelOptions.indexOf(level),
                 authorId: userId,
+                content: JSON.parse(data),
                 tags: {
                     connect: tags.map((tagId) => ({ id: tagId }))
                 }
             }
         });
-    } catch (err) {
-        return false
-    }
-
-    try {
-        await prismaMongo.questionData.create({
-            data: {
-                questionId: question.id,
-                data,
-                type,
-            }
-        });
-
         revalidatePath('/questions')
-
         return true
     } catch (err) {
-        await prisma.question.delete({
-            where: {
-                id: question.id
-            }
-        })
         return false
     }
 }
@@ -124,7 +88,6 @@ export const updateQuestion = async (questionId: number, formData: FormData) => 
             })
         }
 
-
         await prisma.question.update({
             where: {
                 id: questionId,
@@ -136,39 +99,12 @@ export const updateQuestion = async (questionId: number, formData: FormData) => 
                 tags: {
                     connect: tags.map((tagId) => ({ id: tagId })),
                     disconnect: disconnectTags,
-                }
+                },
+                content: JSON.parse(data),
             }
-        });
-    } catch (err) {
-        return false
-    }
-
-    try {
-        const questionData = await prismaMongo.questionData.findFirst({
-            where: {
-                questionId,
-            },
-            select: {
-                id: true,
-            },
-        });
-
-        if (!questionData) {
-            return false;
-        }
-
-        await prismaMongo.questionData.update({
-            where: {
-                id: questionData.id,
-            },
-            data: {
-                data,
-                type,
-            },
         });
 
         revalidatePath("/questions");
-
         return true;
     } catch (err) {
         return false
@@ -180,19 +116,14 @@ export const deleteQuestion = async (questionIds: number[]) => {
         const userId = await getUserId();
         if (!userId) return false;
 
-        const [deletedQuestions] = await prisma.$transaction([
-            prisma.question.deleteMany({
-                where: {
-                    id: { in: questionIds },
-                    authorId: userId,
-                },
-            }),
-            prismaMongo.questionData.deleteMany({
-                where: { questionId: { in: questionIds } },
-            }),
-        ]);
+        const { count } = await prisma.question.deleteMany({
+            where: {
+                id: { in: questionIds },
+                authorId: userId,
+            },
+        })
 
-        if (deletedQuestions.count === 0) return false;
+        if (count === 0) return false;
 
         revalidatePath('/questions');
 

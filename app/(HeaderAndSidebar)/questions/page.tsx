@@ -1,4 +1,4 @@
-import { getQuestions } from "@/lib/questionService";
+import { getQuestions } from "@/lib/question-service";
 import { getUserId } from "@/lib/auth";
 import { columns } from "./columns";
 import { DataTable } from "@/app/components/ui/data-table";
@@ -10,7 +10,7 @@ export default async function Page() {
     const userId = await getUserId();
     if (!userId) return null;
 
-    const res = await getQuestions(userId)
+    const res = await getQuestions()
 
     return (
         <QuestionEditorProvider>

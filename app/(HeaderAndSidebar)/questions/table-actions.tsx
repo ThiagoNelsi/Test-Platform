@@ -5,7 +5,7 @@ import { Trash } from "lucide-react";
 import { MdAdd } from "react-icons/md";
 import { useTable } from "@/app/context/table-context";
 import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm";
-import { deleteQuestion } from "@/lib/questionService";
+import { deleteQuestion } from "@/lib/question-service";
 import QuestionDialogTrigger from './question-dialog-trigger'
 import { Input } from "@/app/components/ui/input";
 import { useEffect, useState } from "react";

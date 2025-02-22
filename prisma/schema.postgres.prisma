@@ -69,6 +69,7 @@ model Question {
   authorId      Int
   level         Int?
   tags          Tag[]
+  content       Json      @default("{}")
 }
 
 model Tag {
