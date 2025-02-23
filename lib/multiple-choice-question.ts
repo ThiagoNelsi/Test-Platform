@@ -19,6 +19,7 @@ export class MultipleChoiceQuestion implements IQuestion {
     public tags: Tag[]
     public authorId: number;
     public createdAt: Date;
+    public version: number;
 
     constructor(question: Question) {
         this.id = question.id;
@@ -28,6 +29,7 @@ export class MultipleChoiceQuestion implements IQuestion {
         this.tags = question.tags;
         this.authorId = question.authorId;
         this.createdAt = question.createdAt;
+        this.version = question.version
     }
 
     getText(): string {

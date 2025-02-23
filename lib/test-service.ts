@@ -16,7 +16,10 @@ export type DataParam = Omit<TestData, "sections"> & {
     sections: {
         selectionMode: string;
         shuffle?: boolean;
-        questions: number[];
+        questions: {
+            id: number;
+            version: number;
+        }[];  // [questionId, version]
         randomQuestionCount?: number;
     }[]
 }
@@ -38,19 +41,17 @@ export const createTest = async (data: DataParam) => {
             sections: data.sections.map(section => {
                 if (section.selectionMode === "random") {
                     return {
-                        c: section.randomQuestionCount,                     // c: count
-                        q: JSON.stringify(section.questions.map(q => q)),   // q: questions
+                        count: section.randomQuestionCount,
+                        questions: section.questions.map(q => q),
                     }
                 }
                 return {
-                    s: section.shuffle,                                 // s: shuffle
-                    q: JSON.stringify(section.questions.map(q => q)),   // q: questions
+                    shuffle: section.shuffle,
+                    questions: section.questions.map(q => q),
                 }
             }),
         }
     });
-
-    console.log("Test created:", test);
 
     return test;
 }

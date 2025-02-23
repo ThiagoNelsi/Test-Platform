@@ -62,14 +62,21 @@ model Comment {
 }
 
 model Question {
-  id            Int       @id @default(autoincrement())
-  createdAt     DateTime  @default(now()) @db.Timestamptz(0)
-  type          String
-  author        User      @relation(fields: [authorId], references: [id])
-  authorId      Int
-  level         Int?
-  tags          Tag[]
-  content       Json      @default("{}")
+  id                   Int         @id @default(autoincrement())
+  createdAt            DateTime    @default(now()) @db.Timestamptz(0)
+  deletedAt            DateTime?   @db.Timestamptz(0)
+  type                 String
+  author               User        @relation(fields: [authorId], references: [id])
+  authorId             Int
+  level                Int?
+  tags                 Tag[]
+  content              Json        @default("{}")
+  version              Int         @default(1)
+
+  originalQuestionId   Int?
+
+  originalQuestion     Question?   @relation("QuestionSnapshots", fields: [originalQuestionId], references: [id])
+  snapshots            Question[]  @relation("QuestionSnapshots")
 }
 
 model Tag {
@@ -93,7 +100,7 @@ model Test {
   description String?
   publishDate DateTime?      @db.Timestamptz(0)
   status      String         @default("draft")
-  sections    Json[]
+  sections    Json           @default("[]")
   classroom   Classroom      @relation(fields: [classroomId], references: [id])
   classroomId Int
   instances   TestInstance[]

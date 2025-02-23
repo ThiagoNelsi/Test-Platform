@@ -23,6 +23,7 @@ export type Question = {
     createdAt: Date;
     authorId: number;
     level: number | null;
+    version: number;
 }
 
 export interface IQuestion extends Question {

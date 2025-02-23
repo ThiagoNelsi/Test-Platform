@@ -61,8 +61,6 @@ export default function SectionQuestions({ section, setOpen, onRemove }: Section
         }, 'handleSetRandomQuestionCount - sectionQuestions')
     }
 
-    console.log(section)
-
     return (
         <div className="flex flex-col gap-8">
             <div className="mt-4 rounded-lg">

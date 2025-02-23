@@ -135,7 +135,10 @@ const validateAndFormat = (data: TestData) => {
             classroomId: data.classroomId,
             status: data.status,
             sections: data.sections.map(section => ({
-                questions: section.questions.map(q => q.id),
+                questions: section.questions.map(q => ({
+                    id: q.id,
+                    version: q.version
+                })),
                 selectionMode: section.selectionMode || "all",
                 shuffle: section.shuffle,
                 randomQuestionCount: section.randomQuestionCount
@@ -160,7 +163,6 @@ export default function CreateTestForm() {
     const [enableDueDate, setEnableDueDate] = useState<boolean>(false)
 
     const handleSubmit = async (draft: boolean) => {
-        console.log("submitting test...")
         const result = validateAndFormat({
             name: testName,
             value: testValue,

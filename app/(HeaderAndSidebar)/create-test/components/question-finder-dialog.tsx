@@ -1,4 +1,4 @@
-import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
+import { DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
 import { QuestionFinder } from "./question-finder";
 import { useState } from "react";
 import { Tag } from "@/lib/types";
@@ -7,8 +7,10 @@ import { ScrollArea } from "@/app/components/ui/scroll-area";
 import { RemovableTag } from "@/app/components/removable-tag";
 import { SearchTags } from "@/app/components/search-tags";
 import { MdAdd } from "react-icons/md";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Section, useCreateTest } from "@/app/context/create-test-context";
 import { AutosizeTextarea } from "@/app/components/ui/auto-resize-textarea";
+import { Separator } from "@/app/components/ui/separator";
 
 type QuestionFinderDialogProps = {
     section: Section;
@@ -30,28 +32,30 @@ export default function QuestionFinderDialog({ section, setOpen }: QuestionFinde
     }
 
     return (
-        <DialogContent className="flex flex-col xl:max-w-[1500px] max-w-[1000px] h-[95%] bg-neutral-100">
-            <DialogHeader className="z-0">
-                <DialogTitle>
-                    Escolha as questões
-                </DialogTitle>
+        <DialogContent className="flex gap-0 flex-col xl:max-w-[1500px] max-w-[1000px] h-[95%] bg-verdigris-900 p-0 border-0">
+            <DialogHeader className="z-0 bg-verdigris-400 rounded-t-lg px-4 py-2 color-white">
+                <VisuallyHidden.Root>
+                    <DialogTitle>
+                        Escolha as questões
+                    </DialogTitle>
+                </VisuallyHidden.Root>
                 <DialogDescription asChild >
                     <div className="flex flex-col gap-4 text-neutral-600">
-                        <p>Escolha as questões que deseja adicionar a esta seção. Você pode filtrar por tags e pesquisar pelo conteúdo.</p>
-
                         <div className="flex gap-2 items-center">
-                            <span className="font-medium">Filtrar tags:</span>
+                            <span className="font-medium text-white">Filtrar tags:</span>
                             {selectedTags.length > 0 && 
-                                selectedTags.map((tag) => (
-                                    <RemovableTag key={tag.id} tag={tag} onRemove={() => handleRemoveTag(tag)} />
-                                ))
+                                <div className="flex gap-2 bg-white rounded-full p-1">
+                                    {selectedTags.map((tag) => (
+                                        <RemovableTag key={tag.id} tag={tag} onRemove={() => handleRemoveTag(tag)} />
+                                    ))}
+                                </div>
                             }
                             {tags && (
                                 <SearchTags items={tags} onSelect={(tag) => handleAddTag(tag)}>
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="text-primary shadow-none bg-transparent border-[1px] border-neutral-400 rounded-full w-20 h-7 hover:bg-blue-100 hover:border-blue-500"
+                                        className="ml-2 text-neutral-800 shadow-none bg-white border-[1px] border-white rounded-full w-20 h-7 hover:shadow-md"
                                     >
                                         <MdAdd />
                                     </Button>
@@ -62,12 +66,13 @@ export default function QuestionFinderDialog({ section, setOpen }: QuestionFinde
                 </DialogDescription>
             </DialogHeader>
 
-            <ScrollArea className="flex-1 p-2 pb-32">
+            <ScrollArea className="flex-1 px-4 py-0">
+                <div className="h-5"></div>
                 <QuestionFinder section={section} selected={section.questions} searchTerm={searchTerm} selectedTags={selectedTags} />
             </ScrollArea>
 
-            <footer className="bg-neutral-200 fixed flex flex-col gap-3 bottom-0 left-0 w-full shadow-lg p-4 rounded-b-lg">
-                <div className="flex gap-2 items-center p-1 rounded-lg pr-2 bg-white">
+            <footer className="flex flex-col gap-3 w-full shadow-lg p-4 rounded-b-lg bg-white">
+                <div className="flex gap-2 items-center p-1 rounded-md pr-2 bg-white shadow-lg border-2 border-neutral-400">
                     <AutosizeTextarea
                         placeholder="Buscar questão..."
                         value={searchTerm}
@@ -77,7 +82,7 @@ export default function QuestionFinderDialog({ section, setOpen }: QuestionFinde
                     />
                 </div>
                 <div className="flex items-center gap-2 justify-between">
-                    <Button onClick={() => setOpen(false)} className="w-52 bg-blue-400 hover:bg-blue-300 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                    <Button onClick={() => setOpen(false)} className="w-52 bg-neutral-800 hover:bg-neutral-900 text-white px-4 py-2 rounded-lg flex items-center gap-2">
                         Pronto
                     </Button>
                     <span className="text-sm font-normal">Questões selecionadas: {section.questions.length}</span>

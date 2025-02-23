@@ -113,7 +113,7 @@ export default {
   		},
   		fontFamily: {
   			sans: [
-  				'var(--font-montserrat)'
+  				'var(--font-inter)'
   			]
   		},
   		borderRadius: {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { SidebarProvider } from "./context/sidebar-context";
 import { NewClassroomModalProvider } from "./context/new-classroom-modal-context";
@@ -9,11 +9,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import { TooltipProvider } from "./components/ui/tooltip";
 
-const montserrat = Montserrat({
+const inter = Inter({
     weight: ['400', '500', '600', '700'],
     subsets: ['latin'],
     display: 'swap',
-    variable: '--font-montserrat',
+    variable: '--font-inter',
 })
 
 export const metadata: Metadata = {
@@ -30,13 +30,13 @@ export default async function RootLayout({
   return (
         <html>
           <head>
-            <script
+            {/* <script
               crossOrigin="anonymous"
               src="//unpkg.com/react-scan/dist/auto.global.js"
-            />
+            /> */}
             {/* rest of your scripts go under */}
           </head>
-          <body className={`${montserrat.variable} antialiased`}>
+          <body className={`${inter.variable} antialiased`}>
             <SessionProvider session={session}>
               <SidebarProvider>
                 <NewClassroomModalProvider>
