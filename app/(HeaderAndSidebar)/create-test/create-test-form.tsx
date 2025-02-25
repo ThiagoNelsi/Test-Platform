@@ -6,13 +6,17 @@ import { IoIosRocket, IoMdStopwatch } from "react-icons/io";
 import { SlNote } from "react-icons/sl";
 import { useCreateTest } from "@/app/context/create-test-context";
 import { TestSection } from "./components/test-section";
-import { MdAdd } from "react-icons/md";
+import { MdAdd, MdClose } from "react-icons/md";
 import { useEffect, useState } from "react";
-import { errorToast, infoToast } from "@/lib/toasters";
+import { errorToast, infoToast, successToast } from "@/lib/toasters";
 import { IQuestion, TestData } from "@/lib/types";
 import { createTest, DataParam } from "@/lib/test-service";
 import { getQuestion } from "@/lib/question-service";
 import { QuestionFactory } from "@/lib/question";
+import { Classroom } from "@/prisma/generated/postgres";
+import { getClassrooms } from "@/lib/classroomService";
+import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
+import SearchClassrooms from "@/app/components/search-classrooms";
 
 type InputBlockProps = {
     label: React.ReactNode;
@@ -106,7 +110,7 @@ const validateAndFormat = (data: TestData) => {
         if (data.publishDate && data.publishDate.getTime() > data.dueDate.getTime()) errors.push("Data de publicação não pode ser posterior à data de entrega")
     }
     if (data.publishDate && data.publishDate.getTime() < new Date().getTime()) errors.push("Data de publicação inválida")
-    if (!data.classroomId) errors.push("Turma não definida")
+    if (data.classroomIds.length < 1) errors.push("Turma não definida")
 
     // sections
     data.sections.forEach((section, index) => {
@@ -134,7 +138,7 @@ const validateAndFormat = (data: TestData) => {
             dueDate: data.dueDate,
             duration: data.duration,
             publishDate: data.publishDate,
-            classroomId: data.classroomId,
+            classroomIds: data.classroomIds,
             status: data.status,
             sections: data.sections.map(section => ({
                 questions: section.questions.map(q => ({
@@ -160,6 +164,8 @@ export default function CreateTestForm() {
     const [testDueDate, setTestDueDate] = useState<Date | undefined>(undefined)
     const [testDuration, setTestDuration] = useState<number>(0)
     const [publishDate, setPublishDate] = useState<Date | undefined>(undefined)
+    const [classrooms, setClassrooms] = useState<Classroom[]>([])
+    const [selectedClassrooms, setSelectedClassrooms] = useState<number[]>([])
 
     const [enablePublishDate, setEnablePublishDate] = useState<boolean>(false)
     const [enableDueDate, setEnableDueDate] = useState<boolean>(false)
@@ -211,6 +217,16 @@ export default function CreateTestForm() {
         }
     }, [sections, questions])
 
+    useEffect(() => {
+        const fetchClassrooms = async () => {
+            const res = await getClassrooms()
+            if (!res) return
+            setClassrooms(res.ownedClasses)
+        }
+
+        fetchClassrooms()
+    }, [])
+
     const refetchUpdatedQuestions = async (id: number) => {
         const res = await getQuestion(id);
         if (!res) return
@@ -227,7 +243,7 @@ export default function CreateTestForm() {
             duration: testDuration,
             publishDate,
             sections,
-            classroomId: 1,
+            classroomIds: selectedClassrooms,
             status: draft ? "draft" : "published"
         })
 
@@ -241,10 +257,19 @@ export default function CreateTestForm() {
 
         try {
             const response = await createTest(result.data)
+            if (!response) return errorToast("Erro ao criar prova")
+
+            successToast("Prova criada com sucesso")
         } catch (err) {
             console.error(err)
             errorToast("Erro ao criar prova")
         }
+    }
+
+    const handleAddClassroom = (classroom: Classroom) => {
+        if (selectedClassrooms.includes(classroom.id)) return
+
+        setSelectedClassrooms(prev => [...prev, classroom.id])
     }
 
     return (
@@ -314,6 +339,30 @@ export default function CreateTestForm() {
                             onChange={(e) => setTestDescription(e.target.value)}
                             placeholder="Descrição da prova..."
                         />
+                    </InputBlock>
+                    <InputBlock label="Turma(s)" required>
+                        {selectedClassrooms.length > 0 && (
+                            <div className="flex gap-2 mb-1">
+                                {selectedClassrooms.map((classroomId) => (
+                                    <div key={classroomId} className="flex items-center gap-2 px-4 py-1 bg-verdigris-900 rounded-full border-2 border-verdigris-400">
+                                        <span className="text-sm">{classrooms.find(c => c.id === classroomId)?.name}</span>
+                                        <button
+                                            onClick={() => setSelectedClassrooms(selectedClassrooms.filter(id => id !== classroomId))}
+                                        >
+                                            <MdClose />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        {classrooms && classrooms.length > 0 && (
+                            <SearchClassrooms items={classrooms} onSelect={handleAddClassroom} />
+                        )}
+                        <span className="text-xs mt-2">Visando facilitar o gerenciamento das provas, ao selecionar múltiplas turmas o sistema irá gerar uma prova para cada turma separadamente. Exemplo:</span>
+                        <ul className="list-disc list-inside text-xs">
+                            <li>Prova I - Turma A</li>
+                            <li>Prova I - Turma B</li>
+                        </ul>
                     </InputBlock>
                 </div>
             </div>

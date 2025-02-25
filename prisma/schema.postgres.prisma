@@ -104,8 +104,8 @@ model Test {
   publishDate DateTime?      @db.Timestamptz(0)
   status      String         @default("draft")
   sections    Json           @default("[]")
-  classroom   Classroom      @relation(fields: [classroomId], references: [id])
-  classroomId Int
+  classroom   Classroom?      @relation(fields: [classroomId], references: [id])
+  classroomId Int?
   instances   TestInstance[]
 }
 

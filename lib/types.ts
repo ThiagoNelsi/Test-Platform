@@ -38,6 +38,6 @@ export type TestData = {
     duration: number;
     publishDate: Date | undefined;
     sections: Section[];
-    classroomId: number;
+    classroomIds: number[];
     status: "draft" | "published" | "scheduled";
 }

@@ -90,7 +90,7 @@ export default function SectionQuestions({ section, setOpen, onRemove }: Section
                         isSelected={section.selectionMode === "random"}
                     >
                         <h3 className="font-semibold">🎲 Sortear um número de questões</h3>
-                        <p className="text-gray-600 text-sm">Escolha quantas questões serão sorteadas para cada aluno.</p>
+                        <p className="text-gray-600 text-sm">Escolha quantas questões desta seção serão sorteadas para cada aluno.</p>
                         {section.selectionMode === "random" && (
                             <div>
                                 <Input
