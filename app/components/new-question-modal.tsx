@@ -68,6 +68,10 @@ export default function NewQuestionModal({ type, closeDialog }: NewQuestionModal
             messageWord = "editada"
             if (!id) return errorToast("Erro ao editar questão")
             res = await updateQuestion(id, formData)
+            new BroadcastChannel("question-change").postMessage({
+                type: "update",
+                questionId: id,
+            })
         }
 
         if (!res) {

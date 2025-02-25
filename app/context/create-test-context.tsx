@@ -1,5 +1,5 @@
 import { IQuestion, Tag } from "@/lib/types";
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from "react";
 
 export type Section = {
     id: string;
@@ -12,6 +12,7 @@ export type Section = {
 type CreateTestContextType = {
     tags: Tag[] | null;
     questions: IQuestion[] | null;
+    setQuestions: Dispatch<SetStateAction<IQuestion[]>>;
     addSection: () => void;
     removeSection: (section: Section) => void;
     updateSection: (section: Section, caller: string) => void;
@@ -24,9 +25,16 @@ type CreateTestContextType = {
     moveQuestion: (section: Section, question: IQuestion, direction: "up" | "down") => void;
 }
 
+type CreateTestProviderProps = {
+    tags: Tag[] | null;
+    questions: IQuestion[] | null;
+    setQuestions: Dispatch<SetStateAction<IQuestion[]>>;
+    children: ReactNode;
+}
+
 export const CreateTestContext = createContext<CreateTestContextType>({} as CreateTestContextType);
 
-export const CreateTestProvider = ({ tags, questions, children }: { tags: Tag[] | null, questions: IQuestion[] | null, children: ReactNode }) => {
+export const CreateTestProvider = ({ tags, questions, setQuestions, children }: CreateTestProviderProps) => {
     const createEmptySection = (): Section => ({
         id: Math.random().toString(),
         shuffle: false,
@@ -97,7 +105,7 @@ export const CreateTestProvider = ({ tags, questions, children }: { tags: Tag[] 
         tags,
         allocatedQuestions, setAllocatedQuestions,
         sections, addSection, updateSection, removeSection, moveSection,
-        questions, moveQuestion, addQuestion, removeQuestion,
+        questions, setQuestions, moveQuestion, addQuestion, removeQuestion,
     }
 
 

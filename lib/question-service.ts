@@ -9,6 +9,28 @@ import { isEqual } from "lodash"
 
 const levelOptions = ['easy', 'medium', 'hard']
 
+export const getQuestion = async (questionId: number): Promise<Question | null> => {
+    const userId = await getUserId()
+    if (!userId) return null
+
+    const postgresData = await prisma.question.findUnique({
+        where: {
+            id: questionId
+        },
+        include: {
+            tags: true
+        }
+    });
+
+    if (!postgresData) return null
+
+    return {
+        ...postgresData,
+        type: postgresData.type as QuestionType,
+        data: postgresData.content,
+    }
+}
+
 export const getQuestions = async (): Promise<Question[]> => {
     const userId = await getUserId()
     if (!userId) return []

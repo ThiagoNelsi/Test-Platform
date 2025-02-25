@@ -153,6 +153,10 @@ export const columns: ColumnDef<Question>[] = [
                         delete newSelection[row.id]
                         setRowSelection(newSelection)
                     }
+                    new BroadcastChannel("question-change").postMessage({
+                        type: "delete",
+                        questionId: row.original.id
+                    })
                 }
             }
 

@@ -28,32 +28,63 @@ export const createTest = async (data: DataParam) => {
     const userId = await getUserId()
     if (!userId) return null
 
-    const test = await prisma.test.create({
-        data: {
-            name: data.name,
-            value: data.value,
-            dueDate: data.dueDate,
-            timer: data.duration,
-            description: data.description,
-            publishDate: data.publishDate,
-            status: data.status === "published" && data.publishDate ? "scheduled" : data.status,
-            classroomId: data.classroomId,
-            sections: data.sections.map(section => {
-                if (section.selectionMode === "random") {
-                    return {
-                        count: section.randomQuestionCount,
-                        questions: section.questions.map(q => q),
-                    }
-                }
-                return {
-                    shuffle: section.shuffle,
-                    questions: section.questions.map(q => q),
-                }
-            }),
-        }
+    // Fetch current question versions
+    const questionIds = data.sections.flatMap(section => section.questions.map(q => q.id));
+    const questions = await prisma.question.findMany({
+        where: {
+            id: {
+                in: questionIds,
+            },
+        },
+        select: {
+            id: true,
+            version: true,
+        },
     });
 
-    return test;
+    const questionMap = new Map<number, number>();
+    questions.forEach(q => {
+        questionMap.set(q.id, q.version);
+    });
+
+    try {
+        const test = await prisma.test.create({
+            data: {
+                name: data.name,
+                value: data.value,
+                dueDate: data.dueDate,
+                timer: data.duration,
+                description: data.description,
+                publishDate: data.publishDate,
+                status: data.status === "published" && data.publishDate ? "scheduled" : data.status,
+                classroomId: data.classroomId,
+                sections: data.sections.map(section => {
+                    if (section.selectionMode === "random") {
+                        return {
+                            count: section.randomQuestionCount,
+                            questions: section.questions.map(q => ({
+                                questionId: q.id,
+                                version: questionMap.get(q.id),
+                            })),
+                        }
+                    }
+                    return {
+                        shuffle: section.shuffle,
+                        questions: section.questions.map(q => ({
+                            questionId: q.id,
+                            version: questionMap.get(q.id),
+                        })),
+                    }
+                }),
+            }
+        });
+
+        return test;
+    } catch (error) {
+        console.log(error)
+        return false
+    }
+
 }
 
 export const getUnfinishedTests = async () => {

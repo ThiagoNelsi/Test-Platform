@@ -22,7 +22,7 @@ export default function CreateTest() {
     }
 
     return (
-        <CreateTestProvider tags={tags} questions={questions}>
+        <CreateTestProvider tags={tags} questions={questions} setQuestions={setQuestions}>
             <CreateTestForm />
         </CreateTestProvider>
     );

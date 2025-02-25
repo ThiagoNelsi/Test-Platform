@@ -8,9 +8,11 @@ import { useCreateTest } from "@/app/context/create-test-context";
 import { TestSection } from "./components/test-section";
 import { MdAdd } from "react-icons/md";
 import { useEffect, useState } from "react";
-import { errorToast } from "@/lib/toasters";
-import { TestData } from "@/lib/types";
+import { errorToast, infoToast } from "@/lib/toasters";
+import { IQuestion, TestData } from "@/lib/types";
 import { createTest, DataParam } from "@/lib/test-service";
+import { getQuestion } from "@/lib/question-service";
+import { QuestionFactory } from "@/lib/question";
 
 type InputBlockProps = {
     label: React.ReactNode;
@@ -56,7 +58,7 @@ const DurationInput = ({ duration, setDuration }: { duration: number, setDuratio
                         min={0}
                         max={99}
                     />
-                    <p className="ml-2">Horas</p>
+                    <p className="ml-2 mt-1">Horas</p>
                 </div>
                 <p className="text-lg mt-1">:</p>
                 <div>
@@ -68,7 +70,7 @@ const DurationInput = ({ duration, setDuration }: { duration: number, setDuratio
                         min={0}
                         max={59}
                     />
-                    <p className="ml-2">Minutos</p>
+                    <p className="ml-2 mt-1">Minutos</p>
                 </div>
             </div>
             {duration > 0 
@@ -150,7 +152,7 @@ const validateAndFormat = (data: TestData) => {
 }
 
 export default function CreateTestForm() {
-    const { sections, addSection } = useCreateTest()
+    const { sections, addSection, setQuestions, questions, updateSection } = useCreateTest()
 
     const [testName, setTestName] = useState<string>("")
     const [testValue, setTestValue] = useState<number>(10)
@@ -161,6 +163,60 @@ export default function CreateTestForm() {
 
     const [enablePublishDate, setEnablePublishDate] = useState<boolean>(false)
     const [enableDueDate, setEnableDueDate] = useState<boolean>(false)
+
+    useEffect(() => {
+        const channel = new BroadcastChannel("question-change")
+
+        channel.onmessage = async (e) => {
+            const section = sections.find(s => s.questions.some(q => q.id === e.data.questionId))
+
+            if (e.data.type == "update") {
+                const updated = await refetchUpdatedQuestions(e.data.questionId)
+                if (!updated) return
+
+                setQuestions((prev: any) => {
+                    const newQuestions = prev.map((q: IQuestion) => q.id === e.data.questionId ? updated : q);
+                    return newQuestions;
+                });
+
+                if (!section) return
+
+                const sectionQuestions = section.questions.map(q => q.id === e.data.questionId ? updated : q)
+                updateSection({
+                    ...section,
+                    questions: sectionQuestions
+                }, "create-test-form")
+
+                infoToast("Uma questão foi atualizada pois foi alterada em outra aba")
+            } else if (e.data.type == "delete") {
+                setQuestions((prev: any) => {
+                    const newQuestions = prev.filter((q: IQuestion) => q.id !== e.data.questionId);
+                    return newQuestions;
+                });
+
+                if (!section) return
+
+                const sectionQuestions = section.questions.filter(q => q.id !== e.data.questionId)
+                updateSection({
+                    ...section,
+                    questions: sectionQuestions
+                }, "create-test-form")
+
+                infoToast("Uma questão foi removida da prova pois foi deletada do banco de questões em outra aba")
+            }
+        }
+
+        return () => {
+            channel.close()
+        }
+    }, [sections, questions])
+
+    const refetchUpdatedQuestions = async (id: number) => {
+        const res = await getQuestion(id);
+        if (!res) return
+        const updated = QuestionFactory.from([res])[0]
+        return updated
+    }
 
     const handleSubmit = async (draft: boolean) => {
         const result = validateAndFormat({
@@ -185,7 +241,6 @@ export default function CreateTestForm() {
 
         try {
             const response = await createTest(result.data)
-            console.log(response)
         } catch (err) {
             console.error(err)
             errorToast("Erro ao criar prova")
