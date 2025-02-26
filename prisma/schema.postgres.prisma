@@ -22,6 +22,7 @@ model User {
   questions     Question[]
   testInstances TestInstance[]
   tags          Tag[]
+  tests         Test[]
 }
 
 model Classroom {
@@ -96,6 +97,7 @@ model Tag {
 model Test {
   id          Int            @id @default(autoincrement())
   createdAt   DateTime       @default(now()) @db.Timestamptz(0)
+  modifiedAt  DateTime       @default(now()) @db.Timestamptz(0)
   name        String
   value       Int            @default(10)
   dueDate     DateTime?      @db.Timestamptz(0)
@@ -107,6 +109,8 @@ model Test {
   classroom   Classroom?      @relation(fields: [classroomId], references: [id])
   classroomId Int?
   instances   TestInstance[]
+  author      User           @relation(fields: [authorId], references: [id])
+  authorId    Int
 }
 
 model TestInstance {

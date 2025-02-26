@@ -1,10 +1,12 @@
 import { toast } from "sonner"
 
-export const infoToast = (message: string) => {
+type Position = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center';
+
+export const infoToast = (message: string, position: Position = "top-center") => {
     toast.info(message, {
-        position: "top-center",
+        position,
         style: {
-            background: "#2563eb", // --blue-500
+            background: "#333", // --blue-500
             color: '#fff',
             border: 0
         }

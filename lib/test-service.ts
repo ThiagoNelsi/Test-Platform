@@ -3,6 +3,7 @@
 import { prisma } from "./prisma";
 import { getUserId } from "./auth";
 import { TestData } from "./types";
+import { revalidatePath } from "next/cache";
 
 export type Todo = {
     id: number;
@@ -103,6 +104,85 @@ export const createTest = async (data: DataParam) => {
         return false
     }
 
+}
+
+export const getOwnedTests = async () => {
+    const userId = await getUserId()
+    if (!userId) return null
+
+    const ownedTests = await prisma.test.findMany({
+        where: {
+            authorId: userId,
+        },
+        select: {
+            id: true,
+            name: true,
+            description: true,
+            value: true,
+            dueDate: true,
+            publishDate: true,
+            status: true,
+            createdAt: true,
+            modifiedAt: true,
+            classroom: {
+                select: {
+                    id: true,
+                    name: true,
+                    _count: {
+                        select: {
+                            students: true,
+                        }
+                    }
+                }
+            },
+            _count: {
+                select: {
+                    instances: {
+                        where: {
+                            finishTime: {
+                                not: null,
+                            }
+                        },
+                    }
+                },
+            },
+        },
+        orderBy: {
+            createdAt: "desc",
+        }
+    });
+
+    return ownedTests;
+}
+
+export const publishTest = async (testId: number) => {
+    const userId = await getUserId()
+    if (!userId) return null
+
+    try {
+        const test = await prisma.test.findFirst({
+            where: {
+                id: testId,
+                authorId: userId,
+            }
+        });
+
+        if (!test) return false
+
+        const publishedTest = await prisma.test.update({
+            where: {
+                id: testId,
+            },
+            data: {
+                status: "published",
+            },
+        });
+        revalidatePath("/tests")
+        return publishedTest;
+    } catch (error) {
+        console.log(error)
+        return false
+    }
 }
 
 export const getUnfinishedTests = async () => {

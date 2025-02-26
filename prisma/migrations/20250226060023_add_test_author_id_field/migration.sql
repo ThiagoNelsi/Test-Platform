@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Test" ADD COLUMN     "authorId" INTEGER NOT NULL DEFAULT 1;
+
+-- AddForeignKey
+ALTER TABLE "Test" ADD CONSTRAINT "Test_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

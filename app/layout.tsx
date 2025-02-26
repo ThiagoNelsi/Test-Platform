@@ -10,7 +10,7 @@ import { authOptions } from "./api/auth/[...nextauth]/route";
 import { TooltipProvider } from "./components/ui/tooltip";
 
 const inter = Inter({
-    weight: ['400', '500', '600', '700'],
+    weight: ['100', '200', '300', '400', '500', '600', '700'],
     subsets: ['latin'],
     display: 'swap',
     variable: '--font-inter',

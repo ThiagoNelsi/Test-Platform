@@ -8,6 +8,7 @@ import { MdAdd } from "react-icons/md";
 import { IoDocumentsOutline } from "react-icons/io5";
 import { GrDocumentPdf } from "react-icons/gr";
 import Link from "next/link";
+import { FaTasks } from "react-icons/fa";
 
 
 type Props ={
@@ -21,11 +22,11 @@ const TeacherActions = () => {
             <Link href="/create-test" className="flex gap-2 items-center hover:underline">
                 <MdAdd /> Criar prova
             </Link>
-            <Link href="#" className="flex gap-2 items-center hover:underline">
-                <GrDocumentPdf /> Gerar prova em PDF
+            <Link href="/tests" className="flex gap-2 items-center hover:underline">
+                <IoDocumentsOutline /> Ver provas
             </Link>
             <Link href="/questions" className="flex gap-2 items-center hover:underline">
-                <IoDocumentsOutline /> Gerenciar questões
+                <FaTasks /> Gerenciar questões
             </Link>
         </div>
     );
