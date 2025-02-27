@@ -14,7 +14,7 @@ export default async function Tests() {
 
     return (
         <div className="max-w-[100ch] mx-auto py-6">
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 pb-64">
                 <menu className="flex items-center justify-between">
                     <h1 className="text-lg">Provas</h1>
                     <Button variant="outline">

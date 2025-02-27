@@ -206,7 +206,7 @@ export const getOwnedTests = async () => {
             },
         },
         orderBy: {
-            createdAt: "desc",
+            modifiedAt: "desc",
         }
     });
 
