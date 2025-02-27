@@ -36,7 +36,7 @@ export default function Component({ ownedClasses, classrooms }: Props) {
     const { switchState: isTeacher } = useSwitch();
 
     return (
-        <div className="size-full py-6 px-40 overflow-auto">
+        <div className="max-w-[1500px] size-full py-6 px-10 mx-auto overflow-auto">
             <Switcher />
             {isTeacher && <TeacherActions />}
             <ClassroomList isTeacher={isTeacher} classrooms={isTeacher ? ownedClasses : classrooms} />

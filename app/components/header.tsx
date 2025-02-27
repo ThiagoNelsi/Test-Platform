@@ -22,7 +22,7 @@ export default function Header() {
     }
 
     return (
-        <header className="fixed w-full flex items-center bg-verdigris text-white px-4 h-16">
+        <header className="fixed w-full flex items-center bg-verdigris-400 text-white px-4 h-16">
             <div className='flex items-center flex-1 gap-10'>
                <button 
                 className='p-2 hover:bg-verdigris-600 rounded transition'
@@ -30,7 +30,7 @@ export default function Header() {
                 >
                     <MdMenu className="text-2xl"/>
                 </button>
-                <Link href={`/home`} className="text-2xl font-semibold">Test Platform</Link>
+                <Link href={`/home`} className="text-lg font-semibold">Test Platform</Link>
             </div>
             <div className='flex justify-end items-center flex-1 gap-10'>
                 <DropdownMenu onOpenChange={(isOpen) => setDropdownIsOpen(isOpen)}>

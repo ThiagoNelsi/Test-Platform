@@ -19,14 +19,14 @@ const ClassroomCard = ({ classroom, isTeacher }: { classroom: ClassroomWithOwner
     }
 
     return (
-        <li className="bg-ash_gray h-40 flex flex-col gap-2 hover:shadow-lg rounded transition cursor-pointer">
+        <li className="bg-ash_gray-900 border-[1px] border-ash_gray-500 min-w-[300px] md:min-w-[400px] h-40 flex flex-col gap-2 hover:shadow-lg rounded transition cursor-pointer">
             <Link href={`/classroom/${classroom.id}`} className="size-full p-4">
-                <h2 className="font-medium mb-0.5">{classroom.name}</h2>
+                <h2 className="font-medium mb-0.5 text-sm">{classroom.name}</h2>
                 <p className="text-sm">{classroom.owner.name}</p>
             </Link>
             {
                 isTeacher && (
-                    <footer className="p-4 bg-ash_gray-600 rounded-b text-neutral-700">
+                    <footer className="p-4 bg-ash_gray-700 rounded-b text-neutral-700">
                         <button className="flex gap-2 items-center" onClick={handleCopy}>
                             <FaRegCopy />
                             <p className="text-xs">Código: {classroom.code}</p>
@@ -40,10 +40,12 @@ const ClassroomCard = ({ classroom, isTeacher }: { classroom: ClassroomWithOwner
 
 export default function ClassroomList({ classrooms, isTeacher }: { classrooms: ClassroomWithOwner[], isTeacher: boolean }) {
     return (
-        <ul className="grid grid-cols-3 gap-8 mb-8">
-            {classrooms.map((classroom) => (
-                <ClassroomCard isTeacher={isTeacher} key={classroom.id} classroom={classroom} />
-            ))}
-        </ul>
+        <div className="mx-auto">
+            <ul className="flex flex-wrap gap-8 mb-8">
+                {classrooms.map((classroom) => (
+                    <ClassroomCard isTeacher={isTeacher} key={classroom.id} classroom={classroom} />
+                ))}
+            </ul>
+        </div>
     )
 }
