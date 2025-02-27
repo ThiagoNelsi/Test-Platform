@@ -31,6 +31,7 @@ export interface IQuestion extends Question {
 }
 
 export type TestData = {
+    id?: number;
     name: string;
     value: number;
     description: string;

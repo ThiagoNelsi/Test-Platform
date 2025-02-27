@@ -37,7 +37,11 @@ export default async function RootLayout({
             {/* rest of your scripts go under */}
           </head>
           <body className={`${inter.variable} antialiased`}>
-            <SessionProvider session={session}>
+            <SessionProvider
+              session={session}
+              refetchOnWindowFocus={false}
+              refetchInterval={60 * 60}
+            >
               <SidebarProvider>
                 <NewClassroomModalProvider>
                   <TooltipProvider>

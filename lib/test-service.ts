@@ -25,9 +25,10 @@ export type DataParam = Omit<TestData, "sections"> & {
     }[]
 }
 
-const createTestAuxiliar = async (prisma: any, data: DataParam, questionMap: Map<number, number>, classroomId?: number) => {
+const createTestAuxiliar = async (prisma: any, authorId: number, data: DataParam, questionMap: Map<number, number>, classroomId?: number) => {
     return await prisma.test.create({
         data: {
+            authorId,
             name: data.name,
             value: data.value,
             dueDate: data.dueDate,
@@ -58,12 +59,8 @@ const createTestAuxiliar = async (prisma: any, data: DataParam, questionMap: Map
     });
 }
 
-export const createTest = async (data: DataParam) => {
-    const userId = await getUserId()
-    if (!userId) return null
-
-    // Fetch current question versions
-    const questionIds = data.sections.flatMap(section => section.questions.map(q => q.id));
+const getCurrentQuestionVersions = async (sections: DataParam["sections"]) => {
+    const questionIds = sections.flatMap(section => section.questions.map(q => q.id));
     const questions = await prisma.question.findMany({
         where: {
             id: {
@@ -81,18 +78,27 @@ export const createTest = async (data: DataParam) => {
         questionMap.set(q.id, q.version);
     });
 
+    return questionMap;
+}
+
+export const createTest = async (data: DataParam) => {
+    const userId = await getUserId()
+    if (!userId) return null
+
+    // Fetch current question versions
+    const questionMap = await getCurrentQuestionVersions(data.sections);
+
     try {
         data.status = data.status === "published" && data.publishDate ? "scheduled" : data.status;
 
         if (data.status === "draft") {
-            const test = await createTestAuxiliar(prisma, data, questionMap);
-            console.log(test)
+            const test = await createTestAuxiliar(prisma, userId, data, questionMap);
             return test;
         }
 
         const tests = await prisma.$transaction(async (prisma) => {
             const res = data.classroomIds.map((async (classroomId, index) => {
-                return await createTestAuxiliar(prisma, data, questionMap, classroomId);
+                return await createTestAuxiliar(prisma, userId, data, questionMap, classroomId);
             }));
             return await Promise.all(res);
         });
@@ -104,6 +110,58 @@ export const createTest = async (data: DataParam) => {
         return false
     }
 
+}
+
+export const updateTest = async (testId: number, data: DataParam) => {
+    const userId = await getUserId()
+    if (!userId) return null
+
+    // Fetch current question versions
+    const questionMap = await getCurrentQuestionVersions(data.sections);
+
+    try {
+        data.status = data.status === "published" && data.publishDate ? "scheduled" : data.status;
+
+        const test = await prisma.test.update({
+            where: {
+                id: testId,
+            },
+            data: {
+                name: data.name,
+                value: data.value,
+                dueDate: data.dueDate,
+                timer: data.duration,
+                description: data.description,
+                publishDate: data.publishDate,
+                status: data.status,
+                modifiedAt: new Date(),
+                sections: data.sections.map(section => {
+                    if (section.selectionMode === "random") {
+                        return {
+                            count: section.randomQuestionCount,
+                            questions: section.questions.map(q => ({
+                                questionId: q.id,
+                                version: questionMap.get(q.id),
+                            })),
+                        }
+                    }
+                    return {
+                        shuffle: section.shuffle,
+                        questions: section.questions.map(q => ({
+                            questionId: q.id,
+                            version: questionMap.get(q.id),
+                        })),
+                    }
+                }),
+            },
+        });
+
+        return test;
+
+    } catch (error) {
+        console.log(error)
+        return false
+    }
 }
 
 export const getOwnedTests = async () => {
@@ -232,4 +290,18 @@ export const getUnfinishedTests = async () => {
     }));
 
     return todos;
+}
+
+export const getTest = async (testId: number) => {
+    const userId = await getUserId()
+    if (!userId) return null
+
+    const test = await prisma.test.findFirst({
+        where: {
+            id: testId,
+            authorId: userId,
+        }
+    });
+
+    return test;
 }

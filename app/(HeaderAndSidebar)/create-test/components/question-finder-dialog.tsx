@@ -10,7 +10,6 @@ import { MdAdd } from "react-icons/md";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Section, useCreateTest } from "@/app/context/create-test-context";
 import { AutosizeTextarea } from "@/app/components/ui/auto-resize-textarea";
-import { Separator } from "@/app/components/ui/separator";
 
 type QuestionFinderDialogProps = {
     section: Section;

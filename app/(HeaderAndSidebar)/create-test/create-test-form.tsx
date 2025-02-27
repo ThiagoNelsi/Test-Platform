@@ -10,12 +10,11 @@ import { MdAdd, MdClose } from "react-icons/md";
 import { useEffect, useState } from "react";
 import { errorToast, infoToast, successToast } from "@/lib/toasters";
 import { IQuestion, TestData } from "@/lib/types";
-import { createTest, DataParam } from "@/lib/test-service";
+import { createTest, DataParam, updateTest } from "@/lib/test-service";
 import { getQuestion } from "@/lib/question-service";
 import { QuestionFactory } from "@/lib/question";
 import { Classroom } from "@/prisma/generated/postgres";
 import { getClassrooms } from "@/lib/classroomService";
-import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import SearchClassrooms from "@/app/components/search-classrooms";
 
 type InputBlockProps = {
@@ -37,9 +36,9 @@ const InputBlock = ({ label, children, required }: InputBlockProps) => (
     </div>
 );
 
-const DurationInput = ({ duration, setDuration }: { duration: number, setDuration: (d: number) => void }) => {
-    const [hours, setHours] = useState<number>(0)
-    const [minutes, setMinutes] = useState<number>(0)
+const DurationInput = ({ duration = 0, setDuration }: { duration: number, setDuration: (d: number) => void }) => {
+    const [hours, setHours] = useState<number>(duration > 0 ? Math.floor(duration / 60) : 0)
+    const [minutes, setMinutes] = useState<number>(duration > 0 ? duration % 60 : 0)
 
     useEffect(() => {
         setDuration(hours * 60 + minutes)
@@ -100,29 +99,33 @@ const DurationInput = ({ duration, setDuration }: { duration: number, setDuratio
     )
 }
 
-const validateAndFormat = (data: TestData) => {
+const validateAndFormat = (data: TestData, isDraft: boolean) => {
+    console.log(isDraft)
     const errors = []
 
     if (!data.name) errors.push("Nome da prova é obrigatório")
-    if (!data.value) errors.push("Valor da prova é obrigatório")
-    if (data.dueDate) {
-        if (data.dueDate.getTime() < new Date().getTime()) errors.push("Data de entrega inválida")
-        if (data.publishDate && data.publishDate.getTime() > data.dueDate.getTime()) errors.push("Data de publicação não pode ser posterior à data de entrega")
-    }
-    if (data.publishDate && data.publishDate.getTime() < new Date().getTime()) errors.push("Data de publicação inválida")
-    if (data.classroomIds.length < 1) errors.push("Turma não definida")
 
-    // sections
-    data.sections.forEach((section, index) => {
-        if (section.questions.length === 0) errors.push(`Seção ${index + 1}: Nenhuma questão selecionada`)
-        else if (section.selectionMode === "random") {
-            if (!section.randomQuestionCount) errors.push(`Seção ${index + 1}: Número de questões aleatórias não definido`)
-            else {
-                if (section.randomQuestionCount > section.questions.length) errors.push(`Seção ${index + 1}: Número de questões aleatórias maior que o número de questões disponíveis`)
-                if (section.randomQuestionCount < 1) errors.push(`Seção ${index + 1}: Número de questões aleatórias inválido`)
-            }
+    if (!isDraft) {
+        if (!data.value) errors.push("Valor da prova é obrigatório")
+        if (data.dueDate) {
+            if (data.dueDate.getTime() < new Date().getTime()) errors.push("Data de entrega inválida")
+            if (data.publishDate && data.publishDate.getTime() > data.dueDate.getTime()) errors.push("Data de publicação não pode ser posterior à data de entrega")
         }
-    })
+        if (data.publishDate && data.publishDate.getTime() < new Date().getTime()) errors.push("Data de publicação inválida")
+        if (data.classroomIds.length < 1) errors.push("Turma não definida")
+
+        // sections
+        data.sections.forEach((section, index) => {
+            if (section.questions.length === 0) errors.push(`Seção ${index + 1}: Nenhuma questão selecionada`)
+            else if (section.selectionMode === "random") {
+                if (!section.randomQuestionCount) errors.push(`Seção ${index + 1}: Número de questões aleatórias não definido`)
+                else {
+                    if (section.randomQuestionCount > section.questions.length) errors.push(`Seção ${index + 1}: Número de questões aleatórias maior que o número de questões disponíveis`)
+                    if (section.randomQuestionCount < 1) errors.push(`Seção ${index + 1}: Número de questões aleatórias inválido`)
+                }
+            }
+        })
+    }
 
     if (errors.length > 0) return {
         valid: false,
@@ -155,20 +158,31 @@ const validateAndFormat = (data: TestData) => {
     return formatted
 }
 
-export default function CreateTestForm() {
-    const { sections, addSection, setQuestions, questions, updateSection } = useCreateTest()
+export default function CreateTestForm({ test }: { test: TestData | null }) {
+    const { sections, setSections, addSection, setQuestions, questions, updateSection, setAllocatedQuestions } = useCreateTest()
 
-    const [testName, setTestName] = useState<string>("")
-    const [testValue, setTestValue] = useState<number>(10)
-    const [testDescription, setTestDescription] = useState<string>("")
-    const [testDueDate, setTestDueDate] = useState<Date | undefined>(undefined)
-    const [testDuration, setTestDuration] = useState<number>(0)
-    const [publishDate, setPublishDate] = useState<Date | undefined>(undefined)
+    const [testName, setTestName] = useState<string>(test?.name || "")
+    const [testValue, setTestValue] = useState<number>(test?.value || 10)
+    const [testDescription, setTestDescription] = useState<string>(test?.description || "")
+    const [testDueDate, setTestDueDate] = useState<Date | undefined>(test?.dueDate || undefined)
+    const [testDuration, setTestDuration] = useState<number>(test?.duration || 0)
+    const [publishDate, setPublishDate] = useState<Date | undefined>(test?.publishDate || undefined)
     const [classrooms, setClassrooms] = useState<Classroom[]>([])
     const [selectedClassrooms, setSelectedClassrooms] = useState<number[]>([])
 
-    const [enablePublishDate, setEnablePublishDate] = useState<boolean>(false)
-    const [enableDueDate, setEnableDueDate] = useState<boolean>(false)
+    const [enablePublishDate, setEnablePublishDate] = useState<boolean>(Boolean(test?.publishDate))
+    const [enableDueDate, setEnableDueDate] = useState<boolean>(Boolean(test?.dueDate))
+
+    useEffect(() => {
+        if (test && test.sections) {
+            setSections(test.sections)
+            const allocatedQuestions = new Map<number, string>()
+            test.sections.forEach((section) => {
+                section.questions.forEach(q => allocatedQuestions.set(q.id, section.id))
+            })
+            setAllocatedQuestions(allocatedQuestions)
+        }
+    }, [test])
 
     useEffect(() => {
         const channel = new BroadcastChannel("question-change")
@@ -245,7 +259,7 @@ export default function CreateTestForm() {
             sections,
             classroomIds: selectedClassrooms,
             status: draft ? "draft" : "published"
-        })
+        }, draft)
 
         if (!result.valid && 'errors' in result) {
             const text = "Erros: \n - " + result.errors.join("\n - ")
@@ -256,10 +270,16 @@ export default function CreateTestForm() {
         if (!('data' in result)) return
 
         try {
+            if (draft && test && test.id) {
+                console.log("Updating test")
+                const response = await updateTest(test.id, result.data)
+                if (!response) return errorToast("Erro ao salvar rascunho")
+                return successToast("Rascunho salvo com sucesso") 
+            }
+            console.log("Creating test")
             const response = await createTest(result.data)
             if (!response) return errorToast("Erro ao criar prova")
-
-            successToast("Prova criada com sucesso")
+            return successToast("Prova criada com sucesso")
         } catch (err) {
             console.error(err)
             errorToast("Erro ao criar prova")

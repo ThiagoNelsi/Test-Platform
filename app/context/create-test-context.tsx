@@ -18,6 +18,7 @@ type CreateTestContextType = {
     updateSection: (section: Section, caller: string) => void;
     moveSection: (section: Section, direction: "up" | "down") => void;
     sections: Section[];
+    setSections: Dispatch<SetStateAction<Section[]>>;
     allocatedQuestions: Map<number, string>;
     setAllocatedQuestions: (allocatedQuestion: Map<number, string>) => void;
     addQuestion: (section: Section, question: IQuestion) => void;
@@ -104,7 +105,7 @@ export const CreateTestProvider = ({ tags, questions, setQuestions, children }: 
     const contextValue: CreateTestContextType = {
         tags,
         allocatedQuestions, setAllocatedQuestions,
-        sections, addSection, updateSection, removeSection, moveSection,
+        sections, setSections, addSection, updateSection, removeSection, moveSection,
         questions, setQuestions, moveQuestion, addQuestion, removeQuestion,
     }
 
