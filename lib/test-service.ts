@@ -171,6 +171,7 @@ export const getOwnedTests = async () => {
     const ownedTests = await prisma.test.findMany({
         where: {
             authorId: userId,
+            deletedAt: null,
         },
         select: {
             id: true,
@@ -249,6 +250,7 @@ export const getUnfinishedTests = async () => {
 
     const unfinishedTests = await prisma.test.findMany({
         where: {
+            deletedAt: null,
             OR: [
             {
                 instances: {
@@ -300,8 +302,48 @@ export const getTest = async (testId: number) => {
         where: {
             id: testId,
             authorId: userId,
+            deletedAt: null,
         }
     });
 
     return test;
+}
+
+export const deleteTest = async (testId: number, softDelete: boolean = true) => {
+    const userId = await getUserId()
+    if (!userId) return null
+
+    try {
+        const test = await prisma.test.findFirst({
+            where: {
+                id: testId,
+                authorId: userId,
+            }
+        });
+
+        if (!test) return false
+
+        if (softDelete) {
+            const deletedTest = await prisma.test.update({
+                where: {
+                    id: testId,
+                },
+                data: {
+                    deletedAt: new Date(),
+                },
+            });
+            return deletedTest;
+        }
+
+        await prisma.test.delete({
+            where: {
+                id: testId,
+            }
+        });
+
+        return true;
+    } catch (error) {
+        console.log(error)
+        return false
+    }
 }

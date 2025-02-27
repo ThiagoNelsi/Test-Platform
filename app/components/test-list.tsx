@@ -5,16 +5,18 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaTrash } from "react-icons/fa";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/app/components/ui/collapsible";
 import { useState } from "react";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import { CiLink } from "react-icons/ci";
-import { getOwnedTests, publishTest } from "@/lib/test-service";
+import { deleteTest, getOwnedTests, publishTest } from "@/lib/test-service";
 import { motion } from 'framer-motion';
 import { errorToast, infoToast, successToast } from "@/lib/toasters";
 import { IoIosRocket } from "react-icons/io";
 import Confirm from "./ui/confirm";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { BsThreeDotsVertical } from "react-icons/bs";
 
 type Test = NonNullable<Awaited<ReturnType<typeof getOwnedTests>>>[0]
 
@@ -50,8 +52,18 @@ function PublishTest({ test }: { test: Test }) {
     )
 }
 
-export default function TestList({ tests, title, defaultOpen = false }: TestListProps) {
+export default function TestList({ tests: t, title, defaultOpen = false }: TestListProps) {
+    const [tests, setTests] = useState(t)
     const [open, setOpen] = useState(defaultOpen)
+
+    const handleDelete = async (test: Test) => {
+        const res = await deleteTest(test.id, !(test.status === "draft"))
+        if (res) {
+            setTests(tests.filter(t => t.id !== test.id))
+            return successToast("Prova apagada com sucesso")
+        }
+        errorToast("Não foi possível apagar a prova")
+    }
 
     return (
         <Collapsible open={open} onOpenChange={setOpen} className="border-t-8 border-verdigris-200 border-opacity-30 flex flex-col bg-neutral-100 rounded-lg px-4 py-0 shadow-md">
@@ -71,25 +83,58 @@ export default function TestList({ tests, title, defaultOpen = false }: TestList
                 >
                     <ul className="flex flex-col rounded-lg overflow-hidden">
                         {tests.map(test => (
-                            <li key={test.id} className="border-l-8 border-verdigris-800 flex gap-2 md:gap-5 text-sm p-4 shadow-sm bg-white border-b">
+                            <li key={test.id} className="relative border-l-8 border-verdigris-800 flex gap-2 md:gap-5 text-sm p-4 shadow-sm bg-white border-b">
                                 <div className="flex flex-col gap-2 w-full ml-1">
                                     <div className="flex justify-between">
                                         <p className="text-sm font-medium md:text-base">{test.name} {test.classroom && ' - ' + test.classroom.name}</p>
                                         { 
                                             test.dueDate && test.status !== "draft" &&
-                                            <p className="flex ml-auto items-center gap-1 text-xs text-neutral-900">
+                                            <p className="flex ml-auto items-center gap-1 text-xs text-neutral-900 mr-4">
                                                 <CalendarIcon className="w-4 h-4" />
                                                 Entrega {format(test.dueDate, "dd/MM 'às' HH:mm", { locale: ptBR })}
                                             </p>
+                                        }
+                                        {
+                                            test.status !== "draft" &&
+                                            <Popover>
+                                                <PopoverTrigger>
+                                                    <BsThreeDotsVertical />
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-fit p-2">
+                                                    <Confirm
+                                                        title="Tem certeza que deseja apagar esta prova?"
+                                                        description="Esta ação é irreversível! Não será mais possível acessá-la e todas as respostas serão perdidas."
+                                                        confirmText="Apagar"
+                                                        verificationText={test.name}
+                                                        onConfirm={() => handleDelete(test)}
+                                                        confirmBtnStyle="bg-red-500 text-white hover:bg-red-600"
+                                                    >
+                                                        <Button variant="ghost" className="text-xs md:text-sm text-red-500 hover:text-red-600">Deletar prova</Button>
+                                                    </Confirm>
+                                                </PopoverContent>
+                                            </Popover>
                                         }
                                     </div>
                                     <p className="text-sm font-light mb-4 text-neutral-700">{test.description?.slice(0, 150)}{test.description && test.description?.length > 150 && "..."}</p>
                                     <div className="flex gap-6 items-end">
                                         {
                                             test.status === "draft"
-                                            ? <Link href={`/create-test?test=${test.id}`}>
-                                                <Button variant="outline" className="text-xs md:text-sm bg-blue-500 text-white border-0 hover:bg-blue-600 hover:text-white">Voltar a editar</Button>
-                                            </Link>
+                                            ? <>
+                                                <Link href={`/create-test?test=${test.id}`}>
+                                                    <Button variant="outline" className="text-xs md:text-sm bg-blue-500 text-white border-0 hover:bg-blue-600 hover:text-white">Voltar a editar</Button>
+                                                </Link>
+                                                <Confirm
+                                                    title="Tem certeza que deseja apagar este rascunho?"
+                                                    description="Esta ação é irreversível."
+                                                    confirmText="Apagar"
+                                                    onConfirm={() => handleDelete(test)}
+                                                    confirmBtnStyle="bg-red-500 text-white hover:bg-red-600"
+                                                >
+                                                    <Button variant="outline" className="text-xs md:text-sm text-neutral-800 border-neutral-500 hover:text-neutral-900">
+                                                        Apagar rascunho
+                                                    </Button>
+                                                </Confirm>
+                                            </>
                                             : <Link href={`/tests/${test.id}`}>
                                                 <Button variant="outline" className="text-xs md:text-sm bg-blue-500 text-white border-0 hover:bg-blue-600 hover:text-white">Ver prova</Button>
                                             </Link>
