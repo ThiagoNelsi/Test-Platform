@@ -4,6 +4,7 @@ import { prisma } from "./prisma";
 import { getUserId } from "./auth";
 import { TestData } from "./types";
 import { revalidatePath } from "next/cache";
+import { InputJsonValue } from "@/prisma/generated/postgres/runtime/library";
 
 export type Todo = {
     id: number;
@@ -13,7 +14,7 @@ export type Todo = {
     finishTime?: Date;
 }
 
-export type DataParam = Omit<TestData, "sections"> & {
+export type DataParam = Omit<Partial<TestData>, "sections"> & {
     sections: {
         selectionMode: string;
         shuffle?: boolean;
@@ -91,12 +92,13 @@ export const createTest = async (data: DataParam) => {
     try {
         data.status = data.status === "published" && data.publishDate ? "scheduled" : data.status;
 
-        if (data.status === "draft") {
+        if (data.status === "draft" || !data.classroomIds) {
             const test = await createTestAuxiliar(prisma, userId, data, questionMap);
             return test;
         }
 
         const tests = await prisma.$transaction(async (prisma) => {
+            if (!data.classroomIds) return
             const res = data.classroomIds.map((async (classroomId, index) => {
                 return await createTestAuxiliar(prisma, userId, data, questionMap, classroomId);
             }));
@@ -112,6 +114,8 @@ export const createTest = async (data: DataParam) => {
 }
 
 export const updateTest = async (testId: number, data: DataParam) => {
+    console.log(testId)
+    console.log(data)
     const userId = await getUserId()
     if (!userId) return null
 
@@ -213,9 +217,22 @@ export const getOwnedTests = async () => {
     return ownedTests;
 }
 
-export const publishTest = async (testId: number) => {
+export const publishTest = async (testId: number, classroomIds: number[]) => {
     const userId = await getUserId()
     if (!userId) return null
+
+    const update = async (id: number, classroom?: number) => {
+        const publishedTest = await prisma.test.update({
+            where: {
+                id,
+            },
+            data: {
+                status: "published",
+                classroomId: classroom,
+            },
+        });
+        return publishedTest;
+    }
 
     try {
         const test = await prisma.test.findFirst({
@@ -227,16 +244,44 @@ export const publishTest = async (testId: number) => {
 
         if (!test) return false
 
-        const publishedTest = await prisma.test.update({
-            where: {
-                id: testId,
-            },
-            data: {
-                status: "published",
-            },
-        });
-        revalidatePath("/tests")
-        return publishedTest;
+        if (classroomIds.length > 0) {
+            const classrooms = await prisma.classroom.findMany({
+                where: {
+                    id: {
+                        in: classroomIds,
+                    },
+                    ownerId: userId,
+                },
+                select: {
+                    id: true,
+                }
+            });
+            const publishedTests = await prisma.$transaction(async (prisma) => {
+                const res = classroomIds.map((async (classroomId, index) => {
+                    if (index === 0) return update(testId, classroomId)
+
+                    if (classrooms.findIndex(c => c.id === classroomId) === -1) return
+
+                    return await prisma.test.create({
+                        data: {
+                            ...test,
+                            id: undefined,
+                            classroomId: classroomId,
+                            status: "published",
+                            sections: test.sections as InputJsonValue,
+                        },
+                    });
+                }));
+                return await Promise.all(res);
+            });
+            console.log("PUBLICADO")
+            console.log(publishedTests)
+            return publishedTests;
+        } else {
+            const publishedTest = await update(testId)
+            revalidatePath("/tests")
+            return publishedTest;
+        }
     } catch (error) {
         console.log(error)
         return false

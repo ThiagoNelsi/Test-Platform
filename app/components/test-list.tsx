@@ -86,7 +86,7 @@ export default function TestList({ tests: t, title, defaultOpen = false }: TestL
                             <li key={test.id} className="relative border-l-8 border-verdigris-800 flex gap-2 md:gap-5 text-sm p-4 shadow-sm bg-white border-b">
                                 <div className="flex flex-col gap-2 w-full ml-1">
                                     <div className="flex justify-between">
-                                        <p className="text-sm font-medium md:text-base">{test.name} {test.classroom && ' - ' + test.classroom.name}</p>
+                                        <p className="text-sm font-medium">{test.name} {test.classroom && ' - ' + test.classroom.name}</p>
                                         { 
                                             test.dueDate && test.status !== "draft" &&
                                             <p className="flex ml-auto items-center gap-1 text-xs text-neutral-900 mr-4">
@@ -150,7 +150,7 @@ export default function TestList({ tests: t, title, defaultOpen = false }: TestL
                                     {
                                         test.status === "published" &&
                                         <>
-                                            <p className="flex items-center gap-2"><FaCheck className="text-green-500" /> Entregues</p>
+                                            <p className="flex items-center gap-2 text-xs"><FaCheck className="text-green-500" /> Entregues</p>
                                             <p className="mb-2">{test._count.instances}/{test.classroom?._count.students}</p>
                                             <Button variant='ghost' className="mt-auto text-xs" onClick={() => {
                                                 navigator.clipboard.writeText(`${window.location.origin}/tests/${test.id}`)

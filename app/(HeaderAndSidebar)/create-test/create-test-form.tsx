@@ -10,13 +10,14 @@ import { MdAdd, MdClose } from "react-icons/md";
 import { useCallback, useEffect, useState } from "react";
 import { errorToast, infoToast, successToast } from "@/lib/toasters";
 import { IQuestion, TestData } from "@/lib/types";
-import { createTest, DataParam, updateTest } from "@/lib/test-service";
+import { createTest, DataParam, publishTest, updateTest } from "@/lib/test-service";
 import { getQuestion } from "@/lib/question-service";
 import { QuestionFactory } from "@/lib/question";
 import { Classroom } from "@/prisma/generated/postgres";
 import { getClassrooms } from "@/lib/classroomService";
 import SearchClassrooms from "@/app/components/search-classrooms";
 import { useDebounce } from "@/app/hooks/useDebounce";
+import { redirect, useRouter } from "next/navigation";
 
 type InputBlockProps = {
     label: React.ReactNode;
@@ -116,6 +117,7 @@ const validateAndFormat = (data: TestData, isDraft: boolean) => {
         if (data.classroomIds.length < 1) errors.push("Turma não definida")
 
         // sections
+        if (data.sections.length === 0) errors.push("Nenhuma seção de questões definida")
         data.sections.forEach((section, index) => {
             if (section.questions.length === 0) errors.push(`Seção ${index + 1}: Nenhuma questão selecionada`)
             else if (section.selectionMode === "random") {
@@ -160,6 +162,8 @@ const validateAndFormat = (data: TestData, isDraft: boolean) => {
 }
 
 export default function CreateTestForm({ test }: { test: TestData | null }) {
+    const router = useRouter()
+
     const { sections, setSections, addSection, setQuestions, questions, updateSection, setAllocatedQuestions } = useCreateTest()
 
     const [testId, setTestId] = useState<number | null>(test?.id || null)
@@ -258,7 +262,9 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
         return updated
     }
 
-    const handleSubmit = async (isDraft: boolean, autoSave: boolean = false) => {
+    const handleSave = async (autoSave: boolean = false) => {
+        if (!testId) return;
+
         const result = validateAndFormat({
             name: testName,
             value: testValue,
@@ -268,8 +274,8 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
             publishDate,
             sections,
             classroomIds: selectedClassrooms,
-            status: isDraft ? "draft" : "published"
-        }, isDraft)
+            status: "draft"
+        }, true)
 
         if (!result.valid && 'errors' in result) {
             const text = "Erros: \n - " + result.errors.join("\n - ")
@@ -280,23 +286,12 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
         if (!('data' in result)) return
 
         try {
-            if (isDraft && testId) {
-                console.log("Updating test")
-                const response = await updateTest(testId, result.data)
-                if (autoSave) return setAutoSaveStatus(new Date())
+            console.log("Updating test")
+            const response = await updateTest(testId, result.data)
+            if (autoSave) return setAutoSaveStatus(new Date())
 
-                if (!response) return errorToast("Erro ao salvar rascunho")
-                return successToast("Rascunho salvo com sucesso") 
-            }
-            console.log("Creating test")
-            const response = await createTest(result.data)
-            if (autoSave && response) {
-                setAutoSaveStatus(new Date())
-                return setTestId(response.id)
-            }
-
-            if (!response) return errorToast("Erro ao criar prova")
-            return successToast("Prova criada com sucesso")
+            if (!response) return errorToast("Erro ao salvar rascunho")
+            return successToast("Rascunho salvo com sucesso") 
         } catch (err) {
             if (autoSave) return
             console.error(err)
@@ -304,10 +299,47 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
         }
     }
 
+    const handlePublish = async () => {
+        const result = validateAndFormat({
+            name: testName,
+            value: testValue,
+            description: testDescription,
+            dueDate: testDueDate,
+            duration: testDuration,
+            publishDate,
+            sections,
+            classroomIds: selectedClassrooms,
+            status: "published"
+        }, false)
+
+        if (!result.valid && 'errors' in result) {
+            const text = "Erros: \n - " + result.errors.join("\n - ")
+            errorToast(text)
+            return;
+        }
+
+        if (!('data' in result)) return
+
+        try {
+            if (!testId) return;
+
+            const response = await publishTest(testId, result.data.classroomIds as number[])
+            console.log(response)
+            if (!response) return errorToast("Erro ao criar prova")
+            successToast("Prova publicada com sucesso")
+
+            // redirect to test page
+            router.push('/tests')
+        } catch (err) {
+            console.error(err)
+            errorToast("Erro ao criar prova")
+        }
+    }
+
     const saveTestData = useCallback(() => {
         setAutoSaveStatus("saving")
-        handleSubmit(true, true)
-    }, [handleSubmit])
+        handleSave(true)
+    }, [handleSave])
     const debounceSave = useDebounce(saveTestData, 5000)
 
     const handleAddClassroom = (classroom: Classroom) => {
@@ -317,7 +349,7 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
     }
 
     return (
-        <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-6">
+        <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-6 px-5">
             <div>
                 <div className="flex items-center justify-between">
                     <h1 className="font-semibold mb-2">Nova prova</h1>
@@ -456,8 +488,8 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
             </div>
 
             <div className="flex flex-col gap-6">
-                <Button onClick={() => handleSubmit(false)} className="flex-[3] bg-verdigris-400 hover:bg-verdigris-300"><IoIosRocket /> Publicar</Button>
-                <Button onClick={() => handleSubmit(true)} className="flex-[1] bg-gray-400 hover:bg-gray-500"><SlNote /> Salvar rascunho</Button>
+                <Button onClick={handlePublish} className="flex-[3] bg-verdigris-400 hover:bg-verdigris-300"><IoIosRocket /> Publicar</Button>
+                <Button onClick={() => handleSave(false)} className="flex-[1] bg-gray-400 hover:bg-gray-500"><SlNote /> Salvar rascunho</Button>
             </div>
         </div>
     )

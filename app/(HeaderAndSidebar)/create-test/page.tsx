@@ -8,7 +8,7 @@ import { QuestionFactory } from "@/lib/question";
 import { CreateTestProvider, Section } from "@/app/context/create-test-context";
 import CreateTestForm from "./create-test-form";
 import { useSearchParams } from "next/navigation";
-import { getTest } from "@/lib/test-service";
+import { createTest, getTest } from "@/lib/test-service";
 
 type SectionFromServer = {
     shuffle?: boolean;
@@ -30,46 +30,57 @@ export default function CreateTest() {
         fetchData()
     }, [])
 
-    useEffect(() => {
-        if (!test && questions.length) fetchTest()
-    }, [questions])
-
     const fetchData = async () => {
         getTags().then(tags => setTags(tags))
-        const q = await getQuestions()
-        setQuestions(QuestionFactory.from(q))
+        const res = await getQuestions()
+        const questions = QuestionFactory.from(res)
+        setQuestions(questions)
+        fetchTest(questions)
     }
 
-    const fetchTest = async () => {
+    const fetchTest = async (questions: IQuestion[]) => {
+        let res;
         if (testId) {
-            const t = await getTest(Number(testId))
-            if (!t) return;
-            setTest({
-                id: t.id,
-                name: t.name,
-                value: t.value,
-                description: t.description || "",
-                dueDate: t.dueDate || undefined,
-                duration: t.timer || 0,
-                publishDate: t.publishDate || undefined,
-                sections: (t.sections as unknown as SectionFromServer[])?.map<Section>(section => {
-                    return {
-                        shuffle: section.shuffle || false,
-                        questions: section.questions.map(question => {
-                            return questions.find(q => q.id === question.questionId)
-                        }).filter(q => q !== undefined) as IQuestion[],
-                        selectionMode: section.count ? "random" : "all",
-                        randomQuestionCount: section.count,
-                        id: Math.random().toString()
-                    }
-                }),
-                classroomIds: [(t.classroomId || 0)],
-                status: t.status as TestData["status"]
+            res = await getTest(Number(testId))
+        } else {
+            res = await createTest({
+                status: "draft",
+                sections: []
             })
         }
+
+        if (!res) return
+        // set url to test id
+        if (!testId) {
+            window.history.replaceState({}, "", `?test=${res.id}`)
+        }
+
+        setTest({
+            id: res.id,
+            name: res.name,
+            value: res.value,
+            description: res.description || "",
+            dueDate: res.dueDate || undefined,
+            duration: res.timer || 0,
+            publishDate: res.publishDate || undefined,
+            sections: (res.sections as unknown as SectionFromServer[])?.map<Section>(section => {
+                return {
+                    shuffle: section.shuffle || false,
+                    questions: section.questions.map(question => {
+                        return questions.find(q => q.id === question.questionId)
+                    }).filter(q => q !== undefined) as IQuestion[],
+                    selectionMode: section.count ? "random" : "all",
+                    randomQuestionCount: section.count,
+                    id: Math.random().toString()
+                }
+            }),
+            classroomIds: [(res.classroomId || 0)],
+            status: res.status as TestData["status"]
+        })
+        return
     }
 
-    if (testId && !test) {
+    if (!test) {
         return <div>Loading...</div>
     }
 
