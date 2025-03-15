@@ -10,11 +10,11 @@ import { authOptions } from "./api/auth/[...nextauth]/route";
 import { TooltipProvider } from "./components/ui/tooltip";
 
 const inter = Inter({
-    weight: ['100', '200', '300', '400', '500', '600', '700'],
-    subsets: ['latin'],
-    display: 'swap',
-    variable: '--font-inter',
-})
+  weight: ["100", "200", "300", "400", "500", "600", "700"],
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -28,30 +28,33 @@ export default async function RootLayout({
 }>) {
   const session = await getServerSession(authOptions);
   return (
-        <html>
-          <head>
-            {/* <script
+    <html>
+      <head>
+        {/* <script
               crossOrigin="anonymous"
               src="//unpkg.com/react-scan/dist/auto.global.js"
             /> */}
-            {/* rest of your scripts go under */}
-          </head>
-          <body className={`${inter.variable} antialiased`}>
-            <SessionProvider
-              session={session}
-              refetchOnWindowFocus={false}
-              refetchInterval={60 * 60}
-            >
-              <SidebarProvider>
-                <NewClassroomModalProvider>
-                  <TooltipProvider>
-                    {children}
-                    <Toaster position="top-center" className="whitespace-pre-wrap" />
-                  </TooltipProvider>
-                </NewClassroomModalProvider>
-              </SidebarProvider>
-            </SessionProvider>
-          </body>
-        </html>
+        {/* rest of your scripts go under */}
+      </head>
+      <body className={`${inter.variable} antialiased`}>
+        <SessionProvider
+          session={session}
+          refetchOnWindowFocus={false}
+          refetchInterval={60 * 60}
+        >
+          <SidebarProvider>
+            <NewClassroomModalProvider>
+              <TooltipProvider>
+                {children}
+                <Toaster
+                  position="top-center"
+                  className="whitespace-pre-wrap"
+                />
+              </TooltipProvider>
+            </NewClassroomModalProvider>
+          </SidebarProvider>
+        </SessionProvider>
+      </body>
+    </html>
   );
 }

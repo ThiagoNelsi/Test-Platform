@@ -1,9 +1,9 @@
-import { DeafultSession } from 'next-auth';
+import { DeafultSession } from "next-auth";
 
-declare module 'next-auth' {
-    interface Session {
-        user: {
-            id: number;
-        } & DeafultSession['user'];
-    }
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: number;
+    } & DeafultSession["user"];
+  }
 }

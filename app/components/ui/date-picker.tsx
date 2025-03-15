@@ -1,50 +1,64 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import { Calendar as CalendarIcon } from "lucide-react"
+import * as React from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Calendar as CalendarIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/app/components/ui/button"
-import { Calendar } from "@/app/components/ui/calendar"
+import { cn } from "@/lib/utils";
+import { Button } from "@/app/components/ui/button";
+import { Calendar } from "@/app/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/app/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select"
-import { ScrollArea } from "./scroll-area"
-import { Separator } from "./separator"
+} from "@/app/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./select";
+import { ScrollArea } from "./scroll-area";
+import { Separator } from "./separator";
 
 type DatePickerProps = {
-  date: Date | undefined
-  setDate: (date: Date | undefined) => void
-  fromDate?: Date,
-  disabled?: boolean
-  defaultTime?: string
-}
+  date: Date | undefined;
+  setDate: (date: Date | undefined) => void;
+  fromDate?: Date;
+  disabled?: boolean;
+  defaultTime?: string;
+};
 
-export function DatePicker({ date, setDate, fromDate, disabled = false, defaultTime = "23:59" }: DatePickerProps) {
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(undefined)
-  const [selectedTime, setSelectedTime] = React.useState<string>(defaultTime)
+export function DatePicker({
+  date,
+  setDate,
+  fromDate,
+  disabled = false,
+  defaultTime = "23:59",
+}: DatePickerProps) {
+  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
+    undefined,
+  );
+  const [selectedTime, setSelectedTime] = React.useState<string>(defaultTime);
 
   React.useEffect(() => {
     if (selectedDate) {
-      const [hour, minute] = selectedTime.split(":")
-      const d = new Date(selectedDate)
-      d.setHours(Number(hour))
-      d.setMinutes(Number(minute))
-      if (d.getTime() !== date?.getTime()) setDate(d)
+      const [hour, minute] = selectedTime.split(":");
+      const d = new Date(selectedDate);
+      d.setHours(Number(hour));
+      d.setMinutes(Number(minute));
+      if (d.getTime() !== date?.getTime()) setDate(d);
     }
-  }, [selectedDate, selectedTime])
+  }, [selectedDate, selectedTime]);
 
   React.useEffect(() => {
     if (date) {
-      setSelectedDate(date)
-      setSelectedTime(format(date, "HH:mm"))
+      setSelectedDate(date);
+      setSelectedTime(format(date, "HH:mm"));
     }
-  }, [date])
+  }, [date]);
 
   return (
     <Popover>
@@ -53,11 +67,17 @@ export function DatePicker({ date, setDate, fromDate, disabled = false, defaultT
           variant={"outline"}
           className={cn(
             "w-[280px] justify-start text-left font-normal",
-            !date && "text-muted-foreground"
+            !date && "text-muted-foreground",
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-            {date ? format(date, "dd 'de' MMMM", { locale: ptBR }) + " às " + selectedTime : <span>Escolha uma data</span>}
+          {date ? (
+            format(date, "dd 'de' MMMM", { locale: ptBR }) +
+            " às " +
+            selectedTime
+          ) : (
+            <span>Escolha uma data</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="flex w-auto p-0">
@@ -85,9 +105,7 @@ export function DatePicker({ date, setDate, fromDate, disabled = false, defaultT
                   const hour = Math.floor(i / 4)
                     .toString()
                     .padStart(2, "0");
-                  const minute = ((i % 4) * 15)
-                    .toString()
-                    .padStart(2, "0");
+                  const minute = ((i % 4) * 15).toString().padStart(2, "0");
                   return (
                     <SelectItem key={i} value={`${hour}:${minute}`}>
                       {hour}:{minute}
@@ -103,5 +121,5 @@ export function DatePicker({ date, setDate, fromDate, disabled = false, defaultT
         </div>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

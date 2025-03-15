@@ -1,36 +1,45 @@
-import { toast } from "sonner"
+import { toast } from "sonner";
 
-type Position = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center';
+type Position =
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right"
+  | "top-center"
+  | "bottom-center";
 
-export const infoToast = (message: string, position: Position = "top-center") => {
-    toast.info(message, {
-        position,
-        style: {
-            background: "#333", // --blue-500
-            color: '#fff',
-            border: 0
-        }
-    })
-}
+export const infoToast = (
+  message: string,
+  position: Position = "top-center",
+) => {
+  toast.info(message, {
+    position,
+    style: {
+      background: "#333", // --blue-500
+      color: "#fff",
+      border: 0,
+    },
+  });
+};
 
 export const successToast = (message: string) => {
-    toast.success(message, {
-        position: "top-center",
-        style: {
-            background: "#10b981", // --green-500
-            color: '#fff',
-            border: 0
-        }
-    })
-}
+  toast.success(message, {
+    position: "top-center",
+    style: {
+      background: "#10b981", // --green-500
+      color: "#fff",
+      border: 0,
+    },
+  });
+};
 
 export const errorToast = (message: string) => {
-    toast.error(message, {
-        position: "top-center",
-        style: {
-            background: "#ef4444", // --red-500
-            color: '#fff',
-            border: 0
-        }
-    })
-}
+  toast.error(message, {
+    position: "top-center",
+    style: {
+      background: "#ef4444", // --red-500
+      color: "#fff",
+      border: 0,
+    },
+  });
+};

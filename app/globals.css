@@ -22,8 +22,8 @@ body {
     display: none;
   }
   .no-scrollbar {
-    -ms-overflow-style: none;  /* Para o Internet Explorer e Edge */
-    scrollbar-width: none;  /* Para o Firefox */
+    -ms-overflow-style: none; /* Para o Internet Explorer e Edge */
+    scrollbar-width: none; /* Para o Firefox */
   }
   .text-node {
     min-height: 1.5em;

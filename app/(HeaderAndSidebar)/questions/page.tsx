@@ -7,19 +7,19 @@ import { TableProvider } from "@/app/context/table-context";
 import { QuestionEditorProvider } from "@/app/context/question-editor-context";
 
 export default async function Page() {
-    const userId = await getUserId();
-    if (!userId) return null;
+  const userId = await getUserId();
+  if (!userId) return null;
 
-    const res = await getQuestions()
+  const res = await getQuestions();
 
-    return (
-        <QuestionEditorProvider>
-            <TableProvider>
-                <div className="container mx-auto py-10">
-                    <TableActions />
-                    <DataTable columns={columns} data={res} />
-                </div>
-            </TableProvider>
-        </QuestionEditorProvider>
-    );
+  return (
+    <QuestionEditorProvider>
+      <TableProvider>
+        <div className="container mx-auto py-10">
+          <TableActions />
+          <DataTable columns={columns} data={res} />
+        </div>
+      </TableProvider>
+    </QuestionEditorProvider>
+  );
 }

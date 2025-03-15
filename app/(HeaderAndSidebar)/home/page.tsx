@@ -4,15 +4,15 @@ import { getClassrooms } from "@/lib/classroomService";
 import { SwitcherProvider } from "@/app/context/switcher-context";
 
 export default async function Classroom() {
-    const response = await getClassrooms()
+  const response = await getClassrooms();
 
-    if (!response) return null
+  if (!response) return null;
 
-    const { ownedClasses, classrooms } = response
+  const { ownedClasses, classrooms } = response;
 
-    return (
-        <SwitcherProvider>
-            <Component classrooms={classrooms} ownedClasses={ownedClasses} />
-        </SwitcherProvider>
-    )
+  return (
+    <SwitcherProvider>
+      <Component classrooms={classrooms} ownedClasses={ownedClasses} />
+    </SwitcherProvider>
+  );
 }
