@@ -122,7 +122,32 @@ export default function NewClassroomModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogTitle>Nova turma</DialogTitle>
-        <Tabs>
+        {createdClassroom ? (
+          <SuccessMessage createdClassroom={createdClassroom} />
+        ) : (
+          <form onSubmit={(e) => handleSubmit(e, createClassroom)}>
+            <Input
+              className="mb-4"
+              name="name"
+              type="text"
+              placeholder="Nome da turma"
+              required
+            />
+            <Input type="hidden" name="userId" value={userId} />
+            <Button
+              type="submit"
+              className="w-full bg-verdigris hover:bg-verdigris-400 flex items-center justify-center"
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader className="w-4 h-4 animate-spin" />
+              ) : (
+                "Criar"
+              )}
+            </Button>
+          </form>
+        )}
+        {/* <Tabs>
           <TabsList className="w-full justify-between mb-4">
             <TabsTrigger className="w-full" value="join">
               Entrar em uma turma
@@ -152,33 +177,9 @@ export default function NewClassroomModal() {
             </form>
           </TabsContent>
           <TabsContent value="create">
-            {createdClassroom ? (
-              <SuccessMessage createdClassroom={createdClassroom} />
-            ) : (
-              <form onSubmit={(e) => handleSubmit(e, createClassroom)}>
-                <Input
-                  className="mb-4"
-                  name="name"
-                  type="text"
-                  placeholder="Nome da turma"
-                  required
-                />
-                <Input type="hidden" name="userId" value={userId} />
-                <Button
-                  type="submit"
-                  className="w-full bg-verdigris hover:bg-verdigris-400 flex items-center justify-center"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <Loader className="w-4 h-4 animate-spin" />
-                  ) : (
-                    "Criar"
-                  )}
-                </Button>
-              </form>
-            )}
+            
           </TabsContent>
-        </Tabs>
+        </Tabs> */}
       </DialogContent>
     </Dialog>
   );

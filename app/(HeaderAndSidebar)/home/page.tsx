@@ -8,11 +8,11 @@ export default async function Classroom() {
 
   if (!response) return null;
 
-  const { ownedClasses, classrooms } = response;
+  const { ownedClasses } = response;
 
   return (
     <SwitcherProvider>
-      <Component classrooms={classrooms} ownedClasses={ownedClasses} />
+      <Component ownedClasses={ownedClasses} />
     </SwitcherProvider>
   );
 }

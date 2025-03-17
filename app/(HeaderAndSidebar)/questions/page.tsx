@@ -15,7 +15,7 @@ export default async function Page() {
   return (
     <QuestionEditorProvider>
       <TableProvider>
-        <div className="container mx-auto py-10">
+        <div className="container mx-auto">
           <TableActions />
           <DataTable columns={columns} data={res} />
         </div>

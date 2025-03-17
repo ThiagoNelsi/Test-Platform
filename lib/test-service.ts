@@ -406,6 +406,8 @@ export const deleteTest = async (
       },
     });
 
+    revalidatePath("/tests");
+
     return true;
   } catch (error) {
     console.log(error);

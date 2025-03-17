@@ -13,10 +13,9 @@ export default async function Tests() {
   const draftTests = tests.filter((test) => test.status === "draft");
 
   return (
-    <div className="max-w-[100ch] mx-auto p-5">
+    <div className="max-w-[100ch] mx-auto">
       <div className="flex flex-col gap-6 pb-64">
-        <menu className="flex items-center justify-between">
-          <h1 className="text-lg">Provas</h1>
+        <menu className="flex items-center justify-end">
           <Button variant="outline">
             <Link href="/create-test" className="flex items-center gap-2">
               <MdAdd /> Criar prova

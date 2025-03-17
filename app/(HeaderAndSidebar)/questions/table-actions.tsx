@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/app/components/ui/button";
-import { Trash } from "lucide-react";
+import { Search, Trash } from "lucide-react";
 import { MdAdd } from "react-icons/md";
 import { useTable } from "@/app/context/table-context";
 import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm";
@@ -71,11 +71,11 @@ export default function TableActions() {
   return (
     <menu className="flex items-center gap-4 justify-between mb-4">
       <QuestionDialogTrigger type="create" initialData={null}>
-        <Button className="bg-ash_gray-300 text-white hover:bg-ash_gray-200">
+        <Button className="bg-blue-500 text-white hover:bg-blue-600">
           <MdAdd /> Criar questão
         </Button>
       </QuestionDialogTrigger>
-      <div className="flex flex-1 item-center gap-1 shadow p-1 rounded-md">
+      <div className="flex flex-1 bg-white item-center gap-1 shadow p-1 rounded-md">
         <div className="flex gap-1 items-center">
           {selectedTags &&
             selectedTags.map((tag) => (
@@ -86,12 +86,16 @@ export default function TableActions() {
               />
             ))}
         </div>
-        <Input
-          placeholder="Buscar questões..."
-          value={(filter?.text ?? "") as string}
-          onChange={handleSearch}
-          className="border-0 shadow-none focus-visible:ring-0"
-        />
+        <div className="relative w-full">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+          type="search"
+            placeholder="Buscar questões..."
+            value={(filter?.text ?? "") as string}
+            onChange={handleSearch}
+            className="border-0 shadow-none focus-visible:ring-0 w-full pl-9"
+          />
+        </div>
         <SearchTags items={tags} onSelect={(tag) => addTagFilter(tag)} />
       </div>
       {selectedRowsCount > 0 && (
@@ -101,6 +105,7 @@ export default function TableActions() {
           confirmText="Apagar"
           onConfirm={() => handleDeleteQuestion(getSelectedQuestionIds() || [])}
           confirmBtnStyle="bg-red-500 text-white hover:bg-red-600"
+          verificationText={selectedRowsCount > 5 ? "apagar" : undefined}
         >
           <ConfirmTrigger>
             <Button variant="ghost" className="text-red-600 hover:text-red-600">

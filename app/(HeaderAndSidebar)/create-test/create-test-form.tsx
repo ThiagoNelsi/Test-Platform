@@ -11,7 +11,6 @@ import { useCallback, useEffect, useState } from "react";
 import { errorToast, infoToast, successToast } from "@/lib/toasters";
 import { IQuestion, TestData } from "@/lib/types";
 import {
-  createTest,
   DataParam,
   publishTest,
   updateTest,
@@ -22,7 +21,7 @@ import { Classroom } from "@/prisma/generated/postgres";
 import { getClassrooms } from "@/lib/classroomService";
 import SearchClassrooms from "@/app/components/search-classrooms";
 import { useDebounce } from "@/app/hooks/useDebounce";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type InputBlockProps = {
   label: React.ReactNode;
@@ -454,7 +453,6 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
     <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-6 px-5">
       <div>
         <div className="flex items-center justify-between">
-          <h1 className="font-semibold mb-2">Nova prova</h1>
           {autoSaveStatus === "saving" ? (
             <p className="text-xs text-neutral-700">Salvando...</p>
           ) : (
@@ -629,7 +627,7 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
           onClick={handlePublish}
           className="flex-[3] bg-verdigris-400 hover:bg-verdigris-300"
         >
-          <IoIosRocket /> Publicar
+          <IoIosRocket /> { enablePublishDate && publishDate ? "Agendar publicação" : "Publicar prova" }
         </Button>
         <Button
           onClick={() => handleSave(false)}

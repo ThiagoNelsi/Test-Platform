@@ -2,6 +2,10 @@ import { ClassroomWithOwner } from "@/lib/classroomService";
 import Link from "next/link";
 import { FaRegCopy } from "react-icons/fa";
 import { toast } from "sonner";
+import { Button } from "./ui/button";
+import { Plus } from "lucide-react";
+import { useNewClassroomModal } from "../context/new-classroom-modal-context";
+import { successToast } from "@/lib/toasters";
 
 const ClassroomCard = ({
   classroom,
@@ -12,15 +16,7 @@ const ClassroomCard = ({
 }) => {
   const handleCopy = () => {
     navigator.clipboard.writeText(classroom.code);
-    toast.success("Código copiado!", {
-      duration: 1200,
-      position: "top-center",
-      style: {
-        background: "#fff",
-        color: "#333",
-        border: 0,
-      },
-    });
+    successToast("Código copiado!");
   };
 
   return (
@@ -48,8 +44,18 @@ export default function ClassroomList({
   classrooms: ClassroomWithOwner[];
   isTeacher: boolean;
 }) {
+
+  const { setOpen } = useNewClassroomModal();
+
   return (
     <div className="mx-auto">
+      <Button
+        onClick={() => setOpen(true)}
+        variant="outline"
+        className="mb-5"
+      >
+        <Plus /> Criar turma
+      </Button>
       <ul className="flex flex-wrap gap-8 mb-8">
         {classrooms.map((classroom) => (
           <ClassroomCard

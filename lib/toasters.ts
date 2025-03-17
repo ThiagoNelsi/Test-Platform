@@ -1,4 +1,9 @@
 import { toast } from "sonner";
+import {
+  green,
+  blue,
+  red,
+} from "tailwindcss/colors";
 
 type Position =
   | "top-left"
@@ -15,7 +20,7 @@ export const infoToast = (
   toast.info(message, {
     position,
     style: {
-      background: "#333", // --blue-500
+      background: blue[500],
       color: "#fff",
       border: 0,
     },
@@ -26,7 +31,7 @@ export const successToast = (message: string) => {
   toast.success(message, {
     position: "top-center",
     style: {
-      background: "#10b981", // --green-500
+      background: green[500],
       color: "#fff",
       border: 0,
     },
@@ -37,7 +42,7 @@ export const errorToast = (message: string) => {
   toast.error(message, {
     position: "top-center",
     style: {
-      background: "#ef4444", // --red-500
+      background: red[500],
       color: "#fff",
       border: 0,
     },

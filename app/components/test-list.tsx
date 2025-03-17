@@ -32,7 +32,8 @@ type TestListProps = {
 
 function PublishTest({ test }: { test: Test }) {
   const handlePublish = async (test: Test) => {
-    const res = await publishTest(test.id);
+    if (!test.classroom) return;
+    const res = await publishTest(test.id, [test.classroom.id]);
     if (res) {
       return successToast("Prova publicada com sucesso");
     }
@@ -80,7 +81,7 @@ export default function TestList({
     <Collapsible
       open={open}
       onOpenChange={setOpen}
-      className="border-t-8 border-verdigris-200 border-opacity-30 flex flex-col bg-neutral-100 rounded-lg px-4 py-0 shadow-md"
+      className="border-t-8 border-opacity-30 flex flex-col bg-neutral-100 rounded px-4 py-0 shadow-md"
     >
       <CollapsibleTrigger className="flex items-center justify-between p-4 text-lg font-semibold ">
         <div className="flex items-center gap-2 text-base">
@@ -96,7 +97,7 @@ export default function TestList({
           animate={{ opacity: open ? 1 : 0, height: open ? "auto" : 0 }}
           transition={{ duration: 0.3 }}
         >
-          <ul className="flex flex-col rounded-lg overflow-hidden">
+          <ul className="flex flex-col rounded overflow-hidden">
             {tests.map((test) => (
               <li
                 key={test.id}
@@ -175,7 +176,7 @@ export default function TestList({
                         </Confirm>
                       </>
                     ) : (
-                      <Link href={`/tests/${test.id}`}>
+                      <Link href={`#`}>
                         <Button
                           variant="outline"
                           className="text-xs md:text-sm bg-blue-500 text-white border-0 hover:bg-blue-600 hover:text-white"

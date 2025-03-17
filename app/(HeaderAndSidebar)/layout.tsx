@@ -1,5 +1,5 @@
 import Header from "@/app/components/header";
-import Sidebar from "@/app/components/sidebar";
+import { Sidebar } from "@/app/components/sidebar";
 import { getUnfinishedTests } from "@/lib/test-service";
 import NewClassroomModal from "../components/new-classroom-modal";
 
@@ -8,18 +8,22 @@ interface Props {
 }
 
 export default async function Layout({ children }: Props) {
-  const todos = await getUnfinishedTests();
+  // const todos = await getUnfinishedTests();
 
-  if (!todos) return null;
+  // if (!todos) return null;
 
   return (
-    <>
-      <Header />
-      <Sidebar todos={todos} />
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <Sidebar />
+      <div id="main-content" className="flex flex-col flex-1 overflow-hidden transition-all duration-300 ease-in-out">
+        <main className="flex-1 overflow-y-auto">
+          <Header />
+          <div className="container mx-auto px-10 py-4">
+            {children}
+          </div>
+        </main>
+      </div>
       <NewClassroomModal />
-      <main className="fixed w-full top-16 h-[calc(100vh-4rem)] overflow-auto">
-        {children}
-      </main>
-    </>
+    </div>
   );
 }
