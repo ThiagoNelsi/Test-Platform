@@ -5,6 +5,7 @@ import { getUserId } from "./auth";
 import { TestData } from "./types";
 import { revalidatePath } from "next/cache";
 import { InputJsonValue } from "@/prisma/generated/postgres/runtime/library";
+import { Test } from "@/prisma/generated/postgres";
 
 export type Todo = {
   id: number;
@@ -294,6 +295,7 @@ export const publishTest = async (testId: number, classroomIds: number[]) => {
       });
       console.log("PUBLICADO");
       console.log(publishedTests);
+      revalidatePath("/tests");
       return publishedTests;
     } else {
       const publishedTest = await update(testId);
@@ -305,6 +307,69 @@ export const publishTest = async (testId: number, classroomIds: number[]) => {
     return false;
   }
 };
+
+export const scheduleTest = async (testId: number, classroomIds: number[]) => {
+  const userId = await getUserId();
+  if (!userId) return null;
+
+  if (classroomIds.length === 0) return false;
+
+  try {
+    const test = await prisma.test.findFirst({
+      where: {
+        id: testId,
+        authorId: userId,
+      },
+    });
+
+    if (!test) return false;
+
+    const classrooms = await prisma.classroom.findMany({
+      where: {
+        id: {
+          in: classroomIds,
+        },
+        ownerId: userId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const scheduledTests = await prisma.$transaction(async (prisma) => {
+      const res = classroomIds.map(async (classroomId, index) => {
+        if (index === 0) return prisma.test.update({
+          where: {
+            id: testId,
+          },
+          data: {
+            status: "scheduled",
+            classroomId,
+          },
+        });
+
+        if (classrooms.findIndex((c) => c.id === classroomId) === -1) return;
+
+        return prisma.test.create({
+          data: {
+            ...test,
+            id: undefined,
+            classroomId: classroomId,
+            status: "scheduled",
+            sections: test.sections as InputJsonValue,
+          },
+        });
+      });
+      return await Promise.all(res);
+    });
+    console.log("AGENDADO");
+    console.log(scheduledTests);
+    return scheduledTests;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
 
 export const getUnfinishedTests = async () => {
   const userId = await getUserId();

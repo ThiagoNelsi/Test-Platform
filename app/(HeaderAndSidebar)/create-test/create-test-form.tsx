@@ -13,6 +13,7 @@ import { IQuestion, TestData } from "@/lib/types";
 import {
   DataParam,
   publishTest,
+  scheduleTest,
   updateTest,
 } from "@/lib/test-service";
 import { getQuestion } from "@/lib/question-service";
@@ -347,6 +348,33 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
     fetchClassrooms();
   }, []);
 
+  const getValidatedData = (status: TestData['status']) => {
+    const result = validateAndFormat(
+      {
+        name: testName,
+        value: testValue,
+        description: testDescription,
+        dueDate: testDueDate,
+        duration: testDuration,
+        publishDate,
+        sections,
+        classroomIds: selectedClassrooms,
+        status,
+      },
+      false,
+    );
+
+    if (!result.valid && "errors" in result) {
+      const text = "Erros: \n - " + result.errors.join("\n - ");
+      errorToast(text);
+      return;
+    }
+
+    if (!("data" in result)) return;
+
+    return result.data;
+  }
+
   const refetchUpdatedQuestions = async (id: number) => {
     const res = await getQuestion(id);
     if (!res) return;
@@ -395,37 +423,19 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
   };
 
   const handlePublish = async () => {
-    const result = validateAndFormat(
-      {
-        name: testName,
-        value: testValue,
-        description: testDescription,
-        dueDate: testDueDate,
-        duration: testDuration,
-        publishDate,
-        sections,
-        classroomIds: selectedClassrooms,
-        status: "published",
-      },
-      false,
-    );
+    const data = getValidatedData("published");
 
-    if (!result.valid && "errors" in result) {
-      const text = "Erros: \n - " + result.errors.join("\n - ");
-      errorToast(text);
-      return;
-    }
-
-    if (!("data" in result)) return;
+    if (!data) return;
 
     try {
       if (!testId) return;
 
+      await handleSave(true);
+
       const response = await publishTest(
         testId,
-        result.data.classroomIds as number[],
+        data.classroomIds as number[],
       );
-      console.log(response);
       if (!response) return errorToast("Erro ao criar prova");
       successToast("Prova publicada com sucesso");
 
@@ -434,6 +444,31 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
     } catch (err) {
       console.error(err);
       errorToast("Erro ao criar prova");
+    }
+  };
+
+  const handleSchedulePublish = async () => {
+    const data = getValidatedData("scheduled");
+
+    if (!data) return;
+
+    try {
+      if (!testId) return;
+
+      await handleSave(true);
+
+      const response = await scheduleTest(
+        testId,
+        data.classroomIds as number[],
+      );
+      if (!response) return errorToast("Erro ao agendar publicação da prova");
+      successToast("Prova publicada com sucesso");
+
+      // redirect to test page
+      router.push("/tests");
+    } catch (err) {
+      console.error(err);
+      errorToast("Erro ao agendar publicação da prova");
     }
   };
 
@@ -623,12 +658,21 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
       </div>
 
       <div className="flex flex-col gap-6">
-        <Button
-          onClick={handlePublish}
-          className="flex-[3] bg-verdigris-400 hover:bg-verdigris-300"
-        >
-          <IoIosRocket /> { enablePublishDate && publishDate ? "Agendar publicação" : "Publicar prova" }
-        </Button>
+        {
+          enablePublishDate && publishDate
+          ? <Button
+              onClick={handleSchedulePublish}
+              className="flex-[3] bg-verdigris-400 hover:bg-verdigris-300"
+            >
+              <IoIosRocket /> Agendar publicação
+            </Button>
+          : <Button
+              onClick={handlePublish}
+              className="flex-[3] bg-verdigris-400 hover:bg-verdigris-300"
+            >
+              <IoIosRocket /> Publicar prova
+            </Button>
+        }
         <Button
           onClick={() => handleSave(false)}
           className="flex-[1] bg-gray-400 hover:bg-gray-500"

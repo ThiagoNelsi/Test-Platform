@@ -1,11 +1,12 @@
 import TestList from "@/app/components/test-list";
 import { Button } from "@/app/components/ui/button";
-import { getOwnedTests } from "@/lib/test-service";
 import Link from "next/link";
 import { MdAdd } from "react-icons/md";
+import { getOwnedTests } from "@/lib/test-service";
 
 export default async function Tests() {
   const tests = await getOwnedTests();
+
   if (!tests) return <div>Erro ao carregar provas</div>;
 
   const publishedTests = tests.filter((test) => test.status === "published");
@@ -35,3 +36,4 @@ export default async function Tests() {
     </div>
   );
 }
+

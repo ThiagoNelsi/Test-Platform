@@ -35,7 +35,8 @@ function PublishTest({ test }: { test: Test }) {
     if (!test.classroom) return;
     const res = await publishTest(test.id, [test.classroom.id]);
     if (res) {
-      return successToast("Prova publicada com sucesso");
+      successToast("Prova publicada com sucesso");
+      return location.reload();
     }
 
     return errorToast("Não foi possível publicar a prova");
