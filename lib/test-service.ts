@@ -5,7 +5,7 @@ import { getUserId } from "./auth";
 import { TestData } from "./types";
 import { revalidatePath } from "next/cache";
 import { InputJsonValue } from "@/prisma/generated/postgres/runtime/library";
-import { Test } from "@/prisma/generated/postgres";
+import { Section } from "./section";
 
 export type Todo = {
   id: number;
@@ -24,6 +24,15 @@ export type DataParam = Omit<Partial<TestData>, "sections"> & {
       version: number;
     }[]; // [questionId, version]
     randomQuestionCount?: number;
+  }[];
+};
+
+export type TestSection = {
+  shuffle?: boolean;
+  count?: number;
+  questions: {
+    questionId: number;
+    version: number;
   }[];
 };
 
@@ -218,7 +227,7 @@ export const getOwnedTests = async () => {
       },
       _count: {
         select: {
-          instances: {
+          submissions: {
             where: {
               finishTime: {
                 not: null,
@@ -380,7 +389,7 @@ export const getUnfinishedTests = async () => {
       deletedAt: null,
       OR: [
         {
-          instances: {
+          submissions: {
             some: {
               id: userId,
               finishTime: null, // Test is not finished
@@ -388,7 +397,7 @@ export const getUnfinishedTests = async () => {
           },
         },
         {
-          instances: {
+          submissions: {
             none: {
               id: userId,
             }, // Test is not started
@@ -400,7 +409,7 @@ export const getUnfinishedTests = async () => {
       id: true,
       name: true,
       dueDate: true,
-      instances: {
+      submissions: {
         where: { id: userId },
         select: {
           startTime: true,
@@ -414,8 +423,8 @@ export const getUnfinishedTests = async () => {
     id: test.id,
     name: test.name,
     dueDate: test.dueDate ?? undefined,
-    startTime: test.instances[0]?.startTime ?? undefined,
-    finishTime: test.instances[0]?.finishTime ?? undefined,
+    startTime: test.submissions[0]?.startTime ?? undefined,
+    finishTime: test.submissions[0]?.finishTime ?? undefined,
   }));
 
   return todos;
@@ -435,6 +444,113 @@ export const getTest = async (testId: number) => {
 
   return test;
 };
+
+export const getStudentTest = async (testId: number) => {
+  const userId = await getUserId();
+  if (!userId) return null;
+
+  const test = await prisma.test.findFirst({
+    where: {
+      id: testId,
+      deletedAt: null,
+    },
+    include: {
+      classroom: true,
+    }
+  });
+
+  if (!test) return null;
+
+  if (!test.sections) return null;
+
+  const parsedSections = (test.sections as Array<any>).map((section: any) => Section.fromJSON(section));
+
+  const questionList = parsedSections.flatMap(section => section.questions);
+
+  const questions = await prisma.question.findMany({
+    where: {
+      OR: questionList.map(({ questionId, version }) => ({
+        OR: [
+          {
+            id: questionId
+          },
+          {
+            originalQuestionId: questionId,
+          }
+        ],
+        version,
+      }))
+    },
+    select: {
+      id: true,
+      originalQuestionId: true,
+      content: true,
+      type: true,
+      version: true,
+    },
+  });
+
+  const sections = parsedSections.map((section) => {
+    // random questions
+    if (section.count != undefined) {
+      const selectedQuestions = [];
+
+      for (let i = 0; i < section.count; i++) {
+        const randomIndex = Math.floor(Math.random() * section.questions.length);
+        const question = section.questions[randomIndex];
+        const questionData = questions.find(q => {
+          if (q.originalQuestionId) {
+            return q.originalQuestionId === question.questionId;
+          }
+          return q.id === question.questionId;
+        });
+        selectedQuestions.push(questionData);
+      }
+
+      return {
+        count: section.count,
+        questions: selectedQuestions,
+      };
+    }
+
+    // shuffle
+    if (section.shuffle != undefined) {
+      const shuffle = (array: typeof section.questions) => { 
+        for (let i = array.length - 1; i > 0; i--) { 
+          const j = Math.floor(Math.random() * (i + 1)); 
+          [array[i], array[j]] = [array[j], array[i]]; 
+        }
+        return array;
+      };
+
+      const shuffledQuestions = shuffle(section.questions);
+
+      return {
+        shuffle: section.shuffle,
+        questions: shuffledQuestions.map((q) => {
+          return questions.find(question => {
+            if (question.originalQuestionId) {
+              return question.originalQuestionId === q.questionId;
+            }
+            return question.id === q.questionId;
+          })
+        }),
+      };
+    }
+  });
+
+  return {
+    id: test.id,
+    name: test.name,
+    description: test.description,
+    value: test.value,
+    dueDate: test.dueDate,
+    timer: test.timer,
+    createdAt: test.createdAt,
+    classroom: test.classroom?.name,
+    sections,
+  };
+}
 
 export const deleteTest = async (
   testId: number,

@@ -1,7 +1,6 @@
 import { toast } from "sonner";
 import {
   green,
-  blue,
   red,
 } from "tailwindcss/colors";
 
@@ -13,14 +12,19 @@ type Position =
   | "top-center"
   | "bottom-center";
 
+type ToastOptions = {
+  position?: Position;
+  duration?: number;
+}
+
 export const infoToast = (
   message: string,
-  position: Position = "top-center",
+  options: ToastOptions = {},
 ) => {
   toast.info(message, {
-    position,
+    position: options.position || "top-center",
+    duration: options.duration || 1500,
     style: {
-      background: blue[500],
       color: "#fff",
       border: 0,
     },

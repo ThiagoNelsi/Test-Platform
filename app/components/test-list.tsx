@@ -197,8 +197,7 @@ export default function TestList({
                         <FaCheck className="text-green-500" /> Entregues
                       </p>
                       <p className="mb-2">
-                        {test._count.instances}/
-                        {test.classroom?._count.students}
+                        {test._count.submissions} / {test.classroom?._count.students}
                       </p>
                       <Button
                         variant="ghost"
@@ -209,7 +208,9 @@ export default function TestList({
                           );
                           infoToast(
                             "Link copiado para a área de transferência",
-                            "bottom-right",
+                            {
+                              position: "top-right",
+                            },
                           );
                         }}
                       >
