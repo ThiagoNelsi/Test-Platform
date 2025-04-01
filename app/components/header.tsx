@@ -22,6 +22,7 @@ const headerTitles = {
   '/create-test': 'Nova prova',
   '/questions': 'Questões',
   '/tests': 'Provas',
+  '/questions/explorar': 'Explorar questões',
 } as const;
 
 export default function Header() {

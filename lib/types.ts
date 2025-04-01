@@ -18,6 +18,7 @@ export type Tag = {
 export type Question = {
   type: QuestionType;
   data: any;
+  subjects: string[];
   tags: Tag[];
   id: number;
   createdAt: Date;

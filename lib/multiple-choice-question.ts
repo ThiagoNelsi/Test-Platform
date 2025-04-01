@@ -1,14 +1,10 @@
 import { IQuestion, Question, QuestionType, Tag } from "./types";
 import { extractTextFromHTML } from "./utils";
 
-export type MultipleChoiceQuestionOption = {
-  value: string;
-  isCorrect: boolean;
-};
-
 export type MultipleChoiceQuestionData = {
   statement: string;
-  options: MultipleChoiceQuestionOption[];
+  options: string[];
+  answer: number;
 };
 
 export class MultipleChoiceQuestion implements IQuestion {
@@ -16,6 +12,7 @@ export class MultipleChoiceQuestion implements IQuestion {
   public type: QuestionType;
   public level: number | null;
   public data: MultipleChoiceQuestionData;
+  public subjects: string[]
   public tags: Tag[];
   public authorId: number;
   public createdAt: Date;
@@ -26,6 +23,7 @@ export class MultipleChoiceQuestion implements IQuestion {
     this.type = question.type;
     this.level = question.level;
     this.data = question.data;
+    this.subjects = question.subjects;
     this.tags = question.tags;
     this.authorId = question.authorId;
     this.createdAt = question.createdAt;
@@ -35,7 +33,7 @@ export class MultipleChoiceQuestion implements IQuestion {
   getText(): string {
     const optionsText = this.data.options
       .map((option) => {
-        return extractTextFromHTML(option.value);
+        return extractTextFromHTML(option);
       })
       .join("\n");
     return extractTextFromHTML(this.data.statement) + "\n" + optionsText;

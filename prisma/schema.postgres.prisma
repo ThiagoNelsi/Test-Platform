@@ -70,6 +70,7 @@ model Question {
   author               User        @relation(fields: [authorId], references: [id])
   authorId             Int
   level                Int?
+  subjects             String[]
   tags                 Tag[]
   content              Json        @default("{}")
   version              Int         @default(1)

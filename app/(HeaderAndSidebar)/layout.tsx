@@ -15,8 +15,8 @@ export default async function Layout({ children }: Props) {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div id="main-content" className="flex flex-col flex-1 overflow-hidden transition-all duration-300 ease-in-out">
-        <main className="flex-1 overflow-y-auto">
+      <div id="main-content" className="flex flex-col flex-1 transition-all duration-300 ease-in-out">
+        <main className="flex-1">
           <Header />
           <div className="container mx-auto px-10 py-4">
             {children}

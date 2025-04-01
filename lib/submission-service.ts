@@ -101,17 +101,27 @@ export const createSubmission = async (testId: number) => {
     where: {
       id: testId,
       deletedAt: null,
+      status: "published"
     },
     include: {
       classroom: {
         select: {
           name: true,
+          students: {
+            select: {
+              id: true,
+            }
+          },
         }
       },
     }
   });
 
   if (!test) return null;
+  if (test.classroom?.students.find(student => student.id === userId) === undefined) {
+    console.log("\n\nUser not allowed to create submission");
+    return null;
+  }
 
   if (submissionExists) {
     console.log("\n\nSubmission already exists");
