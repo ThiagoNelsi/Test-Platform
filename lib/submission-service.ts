@@ -1,10 +1,10 @@
 "use server"
 
-import { Test } from "@/prisma/generated/postgres";
+import { Test } from "@prisma/client";
 import { getUserId } from "./auth";
-import { prisma } from "./prisma";
+import prisma from "./prisma";
 import { Section } from "./section";
-import { InputJsonValue } from "@/prisma/generated/postgres/runtime/library";
+import { InputJsonValue } from "@prisma/client/runtime/library";
 
 const generateSections = async (test: Test) => {
   const parsedSections = (test.sections as Array<any>).map((section: any) => Section.fromJSON(section));

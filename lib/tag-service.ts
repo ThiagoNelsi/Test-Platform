@@ -1,7 +1,7 @@
 "use server";
 
 import { Tag } from "@/lib/types";
-import { prisma } from "./prisma";
+import prisma from "./prisma";
 import { getUserId } from "./auth";
 
 export const createTag = async (tag: Pick<Tag, "name" | "color">) => {

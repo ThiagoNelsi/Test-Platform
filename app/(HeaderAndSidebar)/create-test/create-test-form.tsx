@@ -18,7 +18,7 @@ import {
 } from "@/lib/test-service";
 import { getQuestion } from "@/lib/question-service";
 import { QuestionFactory } from "@/lib/question";
-import { Classroom } from "@/prisma/generated/postgres";
+import { Classroom } from "@prisma/client";
 import { getClassrooms } from "@/lib/classroomService";
 import SearchClassrooms from "@/app/components/search-classrooms";
 import { useDebounce } from "@/app/hooks/useDebounce";

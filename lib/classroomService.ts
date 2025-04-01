@@ -1,7 +1,7 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import { Classroom, User } from "../prisma/generated/postgres";
+import prisma from "@/lib/prisma";
+import { Classroom, User } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { getUserId } from "./auth";
 

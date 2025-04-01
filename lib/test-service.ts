@@ -1,10 +1,10 @@
 "use server";
 
-import { prisma } from "./prisma";
+import prisma from "./prisma";
 import { getUserId } from "./auth";
 import { TestData } from "./types";
 import { revalidatePath } from "next/cache";
-import { InputJsonValue } from "@/prisma/generated/postgres/runtime/library";
+import { InputJsonValue } from "@prisma/client";
 import { Section } from "./section";
 
 export type Todo = {

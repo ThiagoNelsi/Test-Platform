@@ -2,12 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { getUserId } from "./auth";
-import { prisma } from "./prisma";
+import prisma from "./prisma";
 import { Question, QuestionType } from "@/lib/types";
 import {
   Test,
   Question as PostgresQuestion,
-} from "@/prisma/generated/postgres";
+} from "@prisma/client";
 import { isEqual } from "lodash";
 
 const levelOptions = ["easy", "medium", "hard"];
