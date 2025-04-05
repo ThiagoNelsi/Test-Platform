@@ -2,34 +2,39 @@ import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
 import NewQuestionModal from "../../components/new-question-modal";
 import { useQuestionEditor } from "@/app/context/question-editor-context";
 import { useState } from "react";
+import { MultipleChoiceQuestion } from "@/lib/multiple-choice-question";
+import { PossibleQuestionTypes } from "@/lib/question";
 
 type QuestionDialogTriggerProps = {
   children: React.ReactNode;
   type: "create" | "edit";
-  initialData?: any;
+  initialData?: PossibleQuestionTypes;
 };
 
 export default function QuestionDialogTrigger({
   children,
   type,
-  initialData: initial,
+  initialData,
 }: QuestionDialogTriggerProps) {
   const [open, setOpen] = useState(false);
   const { setData, setType, setLevel, setId, setTags } = useQuestionEditor();
 
-  const setInitialData = (initialData: any) => {
-    setId(initialData.id);
-    setData(initialData.data);
-    setType(initialData.type);
-    setLevel(initialData.level);
-    setTags(initialData.tags);
+  const setInitialData = (question: PossibleQuestionTypes) => {
+    console.log("AAAAAAAAAAAAAAAAAa")
+    console.log(question.data);
+    setId(question.id);
+    setData(question.data);
+    setType(question.type);
+    setLevel(question.level);
+    setTags(question.tags);
   };
 
   const clearInitialData = () => {
-    setData(undefined);
-    setType("multiple_choice");
-    setLevel(-1);
-    setTags([]);
+    const question = MultipleChoiceQuestion.empty();
+    setData(question.data);
+    setType(question.type);
+    setLevel(question.level);
+    setTags(question.tags);
   };
 
   return (
@@ -37,7 +42,7 @@ export default function QuestionDialogTrigger({
       onOpenChange={(open) => {
         if (open) {
           if (type === "create") clearInitialData();
-          else if (type === "edit" && initial) setInitialData(initial);
+          else if (type === "edit" && initialData) setInitialData(initialData);
         }
         setOpen(open);
       }}

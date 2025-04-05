@@ -1,19 +1,23 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useState } from "react";
-import { QuestionType, Tag } from "@/lib/types";
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from "react";
+import { PossibleQuestionTypes } from "@/lib/question";
+import { MultipleChoiceQuestion } from "@/lib/multiple-choice-question";
 
 type EditorContextType = {
-  id: number | undefined;
-  setId: (id: number) => void;
-  data: any;
-  setData: (data: any) => void;
-  level: number;
-  setLevel: (level: number) => void;
-  type: QuestionType;
-  setType: (type: QuestionType) => void;
-  tags: Tag[];
-  setTags: (tags: Tag[]) => void;
+  question: PossibleQuestionTypes;
+  setQuestion: Dispatch<SetStateAction<PossibleQuestionTypes>>;
+
+  setId: (id: PossibleQuestionTypes["id"]) => void;
+  setData: (data: PossibleQuestionTypes["data"]) => void;
+  setLevel: (level: PossibleQuestionTypes["level"]) => void;
+  setType: (type: PossibleQuestionTypes["type"]) => void;
+  setSubjects: (subjects: PossibleQuestionTypes["subjects"]) => void;
+  setTags: (tags: PossibleQuestionTypes["tags"]) => void;
+
+  setStatement: (statement: PossibleQuestionTypes["data"]["statement"]) => void;
+  setOptions: (options: PossibleQuestionTypes["data"]["options"]) => void;
+  setAnswer: (correctAnswer: PossibleQuestionTypes["data"]["answer"]) => void;
 };
 
 const QuestionEditorContext = createContext<EditorContextType | undefined>(
@@ -25,25 +29,90 @@ export const QuestionEditorProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const [id, setId] = useState<number | undefined>(undefined);
-  const [data, setData] = useState<any>(undefined);
-  const [level, setLevel] = useState<number>(-1);
-  const [type, setType] = useState<QuestionType>("multiple_choice");
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [question, setQuestion] = useState<PossibleQuestionTypes>(MultipleChoiceQuestion.empty());
+
+  const setId = (id: PossibleQuestionTypes["id"]) => {
+    setQuestion((prev) => ({ ...prev, id } as PossibleQuestionTypes));
+  }
+
+  const setData = (data: PossibleQuestionTypes["data"]) => {
+    setQuestion((prev) => ({ ...prev, data } as PossibleQuestionTypes));
+  };
+
+  const setLevel = (level: PossibleQuestionTypes["level"]) => {
+    setQuestion((prev) => ({ ...prev, level } as PossibleQuestionTypes));
+  };
+
+  const setType = (type: PossibleQuestionTypes["type"]) => {
+    setQuestion((prev) => ({ ...prev, type } as PossibleQuestionTypes));
+  };
+
+  const setSubjects = (subjects: PossibleQuestionTypes["subjects"]) => {
+    setQuestion((prev) => ({ ...prev, subjects } as PossibleQuestionTypes));
+  };
+
+  const setTags = (tags: PossibleQuestionTypes["tags"]) => {
+    setQuestion((prev) => ({ ...prev, tags } as PossibleQuestionTypes));
+  };
+
+  const setStatement = (statement: PossibleQuestionTypes["data"]["statement"]) => {
+    setQuestion((prev) => ({
+      ...prev,
+      data: {
+        ...prev.data,
+        statement,
+      },
+    } as PossibleQuestionTypes));
+  };
+
+  const setOptions = (options: PossibleQuestionTypes["data"]["options"]) => {
+    setQuestion((prev) => ({
+      ...prev,
+      data: {
+        ...prev.data,
+        options,
+      },
+    } as PossibleQuestionTypes));
+  }
+
+  const setAnswer = (answer: PossibleQuestionTypes["data"]["answer"]) => {
+    if (answer > question.data.options.length) {
+      throw new Error("Answer is greater than options length");
+    }
+
+    const options = question.data.options.map((option, index) => {
+      if (index === answer) {
+        return { ...option, isCorrect: true };
+      }
+      return { ...option, isCorrect: false };
+    });
+
+    setQuestion((prev) => ({
+      ...prev,
+      data: {
+        ...prev.data,
+        options,
+        answer,
+      },
+    } as PossibleQuestionTypes));
+  }
 
   return (
     <QuestionEditorContext.Provider
       value={{
-        id,
+        question,
+        setQuestion,
+
         setId,
-        data,
         setData,
-        level,
         setLevel,
-        type,
         setType,
-        tags,
+        setSubjects,
         setTags,
+
+        setStatement,
+        setOptions,
+        setAnswer,
       }}
     >
       {children}

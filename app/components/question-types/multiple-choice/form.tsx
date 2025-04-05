@@ -8,45 +8,29 @@ import React, {
 import { FormSection } from "../../new-question-modal";
 import { useQuestionEditor } from "../../../context/question-editor-context";
 import { MinimalTiptapEditor } from "../../minimal-tiptap";
-import { Content } from "@tiptap/react";
-import Options, { Option } from "./options";
-import { MultipleChoiceQuestionData } from "@/lib/multiple-choice-question";
+import Options from "./options";
+import { MultipleChoiceQuestion, MultipleChoiceQuestionData, Option } from "@/lib/multiple-choice-question";
 
 type MultipleChoiceFormProps = {};
 
 export default function MultipleChoiceForm({}: MultipleChoiceFormProps) {
-  const { data, setData } = useQuestionEditor();
+  const { question, setStatement, setOptions, setData } = useQuestionEditor();
   const [isStatementFocused, setIsStatementFocused] = useState(false);
 
   const editorRef = useRef<HTMLDivElement>(null);
-
-  const setStatement: Dispatch<SetStateAction<Content>> = (newStatement) => {
-    setData((prevData: MultipleChoiceQuestionData) => ({
-      ...prevData,
-      statement: newStatement,
-    }));
-  };
-
-  const setOptions: Dispatch<SetStateAction<Option[]>> = (newOptions) => {
-    setData((prevData: MultipleChoiceQuestionData) => ({
-      ...prevData,
-      options: newOptions,
-    }));
-  };
+  console.log("FORM", question);
 
   useEffect(() => {
-    if (!data || data.statement === undefined || data.options === undefined) {
-      setData({
-        statement: "",
-        options: [
-          { value: "", isCorrect: false, id: Math.random().toString() },
-          { value: "", isCorrect: false, id: Math.random().toString() },
-        ],
-      });
+    if (!question.data || question.data.statement === undefined || question.data.options === undefined) {
+      setData(MultipleChoiceQuestion.empty().data);
+      setOptions([
+        new Option("", false),
+        new Option("", false),
+      ])
     }
   }, []);
 
-  if (data?.statement === undefined || data?.options === undefined) {
+  if (question.data?.statement === undefined || question.data?.options === undefined) {
     return null;
   }
 
@@ -59,13 +43,13 @@ export default function MultipleChoiceForm({}: MultipleChoiceFormProps) {
           onFocus={() => setIsStatementFocused(true)}
           ref={editorRef}
           showToolbar={isStatementFocused}
-          content={data.statement}
-          onChange={(content) => setStatement(content)}
+          content={question.data.statement}
+          onChange={(content) => setStatement(content?.toString() ?? "")}
           placeholder="Digite o enunciado da questão..."
           className="min-h-72"
         />
       </FormSection>
-      <Options options={data.options} setOptions={setOptions} />
+      <Options options={question.data.options} setOptions={setOptions as Dispatch<SetStateAction<Option[]>>} />
     </>
   );
 }

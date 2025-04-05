@@ -3,9 +3,7 @@ import { FormSection } from "../../new-question-modal";
 import MovableItem from "../../movable-item";
 import { MinimalTiptapEditor } from "../../minimal-tiptap";
 import { Button } from "../../ui/button";
-import { MultipleChoiceQuestionOption } from "@/lib/multiple-choice-question";
-
-export type Option = MultipleChoiceQuestionOption & { id: string };
+import { Option } from "@/lib/multiple-choice-question";
 
 type OptionProps = {
   options: Option[];
@@ -14,14 +12,6 @@ type OptionProps = {
 
 export default function Options({ options, setOptions }: OptionProps) {
   const [focusedOption, setFocusedOption] = useState<number | undefined>();
-
-  useEffect(() => {
-    options.forEach((option) => {
-      if (!option.id) option.id = Math.random().toString();
-    });
-  }, [options]);
-
-  if (options.some((option) => !option.id)) return null;
 
   return (
     <FormSection>
@@ -67,7 +57,7 @@ export default function Options({ options, setOptions }: OptionProps) {
             e.preventDefault();
             setOptions([
               ...options,
-              { value: "", isCorrect: false, id: Math.random().toString() },
+              new Option("", false),
             ]);
           }}
         >

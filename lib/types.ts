@@ -21,8 +21,8 @@ export type Question = {
   subjects: string[];
   tags: Tag[];
   id: number;
-  createdAt: Date;
-  authorId: number;
+  createdAt: Date | null;
+  authorId: number | null;
   level: number | null;
   version: number;
 };

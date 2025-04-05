@@ -10,14 +10,14 @@ import { deleteQuestion } from "@/lib/question-service";
 import { Filter, useTable } from "@/app/context/table-context";
 import QuestionDialogTrigger from "./question-dialog-trigger";
 import { tagColors } from "@/lib/tag-colors";
-import { QuestionFactory } from "@/lib/question";
+import { PossibleQuestionTypes, QuestionFactory } from "@/lib/question";
 
 const questionTypeTranslations: { [key in QuestionType]: string } = {
   multiple_choice: "Múltipla escolha",
   true_or_false: "Verdadeiro ou falso",
 };
 
-export const columns: ColumnDef<Question>[] = [
+export const columns: ColumnDef<PossibleQuestionTypes>[] = [
   {
     id: "select",
     header: ({ table }) => (

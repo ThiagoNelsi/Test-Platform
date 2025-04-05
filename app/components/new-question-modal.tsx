@@ -48,12 +48,12 @@ export default function NewQuestionModal({
   type,
   closeDialog,
 }: NewQuestionModalProps) {
-  const { data, id, tags } = useQuestionEditor();
+  const { question } = useQuestionEditor();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const { errors, ...validatedData } = valitadeMultipleChoice(data);
+    const { errors, ...validatedData } = valitadeMultipleChoice(question.data);
 
     if (errors) {
       return errorToast("- " + errors.join("\n- "));
@@ -62,7 +62,7 @@ export default function NewQuestionModal({
     const formData = new FormData();
     formData.append("type", e.currentTarget.type.value);
     formData.append("level", e.currentTarget.level.value);
-    formData.append("tags", JSON.stringify(tags.map((tag) => tag.id)));
+    formData.append("tags", JSON.stringify(question.tags.map((tag) => tag.id)));
     formData.append("data", JSON.stringify(validatedData));
 
     let res = null;
@@ -72,11 +72,11 @@ export default function NewQuestionModal({
       res = await createQuestion(formData);
     } else {
       messageWord = "editada";
-      if (!id) return errorToast("Erro ao editar questão");
-      res = await updateQuestion(id, formData);
+      if (!question.id) return errorToast("Erro ao editar questão");
+      res = await updateQuestion(question.id, formData);
       new BroadcastChannel("question-change").postMessage({
         type: "update",
-        questionId: id,
+        questionId: question.id,
       });
     }
 

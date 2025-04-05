@@ -1,9 +1,18 @@
 import { MultipleChoiceQuestion } from "./multiple-choice-question";
-import { Question } from "./types";
+import { Question, QuestionType } from "./types";
 
-type PossibleQuestionTypes = MultipleChoiceQuestion;
+export type PossibleQuestionTypes = MultipleChoiceQuestion;
 
 export class QuestionFactory {
+  static empty(type: QuestionType = "multiple_choice"): PossibleQuestionTypes {
+    switch (type) {
+      case "multiple_choice":
+        return MultipleChoiceQuestion.empty();
+      default:
+        throw new Error("Invalid question type");
+    }
+  }
+
   static from(questions: Question[]): PossibleQuestionTypes[] {
     return questions.map((question) => {
       switch (question.type) {

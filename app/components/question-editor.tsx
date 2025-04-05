@@ -9,7 +9,7 @@ import {
 } from "@/app/components/ui/select";
 import MultipleChoiceForm from "./question-types/multiple-choice/form";
 import { Button } from "@/app/components/ui/button";
-import { Question, QuestionType, Tag } from "@/lib/types";
+import { QuestionType, Tag } from "@/lib/types";
 import { FormSection } from "./new-question-modal";
 import { useQuestionEditor } from "../context/question-editor-context";
 import {
@@ -46,11 +46,8 @@ export default function QuestionEditor({
   submitButtonText,
 }: QuestionEditorProps) {
   const {
-    data,
-    type,
+    question,
     setType,
-    level,
-    tags: selectedTags,
     setTags: setSelectedTags,
   } = useQuestionEditor();
   const searchTagRef = useRef<HTMLInputElement>(null);
@@ -68,14 +65,16 @@ export default function QuestionEditor({
   };
 
   const handleAddTag = (tag: Tag) => {
-    if (selectedTags.find((t) => t.id === tag.id)) return;
-    setSelectedTags([...selectedTags, tag]);
+    if (question.tags.find((t) => t.id === tag.id)) return;
+    setSelectedTags([...question.tags, tag]);
     searchTagRef.current?.focus();
   };
 
   const handleRemoveTag = (tag: Tag) => {
-    setSelectedTags(selectedTags.filter((t) => t.id !== tag.id));
+    setSelectedTags(question.tags.filter((t) => t.id !== tag.id));
   };
+
+  console.log("Editor", question);
 
   return (
     <form className="flex flex-col gap-2" onSubmit={submitAction}>
@@ -96,7 +95,7 @@ export default function QuestionEditor({
                 <Select
                   name="type"
                   required
-                  defaultValue={type}
+                  defaultValue={question.type}
                   onValueChange={(value: string) =>
                     setType(value as QuestionType)
                   }
@@ -116,7 +115,7 @@ export default function QuestionEditor({
                 <p className="text-sm mb-2">Dificuldade</p>
                 <Select
                   name="level"
-                  defaultValue={level >= 0 ? levels[level] : undefined}
+                  defaultValue={question.level && question.level >= 0 ? levels[question.level] : undefined}
                 >
                   <SelectTrigger className="w-fit">
                     <SelectValue placeholder="Selecione uma dificuldade" />
@@ -135,9 +134,9 @@ export default function QuestionEditor({
               <p className="text-sm mb-2">Tags</p>
               <CreateTagPopover onCreateTag={handleAddTag} />
             </div>
-            {selectedTags?.length > 0 && (
+            {question.tags?.length > 0 && (
               <div className="flex items-center gap-2 bg-gray-100 rounded-full p-2">
-                {selectedTags.map((tag) => (
+                {question.tags.map((tag) => (
                   <RemovableTag
                     key={tag.id}
                     tag={tag}
@@ -164,7 +163,7 @@ export default function QuestionEditor({
                       {tags &&
                         tags.map(
                           (item) =>
-                            !selectedTags.some((tag) => tag.id === item.id) && (
+                            !question.tags.some((tag) => tag.id === item.id) && (
                               <CommandItem
                                 key={item.id}
                                 onSelect={() => handleAddTag(item)}
@@ -191,10 +190,10 @@ export default function QuestionEditor({
               </Popover>
             </Command>
           </FormSection>
-          {type === "multiple_choice" && <MultipleChoiceForm />}
+          {question.type === "multiple_choice" && <MultipleChoiceForm />}
         </TabsContent>
         <TabsContent value="result">
-          <QuestionRenderer question={{ type, data } as Question} />
+          <QuestionRenderer question={question} />
         </TabsContent>
       </Tabs>
       <Button

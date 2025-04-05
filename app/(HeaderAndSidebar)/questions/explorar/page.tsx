@@ -394,9 +394,9 @@ export default function ExploreQuestionsPage() {
                               </summary>
                               <div className="mt-4 space-y-2">
                                 {question.data.options.map((option, index) => (
-                                  <div key={option} className="flex items-start gap-2">
+                                  <div key={option.id} className="flex items-start gap-2">
                                     <div className="font-medium min-w-[20px]">{alternatives[index]})</div>
-                                    <div>{option}</div>
+                                    <div>{option.value}</div>
                                   </div>
                                 ))}
                               </div>
@@ -499,9 +499,9 @@ export default function ExploreQuestionsPage() {
                 <p className="font-medium mb-6">{viewQuestion.data.statement}</p>
 
                 <div className="space-y-3">
-                  {viewQuestion.data.options.map((option: any, index: number) => (
+                  {viewQuestion.data.options.map((option, index) => (
                     <div
-                      key={option}
+                      key={option.id}
                       className={`flex items-start gap-2 p-2 rounded-md ${
                         index === viewQuestion.data.answer
                           ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
@@ -515,7 +515,7 @@ export default function ExploreQuestionsPage() {
                       >
                         {alternatives[index].toUpperCase()})
                       </div>
-                      <div>{option}</div>
+                      <div>{option.value}</div>
                     </div>
                   ))}
                 </div>
