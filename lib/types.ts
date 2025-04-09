@@ -16,15 +16,17 @@ export type Tag = {
 };
 
 export type Question = {
+  id: number;
+  originalQuestionId: number | null;
   type: QuestionType;
   data: any;
   subjects: string[];
   tags: Tag[];
-  id: number;
   createdAt: Date | null;
   authorId: number | null;
   level: number | null;
   version: number;
+  source?: string | null;
 };
 
 export interface IQuestion extends Question {

@@ -204,7 +204,7 @@ export default function TestList({
                         className="mt-auto text-xs"
                         onClick={() => {
                           navigator.clipboard.writeText(
-                            `${window.location.origin}/tests/${test.id}`,
+                            `${window.location.origin}/prova/${test.id}`,
                           );
                           infoToast(
                             "Link copiado para a área de transferência",

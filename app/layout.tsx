@@ -36,7 +36,7 @@ export default async function RootLayout({
             /> */}
         {/* rest of your scripts go under */}
       </head>
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${inter.variable} antialiased overflow-y-hidden`}>
         <SessionProvider
           session={session}
           refetchOnWindowFocus={false}

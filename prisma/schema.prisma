@@ -76,6 +76,7 @@ model Question {
   originalQuestion   Question?  @relation("QuestionSnapshots", fields: [originalQuestionId], references: [id])
   snapshots          Question[] @relation("QuestionSnapshots")
   tags               Tag[]      @relation("QuestionToTag")
+  source             String?
 
   @@unique([id, version])
   @@unique([originalQuestionId, version])

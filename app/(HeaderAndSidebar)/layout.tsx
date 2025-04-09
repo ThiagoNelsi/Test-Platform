@@ -13,7 +13,7 @@ export default async function Layout({ children }: Props) {
   // if (!todos) return null;
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-y-auto">
       <Sidebar />
       <div id="main-content" className="flex flex-col flex-1 transition-all duration-300 ease-in-out">
         <main className="flex-1">

@@ -1,6 +1,6 @@
 "use server"
 
-import { Test } from "@prisma/client";
+import { Submission, Test } from "@prisma/client";
 import { getUserId } from "./auth";
 import prisma from "./prisma";
 import { Section } from "./section";
@@ -84,9 +84,34 @@ const generateSections = async (test: Test) => {
   return sections;
 }
 
+const removeAnswer = (submission: any) => {
+  return {
+    ...submission,
+    sections: (submission.sections as Array<any>).map((section: any) => ({
+      ...section,
+      questions: section.questions.map((question: any) => ({
+        ...question,
+        content: {
+          ...question.content,
+          answer: undefined,
+        },
+      }))
+    })),
+  }
+}
+
 export const createSubmission = async (testId: number) => {
   const userId = await getUserId();
   if (!userId) return null;
+
+  const select = {
+    id: true,
+    answers: true,
+    finishTime: true,
+    score: true,
+    startTime: true,
+    sections: true,
+  }
 
   // check if submission already exists
   const submissionExists = await prisma.submission.findFirst({
@@ -94,6 +119,7 @@ export const createSubmission = async (testId: number) => {
       testId,
       userId,
     },
+    select,
   });
 
   // get test data
@@ -135,7 +161,7 @@ export const createSubmission = async (testId: number) => {
         timer: test.timer,
         classroom: test.classroom?.name,
       },
-      submission: submissionExists,
+      submission: removeAnswer(submissionExists),
     };
   }
 
@@ -151,6 +177,7 @@ export const createSubmission = async (testId: number) => {
       userId,
       sections: sections as InputJsonValue,
     },
+    select,
   });
 
   return {
@@ -163,7 +190,7 @@ export const createSubmission = async (testId: number) => {
       timer: test.timer,
       classroom: test.classroom?.name,
     },
-    submission,
+    submission: removeAnswer(submission),
   };
 }
 

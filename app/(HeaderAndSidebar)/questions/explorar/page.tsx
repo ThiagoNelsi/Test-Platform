@@ -33,7 +33,7 @@ export default function ExploreQuestionsPage() {
   // State for questions
   const [questions, setQuestions] = useState<ReturnType<typeof QuestionFactory.from>>([])
   const [subjects, setSubjects] = useState<string[]>([])
-  // const [sources, setSources] = useState<any[]>([])
+  const [sources, setSources] = useState<string[]>([])
   const [topics, setTopics] = useState<Tag[]>([])
   const [filteredQuestions, setFilteredQuestions] = useState<ReturnType<typeof QuestionFactory.from>>([])
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([])
@@ -56,14 +56,19 @@ export default function ExploreQuestionsPage() {
 
     const subjectsSet = new Set<string>();
     const topicsSet = new Set<Tag>();
+    const sourcesSet = new Set<string>();
 
     parsed.forEach(question => {
       question.subjects.forEach(s => subjectsSet.add(s))
       question.tags.forEach(t => topicsSet.add(t));
+      if (question.source) {
+        sourcesSet.add(question.source)
+      }
     })
 
     setSubjects(Array.from(subjectsSet))
     setTopics(Array.from(topicsSet));
+    setSources(Array.from(sourcesSet))
   }
 
   const applyFilters = () => {
@@ -81,9 +86,9 @@ export default function ExploreQuestionsPage() {
       results = results.filter((q) => q.tags.some((t) => selectedTopics.includes(String(t.id))))
     }
 
-    // if (selectedSources.length > 0) {
-    //   results = results.filter((q) => selectedSources.includes(q.source))
-    // }
+    if (selectedSources.length > 0) {
+      results = results.filter((q) => q.source && selectedSources.includes(q.source))
+    }
 
     setFilteredQuestions(results)
     setCurrentPage(1)
@@ -261,26 +266,26 @@ export default function ExploreQuestionsPage() {
                 </div>
 
                 {/* Sources Filter */}
-                {/* <div>
+                <div>
                   <h3 className="font-medium mb-3">Fontes</h3>
                   <div className="space-y-2 max-h-60 pr-2">
                     {sources.map((source) => (
-                      <div key={source.id} className="flex items-center space-x-2">
+                      <div key={source} className="flex items-center space-x-2">
                         <Checkbox
-                          id={`source-${source.id}`}
-                          checked={selectedSources.includes(source.id)}
-                          onCheckedChange={(checked) => handleSourceChange(source.id, checked === true)}
+                          id={`source-${source}`}
+                          checked={selectedSources.includes(source)}
+                          onCheckedChange={(checked) => handleSourceChange(source, checked === true)}
                         />
                         <label
-                          htmlFor={`source-${source.id}`}
+                          htmlFor={`source-${source}`}
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
-                          {source.name}
+                          {source}
                         </label>
                       </div>
                     ))}
                   </div>
-                </div>*/}
+                </div>
               </div>
             )}
 
@@ -319,21 +324,21 @@ export default function ExploreQuestionsPage() {
                   ) : null
                 })}
 
-                {/* {selectedSources.map((sourceId) => {
-                  const source = sources.find((s) => s.id === sourceId)
+                {selectedSources.map((sourceId) => {
+                  const source = sources.find((s) => s === sourceId)
                   return source ? (
-                    <Badge key={source.id} variant="secondary" className="gap-1">
-                      {source.name}
+                    <Badge key={source} variant="secondary" className="gap-1">
+                      {source}
                       <button
-                        onClick={() => handleSourceChange(source.id, false)}
+                        onClick={() => handleSourceChange(source, false)}
                         className="ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 p-0.5"
                       >
                         <X className="h-3 w-3" />
-                        <span className="sr-only">Remove {source.name}</span>
+                        <span className="sr-only">Remove {source}</span>
                       </button>
                     </Badge>
                   ) : null
-                })} */}
+                })}
 
                 <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={clearFilters}>
                   Limpar todos
@@ -379,11 +384,11 @@ export default function ExploreQuestionsPage() {
                               ) : null
                             })} */}
 
-                            {/* {sources.find((s) => s.id === question.source) && (
+                            {sources.find((s) => s === question.source) && (
                               <Badge className="bg-primary">
-                                {sources.find((s) => s.id === question.source)?.name} {question.year}
+                                {sources.find((s) => s === question.source)}
                               </Badge>
-                            )} */}
+                            )}
                           </div>
 
                           <div className="w-full">
@@ -467,7 +472,7 @@ export default function ExploreQuestionsPage() {
       {/* Question View Dialog */}
       {viewQuestion && (
         <Dialog open={!!viewQuestion} onOpenChange={() => setViewQuestion(null)}>
-          <DialogContent className="sm:max-w-3xl">
+          <DialogContent className="sm:max-w-3xl h-screen 2xl:h-[90%] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Visualizar Questão</DialogTitle>
               <DialogDescription>
@@ -487,11 +492,11 @@ export default function ExploreQuestionsPage() {
                   ) : null
                 })}
 
-                {/* {sources.find((s) => s.id === viewQuestion.source) && (
+                {sources.find((s) => s === viewQuestion.source) && (
                   <Badge className="bg-primary">
-                    {sources.find((s) => s.id === viewQuestion.source)?.name} {viewQuestion.year}
+                    {sources.find((s) => s === viewQuestion.source)}
                   </Badge>
-                )} */}
+                )}
               </div>
 
               {/* Question text */}

@@ -9,6 +9,7 @@ export type MultipleChoiceQuestionData = {
 
 export class MultipleChoiceQuestion implements IQuestion {
   public id: number;
+  public originalQuestionId: number | null;
   public type: QuestionType;
   public level: number | null;
   public data: MultipleChoiceQuestionData;
@@ -17,9 +18,14 @@ export class MultipleChoiceQuestion implements IQuestion {
   public authorId: number | null;
   public createdAt: Date | null;
   public version: number;
+  public source: string | null;
 
   constructor(question: Question) {
     this.id = question.id;
+    this.originalQuestionId = question.originalQuestionId;
+    if (this.originalQuestionId === null) {
+      this.originalQuestionId = question.id;
+    }
     this.type = question.type;
     this.level = question.level;
     this.data = {
@@ -32,6 +38,7 @@ export class MultipleChoiceQuestion implements IQuestion {
     this.authorId = question.authorId;
     this.createdAt = question.createdAt;
     this.version = question.version;
+    this.source = question.source || null;
   }
 
   getText(): string {
@@ -46,6 +53,7 @@ export class MultipleChoiceQuestion implements IQuestion {
   static empty(): MultipleChoiceQuestion {
     return new MultipleChoiceQuestion({
       id: 0,
+      originalQuestionId: null,
       type: "multiple_choice",
       level: null,
       data: {
@@ -58,6 +66,7 @@ export class MultipleChoiceQuestion implements IQuestion {
       authorId: null,
       createdAt: null,
       version: 1,
+      source: null,
     });
   }
 }

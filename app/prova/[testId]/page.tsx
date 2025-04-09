@@ -19,16 +19,15 @@ import { Badge } from "@/app/components/ui/badge"
 import { useParams } from "next/navigation"
 import { Skeleton } from "@/app/components/ui/skeleton"
 import { createSubmission, finishSubmission, saveSubmission } from "@/lib/submission-service"
-import { infoToast, successToast } from "@/lib/toasters"
+import { errorToast, infoToast, successToast } from "@/lib/toasters"
 import Header from "@/app/components/header"
-
-type ExamData = Awaited<ReturnType<typeof createSubmission>>
+import { Submission } from "@/lib/submission"
 
 export default function Test() {
 
   const { testId } = useParams<{ testId: string }>()
 
-  const [examData, setExamData] = useState<ExamData | null>(null)
+  const [examData, setExamData] = useState<Submission | null>(null)
 
   // State for timer
   const [showTimer, setShowTimer] = useState(false)
@@ -52,11 +51,11 @@ export default function Test() {
   const answeredQuestions = Object.values(answers).filter((answer) => answer !== "").length
 
   // Handle answer change
-  const handleAnswerChange = (questionId: number, optionId: string) => {
+  const handleAnswerChange = (questionId: number, answer: string) => {
     if (isSubmitting === "submitted") return
     setAnswers((prev) => ({
       ...prev,
-      [questionId]: optionId,
+      [questionId]: answer,
     }))
   }
 
@@ -76,16 +75,18 @@ export default function Test() {
   useEffect(() => {
     async function fetchExamData() {
       const res = await createSubmission(Number(testId));
-      console.log(res)
+      console.log('%c🤪 ~ file: /home/thiago/Test-Platform/app/prova/[testId]/page.tsx:77 [] -> res : ', 'color: #d673cf', res);
+
       if (!res) {
-        alert("Prova não encontrada")
-        return
+        return errorToast("Erro ao carregar a prova.")
       }
-      const now = (new Date()).getTime()
+
+      const now = new Date().getTime()
       const passedTime = now - (res.submission.startTime?.getTime() ?? now)
 
-      setExamData(res)
-      setTimeRemaining((res.test.timer ?? 0) * 60 - Math.floor(passedTime / 1000))
+      const timeRemaining = (res.test.timer ?? 0) * 60 - Math.floor(passedTime / 1000)
+      setExamData(Submission.fromJSON(res))
+      setTimeRemaining(timeRemaining > 0 ? timeRemaining : 0)
       setIsTimerRunning(true)
       setShowTimer(true)
 
@@ -137,29 +138,11 @@ export default function Test() {
 
   if (!examData) return <div>Carregando...</div>
 
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+    <div className="h-screen overflow-y-auto bg-gray-50 dark:bg-gray-900 flex flex-col">
       <Header />
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b p-4 md:p-6">
-        <div className="container max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold">{examData.test.name} - {examData.test.classroom}</h1>
-            </div>
-          </div>
-
-          {examData.test.description && (
-            <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded-md text-sm whitespace-pre-wrap">
-              {examData.test.description}
-            </div>
-          )}
-        </div>
-      </header>
-
       {/* Timer and Status */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b shadow-sm">
+      <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b shadow-sm mb-4">
         <div className="container max-w-5xl mx-auto p-2 flex justify-between items-center">
           {Boolean(examData.test.timer) && examData.test.timer !== null && examData.test.timer > 0 && (
             <div className="flex items-center">
@@ -174,8 +157,14 @@ export default function Test() {
                     </div>
                     {
                       showTimer || isTimeAlmostUp
-                      ? <Eye onClick={() => !isTimeAlmostUp && setShowTimer(false)} className="text-neutral-600 cursor-pointer ml-2 h-5 w-5 text-muted-foreground hover:text-primary transition-all" />
-                      : <EyeClosed onClick={() => setShowTimer(true)} className="text-neutral-600 cursor-pointer ml-2 h-5 w-5 text-muted-foreground hover:text-primary transition-all" />
+                      ? <Eye
+                          onClick={() => !isTimeAlmostUp && setShowTimer(false)}
+                          className="text-neutral-600 cursor-pointer ml-2 h-5 w-5 text-muted-foreground hover:text-primary transition-all"
+                        />
+                      : <EyeClosed
+                          onClick={() => setShowTimer(true)}
+                          className="text-neutral-600 cursor-pointer ml-2 h-5 w-5 text-muted-foreground hover:text-primary transition-all"
+                        />
                     }
                   </>
                 )
@@ -192,15 +181,30 @@ export default function Test() {
           </div>
         </div>
       </div>
+      {/* Header */}
+      <header className="container max-w-5xl mx-auto bg-white dark:bg-gray-800">
+        <Card className="p-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold">{examData.test.name}</h1>
+            </div>
+          </div>
+
+          {examData.test.description && (
+            <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded-xl text-sm whitespace-pre-wrap">
+              {examData.test.description}
+            </div>
+          )}
+        </Card>
+      </header>
 
       {/* Questions */}
-      {(examData.submission.sections as Array<any>).map((section, index) => (
+      {examData.submission.sections.map((section, index) => (
         <div key={index} className="container max-w-5xl mx-auto my-4">
           <h2 className="text-lg font-semibold">Seção {index + 1}</h2>
 
-          {/* TODO: fix types */}
-          {section && section.questions.map((question: any, qIndex: number) => (
-            <Card key={question?.id} className="mt-4">
+          {section.questions.map((question, qIndex) => (
+            <Card key={question.id} className="mt-4">
               <div className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-md font-semibold">Questão {qIndex + 1}</h3>
@@ -210,17 +214,21 @@ export default function Test() {
                 <p className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: question.content.statement }}></p>
 
                 <div className="mt-4">
-                  {question.content.options.map((option: any, index: number) => (
-                    <div className="flex items-center gap-2 my-2" key={index}>
+                  {question.content.options.map((option, index) => (
+                    <div className="flex items-center gap-2 my-2" key={question.id+String(index)}>
                       <input
                         type="radio"
-                        name={String(question?.id)}
-                        id={question?.id+String(index)}
-                        value={option.id}
-                        onChange={() => handleAnswerChange(question.id, option.id)}
-                        checked={answers[question.id] === option.id}
+                        name={String(question.id)}
+                        id={question.id+String(index)}
+                        value={option}
+                        onChange={() => handleAnswerChange(question.id, String(index))}
+                        checked={answers[question.id] === String(index)}
                       />
-                      <label htmlFor={question?.id+String(index)} className="cursor-pointer whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: option.value }} />
+                      <label
+                        htmlFor={question.id+String(index)}
+                        className="cursor-pointer whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{ __html: option }}
+                      />
                     </div>
                   ))}
                 </div>
@@ -237,7 +245,11 @@ export default function Test() {
             <span className="text-sm font-medium">
               Respostas: {answeredQuestions}/{totalQuestions}
             </span>
-            <Progress indicatorColor="bg-verdigris-600" value={(answeredQuestions / totalQuestions) * 100} className="w-40 md:w-60 h-2" />
+            <Progress
+              indicatorColor="bg-verdigris-600"
+              value={(answeredQuestions / totalQuestions) * 100}
+              className="w-40 md:w-60 h-2"
+            />
           </div>
 
           <div className="flex gap-3">
@@ -248,7 +260,12 @@ export default function Test() {
                   <span>Salvando...</span>
                 </Button>
               ) : (
-                <Button variant="outline" className="gap-2" onClick={handleSaveProgress} disabled={isSubmitting === "submitted"}>
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={handleSaveProgress}
+                  disabled={isSubmitting === "submitted"}
+                >
                   <Save className="h-4 w-4" />
                   <span>Salvar Progresso</span>
                 </Button>
