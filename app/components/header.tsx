@@ -23,6 +23,8 @@ const headerTitles = {
   '/questions': 'Questões',
   '/tests': 'Provas',
   '/questions/explorar': 'Explorar questões',
+  '/materiais': 'Materiais',
+  '/materiais/upload': 'Materiais',
 } as const;
 
 export default function Header() {

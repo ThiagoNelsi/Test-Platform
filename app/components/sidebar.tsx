@@ -12,6 +12,7 @@ const navItems = [
   { icon: Users, label: "Minhas Turmas", href: "/home" },
   { icon: Layers, label: "Banco de Questões", href: "/questions" },
   { icon: FileText, label: "Provas e Simulados", href: "/tests" },
+  { icon: BookOpen, label: "Meus Materiais", href: "/materiais" },
   { icon: Search, label: "Explorar questões", href: "/questions/explorar" },
   // { icon: PenTool, label: "Correções", href: "/correcoes" },
   // { icon: BarChart, label: "Relatórios", href: "/relatorios" },

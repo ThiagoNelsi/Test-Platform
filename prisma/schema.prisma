@@ -22,6 +22,7 @@ model User {
   tags         Tag[]
   tests        Test[]
   classrooms   Classroom[]  @relation("Student")
+  resources    Resource[]
 }
 
 model Classroom {
@@ -124,4 +125,25 @@ model Submission {
   sections   Json
   test       Test      @relation(fields: [testId], references: [id])
   user       User      @relation(fields: [userId], references: [id])
+}
+
+enum ResourceStatus {
+  UPLOADED
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+model Resource {
+  id          Int       @id @default(autoincrement())
+  filename    String
+  fileType    String
+  tags        String[]
+  objectKey   String
+  status      ResourceStatus @default(UPLOADED)
+  ownerId     Int
+  owner       User      @relation(fields: [ownerId], references: [id])
+  createdAt   DateTime  @default(now()) @db.Timestamptz(0)
+  processedAt DateTime? @db.Timestamptz(0)
+  deletedAt   DateTime? @db.Timestamptz(0)
 }
