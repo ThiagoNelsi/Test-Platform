@@ -297,7 +297,7 @@ export default function UploadMaterialsPage() {
                 onChange={handleFileInputChange}
                 multiple
                 className="hidden"
-                accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar"
+                accept="image/*, .pdf"
               />
               <Button onClick={() => fileInputRef.current?.click()} className="gap-2">
                 <Plus className="h-4 w-4" />

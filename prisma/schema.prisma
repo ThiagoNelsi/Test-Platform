@@ -140,6 +140,7 @@ model Resource {
   fileType    String
   tags        String[]
   objectKey   String
+  jobId       String?
   status      ResourceStatus @default(UPLOADED)
   ownerId     Int
   owner       User      @relation(fields: [ownerId], references: [id])

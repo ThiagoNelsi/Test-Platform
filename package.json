@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "sudo docker compose up -d && next dev --turbopack",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -12,6 +12,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.782.0",
     "@aws-sdk/client-sqs": "^3.787.0",
+    "@aws-sdk/client-textract": "^3.787.0",
     "@aws-sdk/s3-presigned-post": "^3.782.0",
     "@neondatabase/serverless": "^1.0.0",
     "@prisma/adapter-neon": "^6.5.0",

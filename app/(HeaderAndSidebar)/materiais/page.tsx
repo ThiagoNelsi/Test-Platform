@@ -6,7 +6,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getFileIcon } from "./utils";
 
-const statuses = ['UPLOADED', 'PROCESSING', 'PROCESSED', 'FAILED'];
+const statuses = {
+  UPLOADED: "Enviando",
+  PROCESSING: "Processando",
+  PROCESSED: "Pronto para usar",
+  FAILED: "Erro"
+} as const;
 
 export default function Page() {
   const [resources, setResources] = useState<any[]>([]);
@@ -48,13 +53,9 @@ export default function Page() {
             {getFileIcon({
               type: resource.fileType
             } as File)}
-            <div className="border p-4 rounded-md">
+            <div className="border p-4 rounded-md bg-white">
               <h2 className="text-lg font-semibold">{resource.filename}</h2>
-              <p className="flex items-center gap-4">{statuses.map(status => (
-                <span key={status} className={`badge px-2 py-1 rounded-md ${resource.status === status ? 'bg-green-300' : 'bg-gray-300'}`}>
-                  {status}
-                </span>
-              ))}</p>
+              {resource.status !== 'PROCESSED' && <p className="flex items-center gap-4">{statuses[resource.status]}</p>}
               <p>{resource.tags.join(", ")}</p>
             </div>
           </div>
