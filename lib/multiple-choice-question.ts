@@ -50,7 +50,7 @@ export class MultipleChoiceQuestion implements IQuestion {
     return extractTextFromHTML(this.data.statement) + "\n" + optionsText;
   }
 
-  static empty(): MultipleChoiceQuestion {
+  static empty(emptyOptions: boolean = false): MultipleChoiceQuestion {
     return new MultipleChoiceQuestion({
       id: 0,
       originalQuestionId: null,
@@ -58,7 +58,7 @@ export class MultipleChoiceQuestion implements IQuestion {
       level: null,
       data: {
         statement: "",
-        options: [],
+        options: emptyOptions ? [] : [new Option("", false), new Option("", false)],
         answer: -1,
       },
       subjects: [],

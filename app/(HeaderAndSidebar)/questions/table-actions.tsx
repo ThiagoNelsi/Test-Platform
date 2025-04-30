@@ -70,7 +70,7 @@ export default function TableActions() {
 
   return (
     <menu className="flex items-center gap-4 justify-between mb-4">
-      <QuestionDialogTrigger type="create" initialData={null}>
+      <QuestionDialogTrigger type="create">
         <Button className="bg-blue-500 text-white hover:bg-blue-600">
           <MdAdd /> Criar questão
         </Button>

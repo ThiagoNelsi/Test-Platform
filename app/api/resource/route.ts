@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { TextractClient, ListAdaptersCommand, StartDocumentAnalysisCommand, StartDocumentTextDetectionCommand } from "@aws-sdk/client-textract";
+import { NextRequest } from "next/server";
+import { ResourceStatus } from "@prisma/client";
 
 const credentials = {
   accessKeyId: process.env.AWS_ACCESS_KEY || "",
@@ -20,7 +22,7 @@ const textract = new TextractClient({
   credentials,
 })
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user || !session.user.id) {
@@ -74,18 +76,21 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user || !session.user.id) {
     return Response.json({ error: "Unauthorized" });
   }
 
+  const status = request?.nextUrl?.searchParams.get("status") as ResourceStatus | null;
+
   try {
     const dbRef = await prisma?.resource.findMany({
       where: {
         ownerId: session.user.id,
         deletedAt: null,
+        ...(status ? { status } : {}),
       },
       orderBy: {
         createdAt: "desc",
