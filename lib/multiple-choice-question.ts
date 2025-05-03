@@ -1,10 +1,11 @@
+import { v4 as uuidv4 } from "uuid";
 import { IQuestion, Question, QuestionType, Tag } from "./types";
 import { extractTextFromHTML } from "./utils";
 
 export type MultipleChoiceQuestionData = {
   statement: string;
   options: Option[];
-  answer: number;
+  answer: string;
 };
 
 export class MultipleChoiceQuestion implements IQuestion {
@@ -30,7 +31,7 @@ export class MultipleChoiceQuestion implements IQuestion {
     this.level = question.level;
     this.data = {
       statement: question.data.statement,
-      options: Option.fromArray(question.data.options, question.data.answer),
+      options: Option.fromArray(question.data.options),
       answer: question.data.answer,
     };
     this.subjects = question.subjects;
@@ -58,7 +59,7 @@ export class MultipleChoiceQuestion implements IQuestion {
       level: null,
       data: {
         statement: "",
-        options: emptyOptions ? [] : [new Option("", false), new Option("", false)],
+        options: emptyOptions ? [] : [new Option(""), new Option("")],
         answer: -1,
       },
       subjects: [],
@@ -74,17 +75,30 @@ export class MultipleChoiceQuestion implements IQuestion {
 export class Option {
   id: string;
   value: string;
-  isCorrect: boolean;
 
-  constructor(value: string, isCorrect: boolean) {
-    this.id = Math.random().toString();
+  constructor(value: string, id?: string) {
+    this.id = id || uuidv4();
     this.value = value;
-    this.isCorrect = isCorrect;
   }
 
-  static fromArray(options: string[], answer: number) {
-    return options.map((option, index) => {
-      return new Option(option, index === answer);
+  static fromArray(options: string[] | { value: string; id: string }[]): Option[] {
+    if (typeof options[0] === "string") {
+      return Option.fromStringArray(options as string[]);
+    }
+    return Option.fromObjectArray(options as { value: string; id: string }[]);
+  }
+
+  static toObjectArray(options: Option[]): { value: string; id: string }[] {
+    return options.map((option) => {
+      return { value: option.value, id: option.id };
     });
+  }
+
+  static fromObjectArray(objects: { value: string; id: string }[]): Option[] {
+    return objects.map((obj) => new Option(obj.value, obj.id));
+  }
+
+  static fromStringArray(options: string[]): Option[] {
+    return options.map((option) => new Option(option));
   }
 }

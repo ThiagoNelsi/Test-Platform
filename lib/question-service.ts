@@ -67,6 +67,7 @@ export const createQuestion = async (formData: FormData) => {
   const type = formData.get("type") as string;
   const level = formData.get("level") as string;
   const data = formData.get("data") as string;
+  const source = formData.get("source") as string;
   const tags = JSON.parse(formData.get("tags") as string) as number[];
 
   try {
@@ -76,17 +77,41 @@ export const createQuestion = async (formData: FormData) => {
         level: levelOptions.indexOf(level),
         authorId: userId,
         content: JSON.parse(data),
-        tags: {
+        source: source ? source : "MANUAL",
+        ...(tags ? {tags: {
           connect: tags.map((tagId) => ({ id: tagId })),
-        },
+        }} : {}),
       },
     });
     revalidatePath("/questions");
     return true;
   } catch (err) {
+    console.log(err);
     return false;
   }
 };
+
+export const createMultipleQuestions = async (questions: any[]) => {
+  const userId = await getUserId();
+  if (!userId) return null;
+
+  try {
+    const createdQuestions = await prisma.question.createMany({
+      data: questions.map((question) => ({
+        type: question.type,
+        level: question.level,
+        authorId: userId,
+        content: question.content,
+        source: question.source ? question.source : "MANUAL",
+      })),
+    });
+    revalidatePath("/questions");
+    return true;
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
+}
 
 const checkEqual = (obj1: any, obj2: any) => {
   return isEqual(obj1, obj2);

@@ -8,9 +8,11 @@ import { Option } from "@/lib/multiple-choice-question";
 type OptionProps = {
   options: Option[];
   setOptions: Dispatch<SetStateAction<Option[]>>;
+  answer: string;
+  setAnswer: (answer: string) => void;
 };
 
-export default function Options({ options, setOptions }: OptionProps) {
+export default function Options({ options, setOptions, answer, setAnswer }: OptionProps) {
   const [focusedOption, setFocusedOption] = useState<number | undefined>();
 
   return (
@@ -19,7 +21,7 @@ export default function Options({ options, setOptions }: OptionProps) {
       <div className="flex flex-col gap-2">
         {options.map((option, index) => (
           <MovableItem<Option>
-            key={`${option.id}`}
+            key={option.id}
             index={index}
             list={options}
             setList={setOptions}
@@ -28,16 +30,12 @@ export default function Options({ options, setOptions }: OptionProps) {
               className="cursor-pointer"
               name="option"
               type="radio"
-              onChange={(e) => {
-                const newOptions = [...options];
-                newOptions.forEach((option) => (option.isCorrect = false));
-                newOptions[index].isCorrect = e.target.checked;
-                setOptions(newOptions);
-              }}
-              checked={option.isCorrect}
+              value={option.id}
+              onChange={(e) => setAnswer(e.target.value)}
+              checked={option.id === answer}
             />
             <MinimalTiptapEditor
-              key={`${option.id}`} // Add unique key prop here
+              key={option.id} // Add unique key prop here
               placeholder="Digite a alternativa..."
               onFocus={() => setFocusedOption(index)}
               showToolbar={focusedOption === index}
@@ -57,7 +55,7 @@ export default function Options({ options, setOptions }: OptionProps) {
             e.preventDefault();
             setOptions([
               ...options,
-              new Option("", false),
+              new Option(""),
             ]);
           }}
         >

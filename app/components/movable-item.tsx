@@ -20,14 +20,14 @@ export default function MovableItem<T>({
     direction: "up" | "down",
   ) => {
     event.preventDefault();
-    const newStatement = [...list];
-    const movedItem = newStatement.splice(index, 1)[0];
-    newStatement.splice(
+    const newList = [...list];
+    const movedItem = newList.splice(index, 1)[0];
+    newList.splice(
       direction === "up" ? index - 1 : index + 1,
       0,
       movedItem,
     );
-    setList(newStatement);
+    setList(newList);
   };
 
   const removeItem = (index: number) => {
@@ -35,9 +35,9 @@ export default function MovableItem<T>({
       return;
     }
 
-    const newStatement = [...list];
-    newStatement.splice(index, 1);
-    setList(newStatement);
+    const newList = [...list];
+    newList.splice(index, 1);
+    setList(newList);
   };
 
   return (

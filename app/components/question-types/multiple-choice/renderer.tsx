@@ -19,11 +19,11 @@ export default function MultipleChoiceRenderer({
       <Separator className="my-5" />
       <div className="flex flex-col gap-2">
         {options &&
-          options.map((option: any, index: number) => (
+          options.map((option, index) => (
             <div key={index} className="flex items-center gap-2">
               <input
                 type="radio"
-                checked={option.isCorrect}
+                checked={option.id === content.answer}
                 onChange={() => {}}
               />
               <div

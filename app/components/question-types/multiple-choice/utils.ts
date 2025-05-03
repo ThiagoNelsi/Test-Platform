@@ -21,7 +21,7 @@ export const valitadeMultipleChoice = (data: MultipleChoiceQuestionData) => {
     errors.push("A questão deve conter no mínimo 2 opções");
   }
 
-  const correctOptions = options.filter((option) => option.isCorrect);
+  const correctOptions = options.filter(option => option.id === data.answer);
 
   if (correctOptions.length === 0) {
     errors.push("A questão deve ter pelo menos uma opção correta");
@@ -32,5 +32,6 @@ export const valitadeMultipleChoice = (data: MultipleChoiceQuestionData) => {
   return {
     statement: data.statement,
     options,
+    answer: data.answer,
   };
 };

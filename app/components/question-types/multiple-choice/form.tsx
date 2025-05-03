@@ -9,24 +9,23 @@ import { FormSection } from "../../new-question-modal";
 import { useQuestionEditor } from "../../../context/question-editor-context";
 import { MinimalTiptapEditor } from "../../minimal-tiptap";
 import Options from "./options";
-import { MultipleChoiceQuestion, MultipleChoiceQuestionData, Option } from "@/lib/multiple-choice-question";
+import { MultipleChoiceQuestion, Option } from "@/lib/multiple-choice-question";
 
 type MultipleChoiceFormProps = {};
 
 export default function MultipleChoiceForm({}: MultipleChoiceFormProps) {
-  const { question, setStatement, setOptions, setData } = useQuestionEditor();
+  const { question, setStatement, setOptions, setData, setAnswer } = useQuestionEditor();
   const [isStatementFocused, setIsStatementFocused] = useState(false);
 
   const editorRef = useRef<HTMLDivElement>(null);
-  console.log("FORM", question);
 
   useEffect(() => {
     if (!question.data || question.data.statement === undefined || question.data.options === undefined) {
       setData(MultipleChoiceQuestion.empty().data);
       setOptions([
-        new Option("", false),
-        new Option("", false),
-      ])
+        new Option(""),
+        new Option(""),
+      ]);
     }
   }, []);
 
@@ -49,7 +48,12 @@ export default function MultipleChoiceForm({}: MultipleChoiceFormProps) {
           className="min-h-72"
         />
       </FormSection>
-      <Options options={question.data.options} setOptions={setOptions as Dispatch<SetStateAction<Option[]>>} />
+      <Options
+        options={question.data.options}
+        setOptions={setOptions as Dispatch<SetStateAction<Option[]>>}
+        answer={question.data.answer}
+        setAnswer={setAnswer}
+      />
     </>
   );
 }

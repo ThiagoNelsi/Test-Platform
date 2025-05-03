@@ -2,11 +2,11 @@ import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Checkbox } from "@/app/components/ui/checkbox";
-import { PossibleQuestionTypes } from "@/lib/question";
-import { createQuestion } from "@/lib/question-service";
+import { createMultipleQuestions, createQuestion } from "@/lib/question-service";
 import { Check, Loader2, Save, Sparkles, Tag } from "lucide-react";
 import { useState } from "react";
 import { StreamedQuestion } from "./create-with-ai";
+import { Option } from "@/lib/multiple-choice-question";
 
 type GeneratedQuestionsProps = {
   generatedQuestions: StreamedQuestion[];
@@ -23,28 +23,29 @@ export default function GeneratedQuestions({ generatedQuestions, setGeneratedQue
     setSelectedGeneratedQuestions((prev) => (prev.includes(id) ? prev.filter((q) => q !== id) : [...prev, id]))
   }
 
-  const saveGeneratedQuestions = () => {
+  const saveGeneratedQuestions = async () => {
     const questionsToSave = generatedQuestions.map((question) => {
+
+      const options = Option.fromArray(question.options || [])
+
       return {
-        statement: question.statement,
-        options: question.options?.map((option, index) => ({
-          value: option,
-          isCorrect: question.answer ? index === Number(question.answer) : false,
-        }))
+        type: "multiple_choice",
+        source: "AI",
+        content: {
+          statement: question.statement || "",
+          options: Option.toObjectArray(options),
+          answer: options[Number(question.answer)].id,
+        }
       }
     })
 
-    questionsToSave.forEach(async(question, index) => {
-      const formData = new FormData();
-      formData.append("type", "multiple_choice");
-      formData.append("data", JSON.stringify(questionsToSave));
-
-      const res = await createQuestion(formData);
-      console.log('%c🤪 ~ file: /home/thiago/Test-Platform/app/app/(HeaderAndSidebar)/questoes/criar/generated-questions.tsx:39 [] -> res : ', 'color: #7ccf25', res);
-    })
-
-    setSaveSuccess(true)
-    setTimeout(() => setSaveSuccess(false), 3000)
+    try {
+      const res = await createMultipleQuestions(questionsToSave)
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 3000)
+    } catch (error) {
+      console.error("Error saving questions:", error)
+    }
 
     // Limpar seleção
     setSelectedGeneratedQuestions([])

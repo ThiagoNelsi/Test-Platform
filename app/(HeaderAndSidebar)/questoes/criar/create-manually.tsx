@@ -3,7 +3,7 @@ import { TabsContent } from "@/app/components/ui/tabs";
 
 export default function CreateQuestionManually() {
     return (
-      <TabsContent value="manual">
+      <TabsContent value="manual" className="bg-white p-2">
         <QuestionEditor
           submitAction={() => {}}
           submitButtonText="Criar Questão"

@@ -76,22 +76,10 @@ export const QuestionEditorProvider = ({
   }
 
   const setAnswer = (answer: PossibleQuestionTypes["data"]["answer"]) => {
-    if (answer > question.data.options.length) {
-      throw new Error("Answer is greater than options length");
-    }
-
-    const options = question.data.options.map((option, index) => {
-      if (index === answer) {
-        return { ...option, isCorrect: true };
-      }
-      return { ...option, isCorrect: false };
-    });
-
     setQuestion((prev) => ({
       ...prev,
       data: {
         ...prev.data,
-        options,
         answer,
       },
     } as PossibleQuestionTypes));

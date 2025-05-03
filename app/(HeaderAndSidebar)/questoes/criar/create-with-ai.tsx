@@ -40,7 +40,7 @@ export default function CreateWithAI() {
   const [transport, setTransport] = useState("N/A");
 
   useEffect(() => {
-    fetchMaterials()
+    fetchMaterials();
 
     if (socket.connected) {
       onConnect();
@@ -104,7 +104,7 @@ export default function CreateWithAI() {
 
     socket.emit("prompt", {
       prompt: aiPrompt,
-      model: "o4-mini",
+      model: "gpt-4o-mini",
       documents: selectedMaterials.map(id => materials?.find(m => m.id === id)?.objectKey),
     })
   }

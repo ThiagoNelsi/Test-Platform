@@ -20,8 +20,6 @@ export default function QuestionDialogTrigger({
   const { setData, setType, setLevel, setId, setTags } = useQuestionEditor();
 
   const setInitialData = (question: PossibleQuestionTypes) => {
-    console.log("AAAAAAAAAAAAAAAAAa")
-    console.log(question.data);
     setId(question.id);
     setData(question.data);
     setType(question.type);
