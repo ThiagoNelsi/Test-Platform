@@ -18,7 +18,7 @@ export default async function Tests() {
       <div className="flex flex-col gap-6 pb-64">
         <menu className="flex items-center justify-end">
           <Button variant="outline">
-            <Link href="/create-test" className="flex items-center gap-2">
+            <Link href="/provas/criar" className="flex items-center gap-2">
               <MdAdd /> Criar prova
             </Link>
           </Button>

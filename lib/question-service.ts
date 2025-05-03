@@ -83,7 +83,7 @@ export const createQuestion = async (formData: FormData) => {
         }} : {}),
       },
     });
-    revalidatePath("/questions");
+    revalidatePath("/questoes");
     return true;
   } catch (err) {
     console.log(err);
@@ -105,7 +105,7 @@ export const createMultipleQuestions = async (questions: any[]) => {
         source: question.source ? question.source : "MANUAL",
       })),
     });
-    revalidatePath("/questions");
+    revalidatePath("/questoes");
     return true;
   } catch (err) {
     console.log(err);
@@ -228,7 +228,7 @@ export const updateQuestion = async (
       });
     });
 
-    revalidatePath("/questions");
+    revalidatePath("/questoes");
     return true;
   } catch (err) {
     return false;
@@ -252,7 +252,7 @@ export const deleteQuestion = async (questionIds: number[]) => {
 
     if (count === 0) return false;
 
-    revalidatePath("/questions");
+    revalidatePath("/questoes");
     return true;
   } catch (error) {
     console.error("Erro ao deletar questões:", error);

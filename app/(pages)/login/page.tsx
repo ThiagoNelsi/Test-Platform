@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { FaGoogle } from "react-icons/fa";
-import { Button } from "../components/ui/button";
+import { Button } from "../../components/ui/button";
 
 export default function Login() {
   const handleLogin = () => {

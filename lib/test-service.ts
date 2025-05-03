@@ -304,11 +304,11 @@ export const publishTest = async (testId: number, classroomIds: number[]) => {
       });
       console.log("PUBLICADO");
       console.log(publishedTests);
-      revalidatePath("/tests");
+      revalidatePath("/provas");
       return publishedTests;
     } else {
       const publishedTest = await update(testId);
-      revalidatePath("/tests");
+      revalidatePath("/provas");
       return publishedTest;
     }
   } catch (error) {
@@ -515,10 +515,10 @@ export const getStudentTest = async (testId: number) => {
 
     // shuffle
     if (section.shuffle != undefined) {
-      const shuffle = (array: typeof section.questions) => { 
-        for (let i = array.length - 1; i > 0; i--) { 
-          const j = Math.floor(Math.random() * (i + 1)); 
-          [array[i], array[j]] = [array[j], array[i]]; 
+      const shuffle = (array: typeof section.questions) => {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
       };
@@ -587,7 +587,7 @@ export const deleteTest = async (
       },
     });
 
-    revalidatePath("/tests");
+    revalidatePath("/provas");
 
     return true;
   } catch (error) {

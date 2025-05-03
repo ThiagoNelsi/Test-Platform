@@ -10,10 +10,10 @@ import { usePathname } from "next/navigation"
 const navItems = [
   // { icon: Home, label: "Dashboard", href: "/home" },
   { icon: Users, label: "Minhas Turmas", href: "/home" },
-  { icon: Layers, label: "Banco de Questões", href: "/questions" },
-  { icon: FileText, label: "Provas e Simulados", href: "/tests" },
+  { icon: Layers, label: "Banco de Questões", href: "/questoes" },
+  { icon: FileText, label: "Provas e Simulados", href: "/provas" },
   { icon: BookOpen, label: "Meus Materiais", href: "/materiais" },
-  { icon: Search, label: "Explorar questões", href: "/questions/explorar" },
+  { icon: Search, label: "Explorar questões", href: "/questoes/explorar" },
   // { icon: PenTool, label: "Correções", href: "/correcoes" },
   // { icon: BarChart, label: "Relatórios", href: "/relatorios" },
   // { icon: Settings, label: "Configurações", href: "/configuracoes" },

@@ -15,16 +15,16 @@ const TeacherActions = () => {
   return (
     <div className="flex items-center gap-10 border-b-2 border-gray-100 mb-8 px-4 py-2 text-sm">
       <Link
-        href="/create-test"
+        href="/provas/criar"
         className="flex gap-2 items-center hover:underline"
       >
         <MdAdd /> Criar prova
       </Link>
-      <Link href="/tests" className="flex gap-2 items-center hover:underline">
+      <Link href="/provas" className="flex gap-2 items-center hover:underline">
         <IoDocumentsOutline /> Ver provas
       </Link>
       <Link
-        href="/questions"
+        href="/questoes"
         className="flex gap-2 items-center hover:underline"
       >
         <FaTasks /> Gerenciar questões

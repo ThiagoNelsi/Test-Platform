@@ -153,7 +153,7 @@ export default function TestList({
                   <div className="flex gap-6 items-end">
                     {test.status === "draft" ? (
                       <>
-                        <Link href={`/create-test?test=${test.id}`}>
+                        <Link href={`/provas/criar?test=${test.id}`}>
                           <Button
                             variant="outline"
                             className="text-xs md:text-sm bg-blue-500 text-white border-0 hover:bg-blue-600 hover:text-white"

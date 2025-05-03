@@ -440,7 +440,7 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
       successToast("Prova publicada com sucesso");
 
       // redirect to test page
-      router.push("/tests");
+      router.push("/provas");
     } catch (err) {
       console.error(err);
       errorToast("Erro ao criar prova");
@@ -465,7 +465,7 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
       successToast("Prova publicada com sucesso");
 
       // redirect to test page
-      router.push("/tests");
+      router.push("/provas");
     } catch (err) {
       console.error(err);
       errorToast("Erro ao agendar publicação da prova");

@@ -12,17 +12,16 @@ import {
 } from "./ui/dropdown-menu";
 import { useState } from "react";
 import { Bell, ChevronDown, LogOut, LucideCircleUserRound, Plus, Search, Settings, User } from "lucide-react";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { usePathname } from "next/navigation";
 
 const headerTitles = {
   '/home': 'Turmas',
-  '/create-test': 'Nova prova',
-  '/questions': 'Questões',
-  '/tests': 'Provas',
-  '/questions/explorar': 'Explorar questões',
+  '/questoes': 'Questões',
+  '/questoes/explorar': 'Explorar questões',
+  '/provas': 'Provas',
+  '/provas/criar': 'Nova prova',
   '/materiais': 'Materiais',
   '/materiais/upload': 'Materiais',
 } as const;
