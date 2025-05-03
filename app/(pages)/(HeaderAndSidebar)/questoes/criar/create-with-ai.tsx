@@ -4,10 +4,14 @@ import { TabsContent } from "@/app/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Label } from "@/app/components/ui/label";
 import { Button } from "@/app/components/ui/button";
-import { FileText, ImageIcon, Loader2, Sparkles, X } from "lucide-react";
+import { CircleHelp, FileText, ImageIcon, Lightbulb, Loader2, Sparkles, X } from "lucide-react";
 import { Textarea } from "@/app/components/ui/textarea";
 import MaterialSelectorDialog from "./material-selector";
 import { socket } from "@/app/socket";
+import { Tooltip, TooltipTrigger } from "@/app/components/ui/tooltip";
+import { TooltipContent } from "@radix-ui/react-tooltip";
+import HelpTooltip from "@/app/components/ui/help-tooltip";
+import PromptExamples from "./prompt-examples";
 
 export interface Material {
   id: number
@@ -104,7 +108,7 @@ export default function CreateWithAI() {
 
     socket.emit("prompt", {
       prompt: aiPrompt,
-      model: "gpt-4o-mini",
+      model: "o4-mini",
       documents: selectedMaterials.map(id => materials?.find(m => m.id === id)?.objectKey),
     })
   }
@@ -308,7 +312,14 @@ export default function CreateWithAI() {
           <CardContent className="space-y-6">
             {/* Materiais de referência */}
             <div className="space-y-2">
-              <Label>Materiais de referência (opcional)</Label>
+              <div className="flex items-center gap-2">
+                <Label>Materiais de referência (opcional)</Label>
+                <HelpTooltip
+                  link="#"
+                  text="Os materiais são usados para gerar questões com mais afinidade com o conteúdo ensinado. Recomenda-se selecionar materiais relacionados ao tema para aumentar a qualidade das questões geradas."
+                />
+              </div>
+
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -356,10 +367,19 @@ export default function CreateWithAI() {
                 </div>
               )}
             </div>
-
             {/* Prompt para a IA */}
             <div className="space-y-2">
-              <Label htmlFor="ai-prompt">Prompt para a IA</Label>
+              <div className="flex items-center gap-2">
+                <Label>Prompt para a IA</Label>
+                <HelpTooltip link="#">
+                  <p>
+                    O prompt é a descrição das questões que você deseja. Quanto mais detalhado, melhor o resultado.
+                  </p>
+                  <p>Clique em <strong>Ver exemplos de prompt</strong> para ver exemplos de prompts bons e ruins.</p>
+                </HelpTooltip>
+              </div>
+              {/* Exemplos de prompts */}
+              <PromptExamples setPrompt={setAiPrompt} />
               <Textarea
                 id="ai-prompt"
                 placeholder="Descreva as questões que deseja gerar..."
