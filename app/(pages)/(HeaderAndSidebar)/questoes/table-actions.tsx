@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { Tag } from "@/lib/types";
 import { RemovableTag } from "@/app/components/removable-tag";
 import { SearchTags } from "@/app/components/search-tags";
+import Link from "next/link";
 
 export default function TableActions() {
   const {
@@ -70,11 +71,11 @@ export default function TableActions() {
 
   return (
     <menu className="flex items-center gap-4 justify-between mb-4">
-      <QuestionDialogTrigger type="create">
-        <Button className="bg-blue-500 text-white hover:bg-blue-600">
+      <Button className="bg-blue-500 text-white hover:bg-blue-600">
+        <Link href="/questoes/criar" className="flex items-center gap-2">
           <MdAdd /> Criar questão
-        </Button>
-      </QuestionDialogTrigger>
+        </Link>
+      </Button>
       <div className="flex flex-1 bg-white item-center gap-1 shadow p-1 rounded-md">
         <div className="flex gap-1 items-center">
           {selectedTags &&

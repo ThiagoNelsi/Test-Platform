@@ -1,5 +1,5 @@
 import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
-import NewQuestionModal from "../../../../components/new-question-modal";
+import NewQuestionModal from "@/app/components/new-question-modal";
 import { useQuestionEditor } from "@/app/context/question-editor-context";
 import { useState } from "react";
 import { MultipleChoiceQuestion } from "@/lib/multiple-choice-question";
