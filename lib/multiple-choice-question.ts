@@ -22,6 +22,10 @@ export class MultipleChoiceQuestion implements IQuestion {
   public source: string | null;
 
   constructor(question: Question) {
+    if (question.type !== "multiple_choice") {
+      throw new Error("Invalid question type");
+    }
+
     this.id = question.id;
     this.originalQuestionId = question.originalQuestionId;
     if (this.originalQuestionId === null) {
@@ -34,6 +38,11 @@ export class MultipleChoiceQuestion implements IQuestion {
       options: Option.fromArray(question.data.options),
       answer: question.data.answer,
     };
+
+    if (typeof(this.data.answer) === "number") {
+      this.data.answer = this.data.options[this.data.answer].id;
+    }
+
     this.subjects = question.subjects;
     this.tags = question.tags;
     this.authorId = question.authorId;
@@ -60,7 +69,7 @@ export class MultipleChoiceQuestion implements IQuestion {
       data: {
         statement: "",
         options: emptyOptions ? [] : [new Option(""), new Option("")],
-        answer: -1,
+        answer: "",
       },
       subjects: [],
       tags: [],

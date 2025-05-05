@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { BookOpen, Check, ChevronDown, Filter, Plus, Search, X } from "lucide-react"
+import { BookOpen, Check, ChevronDown, Filter, LoaderCircle, Plus, Search, X } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Badge } from "@/app/components/ui/badge"
@@ -19,6 +19,7 @@ import { Pagination } from "./components/pagination"
 import { getQuestions } from "@/lib/question-service"
 import { QuestionFactory } from "@/lib/question"
 import { Tag } from "@/lib/types"
+import { errorToast } from "@/lib/toasters"
 
 const alternatives = ['A', 'B', 'C', 'D', 'E']
 
@@ -38,19 +39,37 @@ export default function ExploreQuestionsPage() {
   const [filteredQuestions, setFilteredQuestions] = useState<ReturnType<typeof QuestionFactory.from>>([])
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([])
   const [currentPage, setCurrentPage] = useState(1)
-  const [questionsPerPage] = useState(5)
+  const [questionsPerPage] = useState(10)
 
   // State for question dialog
   const [viewQuestion, setViewQuestion] = useState<ReturnType<typeof QuestionFactory.from>[0] | null>(null)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchData();
   }, [])
 
   const fetchData = async () => {
-    const response = await getQuestions();
-    const parsed = QuestionFactory.from(response)
+    setLoading(true)
+    const response = await fetch("/api/repositorio");
+
+    if (!response.ok) {
+      errorToast("Erro ao buscar questões")
+      return
+    }
+    const data = await response.json()
+    if (data.error) {
+      errorToast("Erro ao buscar questões")
+      return
+    }
+
+    const parsed = QuestionFactory.from(data.questions.map((question: any) => ({
+      ...question,
+      content: undefined,
+      data: JSON.parse(question.content)
+    })))
     setQuestions(parsed);
     setFilteredQuestions(parsed);
 
@@ -68,7 +87,8 @@ export default function ExploreQuestionsPage() {
 
     setSubjects(Array.from(subjectsSet))
     setTopics(Array.from(topicsSet));
-    setSources(Array.from(sourcesSet))
+    setSources(Array.from(sourcesSet));
+    setLoading(false);
   }
 
   const applyFilters = () => {
@@ -154,7 +174,23 @@ export default function ExploreQuestionsPage() {
   }
 
   // Handle adding selected questions to personal bank
-  const handleAddToPersonalBank = () => {}
+  const handleAddToPersonalBank = async () => {
+    const res = await fetch("/api/question/clone", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ questionIds: selectedQuestions }),
+    })
+
+    if (res.ok) {
+      setShowSuccessDialog(true)
+      setSelectedQuestions([])
+      setFilteredQuestions((prev) => prev.filter((q) => !selectedQuestions.includes(q.id)))
+    } else {
+      errorToast("Erro ao adicionar questões ao banco pessoal")
+    }
+  }
 
   // Get current questions for pagination
   const indexOfLastQuestion = currentPage * questionsPerPage
@@ -167,13 +203,24 @@ export default function ExploreQuestionsPage() {
   // Get available topics based on selected subjects
   const availableTopics = getAvailableTopics(selectedSubjects);
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-6 h-[90vh]">
+        <LoaderCircle className="h-12 w-12 text-muted-foreground animate-spin" />
+        <div className="flex flex-col items-center">
+          <h2 className="text-lg font-semibold mb-4">Carregando questões...</h2>
+        </div>
+      </div>
+    )
+  }
+
   if (!subjects) return null
 
   return (
     <div className="h-screen">
       <div id="main-content" className="flex flex-col flex-1 transition-all duration-300 ease-in-out">
         {/* Main Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 max-w-[80ch] mx-auto">
           {/* Page Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
@@ -214,7 +261,7 @@ export default function ExploreQuestionsPage() {
             </div>
 
             {showFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
                 {/* Subjects Filter */}
                 <div>
                   <h3 className="font-medium mb-3">Disciplinas</h3>
@@ -238,7 +285,7 @@ export default function ExploreQuestionsPage() {
                 </div>
 
                 {/* Topics Filter */}
-                <div>
+                {/* <div>
                   <h3 className="font-medium mb-3">Tópicos</h3>
                   {selectedSubjects.length > 0 ? (
                     <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
@@ -263,7 +310,7 @@ export default function ExploreQuestionsPage() {
                       Selecione pelo menos uma disciplina para ver os tópicos disponíveis.
                     </p>
                   )}
-                </div>
+                </div> */}
 
                 {/* Sources Filter */}
                 <div>
@@ -374,12 +421,9 @@ export default function ExploreQuestionsPage() {
                             })}
 
                             {/* {question.tags.map((tag) => {
-                              const [subject] = tag.name.split("-")
-                              const topicsList = topics[subjectId as keyof typeof topics] || []
-                              const topic = topicsList.find((t) => t.id === topicId)
-                              return topic ? (
-                                <Badge key={topic.id} variant="outline" className="bg-gray-50 dark:bg-gray-800">
-                                  {topic.name}
+                              return tag ? (
+                                <Badge key={question.id+tag} variant="outline" className="bg-gray-50 dark:bg-gray-800">
+                                  {tag}
                                 </Badge>
                               ) : null
                             })} */}
@@ -394,14 +438,14 @@ export default function ExploreQuestionsPage() {
                           <div className="w-full">
                             <details className="group">
                               <summary className="flex cursor-pointer list-none items-center justify-between py-2 text-left font-normal">
-                                <p className="text-left font-normal" dangerouslySetInnerHTML={{ __html: question.data.statement }}></p>
+                                <p className="text-left font-normal whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: question.data.statement }}></p>
                                 <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
                               </summary>
                               <div className="mt-4 space-y-2">
                                 {question.data.options.map((option, index) => (
-                                  <div key={option.id} className="flex items-start gap-2">
-                                    <div className="font-medium min-w-[20px]">{alternatives[index]})</div>
-                                    <div>{option.value}</div>
+                                  <div key={option.id} className="flex items-center gap-2">
+                                    <div className={`flex items-center justify-center font-medium w-8 h-8 border rounded-full ${question.data.answer === option.id ? "border-green-300 bg-green-100" : ""}`}>{alternatives[index]}</div>
+                                    <div className="whitespace-pre-wrap">{option.value}</div>
                                   </div>
                                 ))}
                               </div>
@@ -472,7 +516,7 @@ export default function ExploreQuestionsPage() {
       {/* Question View Dialog */}
       {viewQuestion && (
         <Dialog open={!!viewQuestion} onOpenChange={() => setViewQuestion(null)}>
-          <DialogContent className="sm:max-w-3xl h-screen 2xl:h-[90%] overflow-y-auto">
+          <DialogContent className="sm:max-w-3xl 2xl:h-[90%] h-fit max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Visualizar Questão</DialogTitle>
               <DialogDescription>
@@ -501,21 +545,21 @@ export default function ExploreQuestionsPage() {
 
               {/* Question text */}
               <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
-                <p className="font-medium mb-6">{viewQuestion.data.statement}</p>
+                <p className="font-medium mb-6 whitespace-pre-wrap prose-lg">{viewQuestion.data.statement}</p>
 
                 <div className="space-y-3">
                   {viewQuestion.data.options.map((option, index) => (
                     <div
                       key={option.id}
                       className={`flex items-start gap-2 p-2 rounded-md ${
-                        index === viewQuestion.data.answer
+                        index === Number(viewQuestion.data.answer)
                           ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
                           : ""
                       }`}
                     >
                       <div
                         className={`font-medium min-w-[20px] ${
-                          index === viewQuestion.data.answer ? "text-green-600 dark:text-green-400" : ""
+                          index === Number(viewQuestion.data.answer) ? "text-green-600 dark:text-green-400" : ""
                         }`}
                       >
                         {alternatives[index].toUpperCase()})
@@ -524,11 +568,6 @@ export default function ExploreQuestionsPage() {
                     </div>
                   ))}
                 </div>
-              </div>
-
-              {/* Additional info */}
-              <div className="text-sm text-muted-foreground">
-                <p>Resposta correta: {alternatives[viewQuestion.data.answer]}</p>
               </div>
             </div>
 
