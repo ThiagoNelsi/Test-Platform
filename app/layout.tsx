@@ -8,6 +8,8 @@ import SessionProvider from "./components/session-provider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import { TooltipProvider } from "./components/ui/tooltip";
+import { tryCatch } from "@/lib/try-catch";
+import { redirect } from "next/navigation";
 
 const inter = Inter({
   weight: ["100", "200", "300", "400", "500", "600", "700"],
@@ -26,7 +28,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
+  const { data: session, error } = await tryCatch(getServerSession(authOptions));
+
+  if (error) {
+    // redirect to login
+    redirect('/login')
+  }
+
   return (
     <html>
       <head>

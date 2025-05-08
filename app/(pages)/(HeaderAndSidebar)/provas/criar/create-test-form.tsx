@@ -23,6 +23,7 @@ import { getClassrooms } from "@/lib/classroomService";
 import SearchClassrooms from "@/app/components/search-classrooms";
 import { useDebounce } from "@/app/hooks/useDebounce";
 import { useRouter } from "next/navigation";
+import { tryCatch } from "@/lib/try-catch";
 
 type InputBlockProps = {
   label: React.ReactNode;
@@ -408,68 +409,54 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
 
     if (!("data" in result)) return;
 
-    try {
-      console.log("Updating test");
-      const response = await updateTest(testId, result.data);
-      if (autoSave) return setAutoSaveStatus(new Date());
+    const { data, error } = await tryCatch(updateTest(testId, result.data));
 
-      if (!response) return errorToast("Erro ao salvar rascunho");
-      return successToast("Rascunho salvo com sucesso");
-    } catch (err) {
+    if (!data || error) {
       if (autoSave) return;
-      console.error(err);
-      errorToast("Erro ao criar prova");
+      errorToast("Erro ao salvar rascunho");
     }
+
+    if (autoSave) return setAutoSaveStatus(new Date());
+
+    return successToast("Rascunho salvo com sucesso");
   };
 
   const handlePublish = async () => {
     const data = getValidatedData("published");
+    if (!data || !testId) return;
 
-    if (!data) return;
+    const { error } = await tryCatch(handleSave(true));
+    if (error) return;
 
-    try {
-      if (!testId) return;
+    const response = await tryCatch(publishTest(
+      testId,
+      data.classroomIds as number[],
+    ));
 
-      await handleSave(true);
+    if (!response.data || response.error) return errorToast("Erro ao criar prova");
+    successToast("Prova publicada com sucesso");
 
-      const response = await publishTest(
-        testId,
-        data.classroomIds as number[],
-      );
-      if (!response) return errorToast("Erro ao criar prova");
-      successToast("Prova publicada com sucesso");
-
-      // redirect to test page
-      router.push("/provas");
-    } catch (err) {
-      console.error(err);
-      errorToast("Erro ao criar prova");
-    }
+    // redirect to test page
+    router.push("/provas");
   };
 
   const handleSchedulePublish = async () => {
     const data = getValidatedData("scheduled");
 
-    if (!data) return;
+    if (!data || !testId) return;
 
-    try {
-      if (!testId) return;
+    const { error } = await tryCatch(handleSave(true));
+    if (error) return;
 
-      await handleSave(true);
+    const response = await tryCatch(scheduleTest(
+      testId,
+      data.classroomIds as number[],
+    ));
+    if (!response.data || response.error) return errorToast("Erro ao agendar publicação da prova");
+    successToast("Prova publicada com sucesso");
 
-      const response = await scheduleTest(
-        testId,
-        data.classroomIds as number[],
-      );
-      if (!response) return errorToast("Erro ao agendar publicação da prova");
-      successToast("Prova publicada com sucesso");
-
-      // redirect to test page
-      router.push("/provas");
-    } catch (err) {
-      console.error(err);
-      errorToast("Erro ao agendar publicação da prova");
-    }
+    // redirect to test page
+    router.push("/provas");
   };
 
   const saveTestData = useCallback(() => {

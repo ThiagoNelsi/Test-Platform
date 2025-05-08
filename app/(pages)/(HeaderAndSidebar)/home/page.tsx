@@ -2,11 +2,12 @@ import type { Classroom } from "@prisma/client";
 import Component from "./component";
 import { getClassrooms } from "@/lib/classroomService";
 import { SwitcherProvider } from "@/app/context/switcher-context";
+import { tryCatch } from "@/lib/try-catch";
 
 export default async function Classroom() {
-  const response = await getClassrooms();
+  const { data: response, error } = await tryCatch(getClassrooms());
 
-  if (!response) return null;
+  if (!response || error) return null;
 
   const { ownedClasses } = response;
 

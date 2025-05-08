@@ -1,20 +1,29 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
+import { tryCatch } from "./lib/try-catch";
 
 export async function middleware(req: NextRequest) {
-    const token = await getToken({ req });
+  const { data: token, error } = await tryCatch(getToken({ req }));
 
-    if (!token) {
-        return NextResponse.redirect(new URL("/login", req.url));
-    }
+  if (!token || error) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
 
-    if (req.nextUrl.pathname === "/") {
-        return NextResponse.redirect(new URL("/home", req.url));
-    }
+  if (req.nextUrl.pathname === "/") {
+    return NextResponse.redirect(new URL("/home", req.url));
+  }
 
-    return NextResponse.next();
+  return NextResponse.next();
 }
 
 export const config = {
-    matcher: ["/", "/home", "/materiais/:path*", "/turmas/:path*", "/questoes/:path*", "/provas/:path*", "/prova/:path*"],
+  matcher: [
+    "/",
+    "/home",
+    "/materiais/:path*",
+    "/turmas/:path*",
+    "/questoes/:path*",
+    "/provas/:path*",
+    "/prova/:path*",
+  ],
 };

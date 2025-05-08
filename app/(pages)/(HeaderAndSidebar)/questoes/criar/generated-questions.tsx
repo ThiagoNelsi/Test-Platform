@@ -7,6 +7,7 @@ import { Check, Loader2, Save, Sparkles, Tag } from "lucide-react";
 import { useState } from "react";
 import { StreamedQuestion } from "./create-with-ai";
 import { Option } from "@/lib/multiple-choice-question";
+import { successToast } from "@/lib/toasters";
 
 type GeneratedQuestionsProps = {
   generatedQuestions: StreamedQuestion[];
@@ -47,9 +48,7 @@ export default function GeneratedQuestions({ generatedQuestions, setGeneratedQue
       console.error("Error saving questions:", error)
     }
 
-    // Limpar seleção
-    setSelectedGeneratedQuestions([])
-    setGeneratedQuestions([])
+    successToast("Questões salvas com sucesso!")
   }
 
   const selectAllGeneratedQuestions = () => {
@@ -107,7 +106,7 @@ export default function GeneratedQuestions({ generatedQuestions, setGeneratedQue
                     className="mt-1"
                   />
                   <div className="flex-1">
-                    <p className="font-medium mb-2">{question.statement}</p>
+                    <p className="font-medium mb-2 whitespace-pre-wrap">{question.statement}</p>
                     <div className="space-y-1 mb-3">
                       {question.options?.map((option, index) => (
                         <div

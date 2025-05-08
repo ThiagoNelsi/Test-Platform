@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { BarChart, BookOpen, FileText, Home, Layers, Menu, Moon, PenTool, Search, Settings, Sun, Users } from "lucide-react"
+import { BarChart, BookOpen, FileText, Home, Layers, Menu, Moon, PenTool, Search, Settings, Sparkles, Sun, Users } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -14,6 +14,7 @@ const navItems = [
   { icon: FileText, label: "Provas e Simulados", href: "/provas" },
   { icon: BookOpen, label: "Meus Materiais", href: "/materiais" },
   { icon: Search, label: "Explorar questões", href: "/questoes/explorar" },
+  { icon: Sparkles, label: "Gerar questões com IA", href: "/questoes/criar" }
   // { icon: PenTool, label: "Correções", href: "/correcoes" },
   // { icon: BarChart, label: "Relatórios", href: "/relatorios" },
   // { icon: Settings, label: "Configurações", href: "/configuracoes" },

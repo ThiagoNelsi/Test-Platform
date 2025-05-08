@@ -3,11 +3,12 @@ import { Button } from "@/app/components/ui/button";
 import Link from "next/link";
 import { MdAdd } from "react-icons/md";
 import { getOwnedTests } from "@/lib/test-service";
+import { tryCatch } from "@/lib/try-catch";
 
 export default async function Tests() {
-  const tests = await getOwnedTests();
+  const { data: tests, error } = await tryCatch(getOwnedTests());
 
-  if (!tests) return <div>Erro ao carregar provas</div>;
+  if (error || !tests) return <div>Erro ao carregar provas</div>;
 
   const publishedTests = tests.filter((test) => test.status === "published");
   const scheduledTests = tests.filter((test) => test.status === "scheduled");

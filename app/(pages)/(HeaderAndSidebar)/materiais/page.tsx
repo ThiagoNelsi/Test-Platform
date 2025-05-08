@@ -5,6 +5,8 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getFileIcon } from "./utils";
+import { tryCatch } from "@/lib/try-catch";
+import { errorToast } from "@/lib/toasters";
 
 const statuses = {
   UPLOADED: "Enviando",
@@ -19,8 +21,20 @@ export default function Page() {
 
   useEffect(() => {
     async function fetchResources() {
-      const response = await fetch("/api/resource");
-      const data = await response.json();
+      const { data: fetchResponse, error: fetchError } = await tryCatch(fetch("/api/resource"));
+      if (fetchError || fetchResponse === null) {
+        errorToast("Erro ao buscar materiais");
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await tryCatch(fetchResponse.json());
+
+      if (error) {
+        setLoading(false);
+        return;
+      }
+
       setResources(data.resources);
       setLoading(false);
     }
@@ -30,7 +44,7 @@ export default function Page() {
   if (loading) {
     return <div>Loading...</div>;
   }
-  if (resources.length === 0) {
+  if (!resources || resources.length === 0) {
     return (
       <div>
         <h1>Meus Materiais</h1>

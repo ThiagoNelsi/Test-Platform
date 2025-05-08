@@ -28,6 +28,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert"
 import { Progress } from "@/app/components/ui/progress"
 import axios, { AxiosProgressEvent } from "axios"
 import { getFileIcon } from "../utils"
+import { tryCatch } from "@/lib/try-catch"
+import { errorToast } from "@/lib/toasters"
 
 // Tipo para os arquivos selecionados com metadados adicionais
 interface FileWithMetadata {
@@ -168,8 +170,13 @@ export default function UploadMaterialsPage() {
     })
   }
 
+  const uploadErrorToast = (...log: any) => {
+    console.error('Upload error:', ...log);
+    errorToast('Erro ao fazer upload dos arquivos');
+  }
+
   const uploadFile = async (file: FileWithMetadata, fileId: string) => {
-    const response = await fetch(
+    const { data: fetchResponse, error: fetchError } = await tryCatch(fetch(
       '/api/upload',
       {
         method: 'POST',
@@ -178,55 +185,64 @@ export default function UploadMaterialsPage() {
         },
         body: JSON.stringify({ filename: file.file.name, contentType: file.file.type }),
       }
-    )
+    ))
 
-    if (response.ok) {
-      const { url, fields } = await response.json()
-
-      const formData = new FormData()
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value as string)
-      })
-      formData.append('file', file.file)
-
-      const uploadResponse = await axios.post(url, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent: AxiosProgressEvent) => {
-          if (!progressEvent.total) return
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-          setUploadProgress(prev => ({
-            ...prev,
-            [fileId]: percentCompleted
-          }))
-        }
-      })
-
-      if (uploadResponse.status === 204) {
-        // save the file URL to database
-        const dbRef = await fetch('/api/resource', {
-          method: 'POST',
-          body: JSON.stringify({
-            filename: file.file.name,
-            fileType: file.file.type,
-            objectKey: fields.key,
-            tags: file.tags,
-          })
-        });
-
-        return dbRef.ok
-      } else {
-        console.error('S3 Upload Error:', uploadResponse)
-        alert('Upload failed.')
-      }
-    } else {
-      alert('Failed to get pre-signed URL.')
+    if (fetchError || fetchResponse === null || !fetchResponse.ok) {
+      uploadErrorToast(fetchResponse, fetchError);
+      return false
     }
-    return false
+
+    const { data: { url, fields }, error: parseError } = await (fetchResponse.json())
+
+    if (parseError) {
+      uploadErrorToast('Error parsing upload response', parseError);
+      return false
+    }
+
+    const formData = new FormData()
+    Object.entries(fields).forEach(([key, value]) => {
+      formData.append(key, value as string)
+    })
+    formData.append('file', file.file)
+
+    const { data: uploadResponse, error: uploadError } = await tryCatch(axios.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+        if (!progressEvent.total) return
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+        setUploadProgress(prev => ({
+          ...prev,
+          [fileId]: percentCompleted
+        }))
+      }
+    }));
+
+    if (uploadError || uploadResponse.status !== 204) {
+      uploadErrorToast(uploadResponse, uploadError);
+      return false
+    }
+
+    // save the file URL to database
+    const { data: dbRef, error: dbError } = await tryCatch(fetch('/api/resource', {
+      method: 'POST',
+      body: JSON.stringify({
+        filename: file.file.name,
+        fileType: file.file.type,
+        objectKey: fields.key,
+        tags: file.tags,
+      })
+    }));
+
+    if (dbError || !dbRef.ok) {
+      uploadErrorToast(dbRef, dbError);
+      return false
+    }
+
+    return dbRef.ok
   }
 
-  // Função para simular o upload dos arquivos
   const uploadFiles = async () => {
     setIsUploading(true)
     const uploads = files.map((file) => {
@@ -237,7 +253,10 @@ export default function UploadMaterialsPage() {
       return uploadFile(file, file.id);
     });
 
-    await Promise.all(uploads);
+    const { error } = await tryCatch(Promise.all(uploads));
+    if (error) {
+      uploadErrorToast(error);
+    }
     setUploadComplete(true)
     setIsUploading(false)
   }
