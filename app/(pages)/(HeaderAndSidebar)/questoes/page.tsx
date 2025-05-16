@@ -1,33 +1,112 @@
-"use client"
+"use client";
 
 import { getQuestions } from "@/lib/question-service";
-import { columns } from "./columns";
-import { DataTable } from "@/app/components/ui/data-table";
 import TableActions from "./table-actions";
 import { TableProvider } from "@/app/context/table-context";
 import { QuestionEditorProvider } from "@/app/context/question-editor-context";
 import { PossibleQuestionTypes, QuestionFactory } from "@/lib/question";
 import { useEffect, useState } from "react";
 import { errorToast } from "@/lib/toasters";
+import { tryCatch } from "@/lib/try-catch";
+import SectionList from "./section-list";
+
+const groupByOptions: {
+  label: string;
+  value: keyof PossibleQuestionTypes;
+}[] = [
+  // { label: "Tipo", value: "type" },
+  // { label: "Tags", value: "tags" },
+  { label: "Fonte", value: "source" },
+  { label: "Dificuldade", value: "level" },
+  { label: "Disciplina", value: "subjects" },
+];
+
+export type Sections = Map<string, PossibleQuestionTypes[]>;
 
 export default function Page() {
   const [questions, setQuestions] = useState<PossibleQuestionTypes[]>([]);
+  const [filteredQuestions, setFilteredQuestions] = useState<PossibleQuestionTypes[]>([]);
   const [fetching, setFetching] = useState(false);
+  const [groupBy, setGroupBy] = useState<keyof PossibleQuestionTypes | null>(
+    null
+  );
+  const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
+  const [sections, setSections] = useState<Sections>(new Map());
+  const [subSections, setSubSections] = useState<Set<string>>(new Set());
+  const [selectedSubSections, setSelectedSubSections] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
     async function fetchData() {
-      const res = await getQuestions();
-      setQuestions(QuestionFactory.from(res));
+      const { data, error } = await tryCatch(getQuestions());
+      if (error) {
+        errorToast("Erro ao carregar questões");
+        setFetching(false);
+        return;
+      }
+      setQuestions(QuestionFactory.from(data));
     }
 
     setFetching(true);
+
     fetchData()
       .then(() => setFetching(false))
       .catch((error) => {
         errorToast("Erro ao carregar questões");
-        setFetching(false)
+        setFetching(false);
       });
   }, []);
+
+  useEffect(() => {
+    setFilteredQuestions(questions);
+  }, [questions]);
+
+  useEffect(() => {
+    setSections(new Map());
+    const newSections = new Map();
+    const newSubSections = new Set<string>();
+
+    if (!groupBy) {
+      newSections.set("Sem grupo", filteredQuestions);
+      setSections(newSections);
+      setSubSections(newSubSections);
+      return;
+    }
+
+    filteredQuestions.forEach((question) => {
+      const groupValue = question[groupBy];
+      let questionGroup = groupValue?.toString() || "Sem grupo";
+
+      if (Array.isArray(groupValue)) {
+        questionGroup = groupValue.join(", ") || "Sem grupo";
+      }
+
+      const existingSection = newSections.get(questionGroup);
+
+      if (existingSection) {
+        existingSection.push(question);
+        return;
+      }
+
+      if (!newSubSections.has(questionGroup)) {
+        newSubSections.add(questionGroup);
+      }
+
+      newSections.set(questionGroup, [question]);
+    });
+    setSections(newSections);
+    setSubSections(newSubSections);
+    setSelectedSubSections(newSubSections);
+  }, [filteredQuestions, groupBy]);
+
+  const toggleGroupBy = (option: keyof PossibleQuestionTypes | null) => {
+    if (groupBy === option) {
+      setGroupBy(null);
+    } else {
+      setGroupBy(option);
+    }
+  };
 
   if (!questions) return null;
 
@@ -43,8 +122,33 @@ export default function Page() {
     <QuestionEditorProvider>
       <TableProvider>
         <div className="container mx-auto">
-          <TableActions />
-          <DataTable columns={columns} data={questions} />
+          <TableActions
+            groupBy={groupBy}
+            groupByOptions={groupByOptions}
+            setGroupBy={toggleGroupBy}
+            subSections={subSections}
+            selectedSubSections={selectedSubSections}
+            setSelectedSubSections={setSelectedSubSections}
+            selectedQuestions={selectedQuestions}
+            setSelectedQuestions={setSelectedQuestions}
+            sections={sections}
+            setSections={setSections}
+            questions={questions}
+            setQuestions={setQuestions}
+            filteredQuestions={filteredQuestions}
+            setFilteredQuestions={setFilteredQuestions}
+          />
+          {Array.from(sections.keys()).map((section) => (!groupBy || selectedSubSections.has(section)) && (
+            <SectionList
+              key={section}
+              section={section}
+              questions={sections.get(section) || []}
+              defaultOpen={sections.size === 1}
+              groupBy={groupBy}
+              selectedQuestions={selectedQuestions}
+              setSelectedQuestions={setSelectedQuestions}
+            />
+          ))}
         </div>
       </TableProvider>
     </QuestionEditorProvider>

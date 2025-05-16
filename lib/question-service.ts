@@ -49,6 +49,9 @@ export const getQuestions = async (): Promise<Question[]> => {
     include: {
       tags: true,
     },
+    orderBy: {
+      updatedAt: "desc",
+    }
   });
 
   return postgresData.map((question) => {
@@ -216,6 +219,7 @@ export const updateQuestion = async (
           authorId: userId,
         },
         data: {
+          updatedAt: new Date(),
           type,
           level: levelOptions.indexOf(level),
           tags: {

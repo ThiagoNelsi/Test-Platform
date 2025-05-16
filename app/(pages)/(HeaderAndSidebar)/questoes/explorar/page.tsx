@@ -20,6 +20,7 @@ import { getQuestions } from "@/lib/question-service"
 import { QuestionFactory } from "@/lib/question"
 import { Tag } from "@/lib/types"
 import { errorToast } from "@/lib/toasters"
+import MultipleChoiceCard from "@/app/components/question-types/multiple-choice/card"
 
 const alternatives = ['A', 'B', 'C', 'D', 'E']
 
@@ -220,7 +221,7 @@ export default function ExploreQuestionsPage() {
     <div className="h-screen">
       <div id="main-content" className="flex flex-col flex-1 transition-all duration-300 ease-in-out">
         {/* Main Content */}
-        <main className="flex-1 p-6 max-w-[80ch] mx-auto">
+        <main className="flex-1 p-6 mx-auto">
           {/* Page Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
@@ -399,79 +400,30 @@ export default function ExploreQuestionsPage() {
             {currentQuestions.length > 0 ? (
               <>
                 {currentQuestions.map((question) => (
-                  <Card key={question.id} className="overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-3">
-                        <Checkbox
-                          id={`select-question-${question.id}`}
-                          checked={selectedQuestions.includes(question.id)}
-                          onCheckedChange={() => handleQuestionSelection(question.id)}
-                          className="mt-1"
-                        />
-
-                        <div className="flex-1">
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {question.subjects.map((subjectId) => {
-                              const subject = subjects.find((s) => s === subjectId)
-                              return subject ? (
-                                <Badge key={subject} variant="outline">
-                                  {subject}
-                                </Badge>
-                              ) : null
-                            })}
-
-                            {/* {question.tags.map((tag) => {
-                              return tag ? (
-                                <Badge key={question.id+tag} variant="outline" className="bg-gray-50 dark:bg-gray-800">
-                                  {tag}
-                                </Badge>
-                              ) : null
-                            })} */}
-
-                            {sources.find((s) => s === question.source) && (
-                              <Badge className="bg-primary">
-                                {sources.find((s) => s === question.source)}
-                              </Badge>
-                            )}
-                          </div>
-
-                          <div className="w-full">
-                            <details className="group">
-                              <summary className="flex cursor-pointer list-none items-center justify-between py-2 text-left font-normal">
-                                <p className="text-left font-normal whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: question.data.statement }}></p>
-                                <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
-                              </summary>
-                              <div className="mt-4 space-y-2">
-                                {question.data.options.map((option, index) => (
-                                  <div key={option.id} className="flex items-center gap-2">
-                                    <div className={`flex items-center justify-center font-medium w-8 h-8 border rounded-full ${question.data.answer === option.id ? "border-green-300 bg-green-100" : ""}`}>{alternatives[index]}</div>
-                                    <div className="whitespace-pre-wrap">{option.value}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            </details>
-                          </div>
-
-                          <div className="flex justify-end gap-2 mt-4">
-                            <Button variant="outline" size="sm" onClick={() => setViewQuestion(question)}>
-                              Visualizar
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                if (!selectedQuestions.includes(question.id)) {
-                                  handleQuestionSelection(question.id)
-                                }
-                                handleAddToPersonalBank()
-                              }}
-                            >
-                              Adicionar ao Banco Pessoal
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <MultipleChoiceCard
+                    key={question.id}
+                    checked={selectedQuestions.includes(question.id)}
+                    onCheckedChange={() => handleQuestionSelection(question.id)}
+                    question={question}
+                    showTags={false}
+                  >
+                    <div className="flex justify-end gap-2 mt-4">
+                      <Button variant="outline" size="sm" onClick={() => setViewQuestion(question)}>
+                        Visualizar
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          if (!selectedQuestions.includes(question.id)) {
+                            handleQuestionSelection(question.id)
+                          }
+                          handleAddToPersonalBank()
+                        }}
+                      >
+                        Adicionar ao Banco Pessoal
+                      </Button>
+                    </div>
+                  </MultipleChoiceCard>
                 ))}
 
                 {/* Pagination */}

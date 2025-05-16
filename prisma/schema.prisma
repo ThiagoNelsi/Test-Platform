@@ -64,14 +64,15 @@ model Comment {
 
 model Question {
   id                 Int        @id @default(autoincrement())
+  createdAt          DateTime   @default(now()) @db.Timestamptz(0)
+  updatedAt          DateTime   @default(now()) @db.Timestamptz(0)
+  deletedAt          DateTime?  @db.Timestamptz(0)
   type               String
   authorId           Int
   level              Int?
-  createdAt          DateTime   @default(now()) @db.Timestamptz(0)
   content            Json       @default("{}")
   originalQuestionId Int?
   version            Int        @default(1)
-  deletedAt          DateTime?  @db.Timestamptz(0)
   subjects           String[]
   author             User       @relation(fields: [authorId], references: [id])
   originalQuestion   Question?  @relation("QuestionSnapshots", fields: [originalQuestionId], references: [id])
