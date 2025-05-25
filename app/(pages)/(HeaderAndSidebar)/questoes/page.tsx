@@ -15,7 +15,7 @@ const groupByOptions: {
   value: keyof PossibleQuestionTypes;
 }[] = [
   // { label: "Tipo", value: "type" },
-  // { label: "Tags", value: "tags" },
+  { label: "Tags", value: "tags" },
   { label: "Fonte", value: "source" },
   { label: "Dificuldade", value: "level" },
   { label: "Disciplina", value: "subjects" },
@@ -25,7 +25,9 @@ export type Sections = Map<string, PossibleQuestionTypes[]>;
 
 export default function Page() {
   const [questions, setQuestions] = useState<PossibleQuestionTypes[]>([]);
-  const [filteredQuestions, setFilteredQuestions] = useState<PossibleQuestionTypes[]>([]);
+  const [filteredQuestions, setFilteredQuestions] = useState<
+    PossibleQuestionTypes[]
+  >([]);
   const [fetching, setFetching] = useState(false);
   const [groupBy, setGroupBy] = useState<keyof PossibleQuestionTypes | null>(
     null
@@ -74,6 +76,8 @@ export default function Page() {
       return;
     }
 
+    if (groupBy === "tags") return groupByTags();
+
     filteredQuestions.forEach((question) => {
       const groupValue = question[groupBy];
       let questionGroup = groupValue?.toString() || "Sem grupo";
@@ -99,6 +103,46 @@ export default function Page() {
     setSubSections(newSubSections);
     setSelectedSubSections(newSubSections);
   }, [filteredQuestions, groupBy]);
+
+  const groupByTags = () => {
+    const newSections = new Map<string, PossibleQuestionTypes[]>();
+    const newSubSections = new Set<string>();
+
+    filteredQuestions.forEach((question) => {
+      const tags = question.tags;
+
+      if (!tags || tags.length === 0) {
+        const existingSection = newSections.get("Sem tags");
+        if (existingSection) {
+          existingSection.push(question);
+        } else {
+          newSections.set("Sem tags", [question]);
+        }
+
+        if (!newSubSections.has("Sem tags")) {
+          newSubSections.add("Sem tags");
+        }
+        return;
+      }
+
+      tags.forEach((tag) => {
+        const existingSection = newSections.get(tag.name);
+
+        if (existingSection) {
+          existingSection.push(question);
+        } else {
+          newSections.set(tag.name, [question]);
+        }
+
+        if (!newSubSections.has(tag.name)) {
+          newSubSections.add(tag.name);
+        }
+      });
+    });
+    setSections(newSections);
+    setSubSections(newSubSections);
+    setSelectedSubSections(newSubSections);
+  };
 
   const toggleGroupBy = (option: keyof PossibleQuestionTypes | null) => {
     if (groupBy === option) {
@@ -138,17 +182,20 @@ export default function Page() {
             filteredQuestions={filteredQuestions}
             setFilteredQuestions={setFilteredQuestions}
           />
-          {Array.from(sections.keys()).map((section) => (!groupBy || selectedSubSections.has(section)) && (
-            <SectionList
-              key={section}
-              section={section}
-              questions={sections.get(section) || []}
-              defaultOpen={sections.size === 1}
-              groupBy={groupBy}
-              selectedQuestions={selectedQuestions}
-              setSelectedQuestions={setSelectedQuestions}
-            />
-          ))}
+          {Array.from(sections.keys()).map(
+            (section) =>
+              (!groupBy || selectedSubSections.has(section)) && (
+                <SectionList
+                  key={section}
+                  section={section}
+                  questions={sections.get(section) || []}
+                  defaultOpen={sections.size === 1}
+                  groupBy={groupBy}
+                  selectedQuestions={selectedQuestions}
+                  setSelectedQuestions={setSelectedQuestions}
+                />
+              )
+          )}
         </div>
       </TableProvider>
     </QuestionEditorProvider>
