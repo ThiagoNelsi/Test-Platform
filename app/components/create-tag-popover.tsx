@@ -49,8 +49,8 @@ export const CreateTagPopover = ({
   return (
     <Popover onOpenChange={(open) => open && inputRef.current?.focus()}>
       <PopoverTrigger asChild>
-        <Button className="bg-verdigris hover:bg-verdigris-400" type="button">
-          <MdAdd /> Criar Tag
+        <Button className="bg-verdigris hover:bg-verdigris h-8" type="button">
+          <MdAdd />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="min-w-[300px] w-[400px]">

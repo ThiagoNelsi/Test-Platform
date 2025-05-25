@@ -12,14 +12,14 @@ import CreateWithAI from "./create-with-ai"
 import { QuestionEditorProvider } from "@/app/context/question-editor-context"
 
 export default function CreateQuestionPage() {
-  const [activeTab, setActiveTab] = useState("ai")
+  const [activeTab, setActiveTab] = useState("manual")
 
   return (
     <QuestionEditorProvider>
 
       <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         <div id="main-content" className="flex flex-col flex-1 transition-all duration-300 ease-in-out">
-          <main className="flex-1 p-6">
+          <main className="flex-1">
             {/* Abas para alternar entre criação manual e IA */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">

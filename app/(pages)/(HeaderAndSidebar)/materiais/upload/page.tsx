@@ -192,7 +192,7 @@ export default function UploadMaterialsPage() {
       return false
     }
 
-    const { data: { url, fields }, error: parseError } = await (fetchResponse.json())
+    const { data: { url, fields }, error: parseError } = await tryCatch(fetchResponse.json())
 
     if (parseError) {
       uploadErrorToast('Error parsing upload response', parseError);

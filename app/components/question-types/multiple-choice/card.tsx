@@ -3,6 +3,9 @@ import { Checkbox } from "../../ui/checkbox";
 import { Badge } from "../../ui/badge";
 import { ChevronDown } from "lucide-react";
 import { MultipleChoiceQuestion } from "@/lib/multiple-choice-question";
+import { alphabet } from "@/lib/alphabet";
+import { getLevel } from "@/lib/levels";
+import { tagColors } from "@/lib/tag-colors";
 
 type Props = {
   children?: React.ReactNode;
@@ -24,34 +27,6 @@ export default function MultipleChoiceCard({
   maxHeight = undefined,
 }: Props) {
   const { subjects } = question;
-  const alphabet = [
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "O",
-    "P",
-    "Q",
-    "R",
-    "S",
-    "T",
-    "U",
-    "V",
-    "W",
-    "X",
-    "Y",
-    "Z",
-  ];
 
   const getMaxHeight = () => {
     return maxHeight ? `max-h-${maxHeight} overflow-y-auto` : ""
@@ -74,6 +49,14 @@ export default function MultipleChoiceCard({
           )}
           <div className="flex-1">
             <div className="flex flex-wrap gap-2 mb-2">
+              {question.source !== "MANUAL" && (
+                <Badge className="bg-primary">{question.source === "AI" ? "IA" : question.source}</Badge>
+              )}
+
+              {(question.level != null && question.level >= 0) && (
+                <Badge variant="outline">{getLevel(question.level)}</Badge>
+              )}
+
               {question.subjects.map((subjectId) => {
                 const subject = subjects.find((s) => s === subjectId);
                 return subject ? (
@@ -89,14 +72,16 @@ export default function MultipleChoiceCard({
                     <Badge
                       key={String(question.id) + tag.id}
                       variant="outline"
-                      className="bg-gray-50 dark:bg-gray-800"
+                      className="border-0 font-normal"
+                      style={{
+                        backgroundColor: tagColors[tag.color].background,
+                        color: tagColors[tag.color].text,
+                      }}
                     >
                       {tag.name}
                     </Badge>
                   ) : null;
                 })}
-
-              <Badge className="bg-primary">{question.source === "AI" ? "IA" : question.source}</Badge>
             </div>
           </div>
         </div>

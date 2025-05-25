@@ -25,6 +25,8 @@ export default function GroupLabel({ groupBy, section }: Props) {
     switch (section) {
       case "AI":
         return "Questões geradas por IA";
+      case "MANUAL":
+        return "Criadas por você";
       default:
         return section;
     }

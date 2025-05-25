@@ -37,7 +37,7 @@ export default function EditGeneratedQuestion() {
       options: editingQuestion.options.map((opt) => ({ ...opt, isCorrect: opt.id === id })),
     })
   }
-  
+
   return (
     <Dialog open={!!editingQuestion} onOpenChange={(open) => !open && setEditingQuestion(null)}>
       <DialogContent className="sm:max-w-2xl">

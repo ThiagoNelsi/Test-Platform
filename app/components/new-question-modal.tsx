@@ -91,7 +91,7 @@ export default function NewQuestionModal({
   const buttonText = type === "create" ? "Criar questão" : "Salvar alterações";
 
   return (
-    <DialogContent className="max-h-[95vh] md:max-w-[1000px] overflow-auto">
+    <DialogContent className="max-h-[95vh] md:max-w-[1200px] overflow-auto">
       {type === "create" ? <CreateQuestionHeader /> : <EditQuestionHeader />}
       <QuestionEditor
         submitAction={handleSubmit}
