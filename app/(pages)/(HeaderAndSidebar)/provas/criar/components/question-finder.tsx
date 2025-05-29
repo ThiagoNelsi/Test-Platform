@@ -6,6 +6,8 @@ import QuestionRenderer from "@/app/components/question-renderer";
 import { ScrollArea } from "@/app/components/ui/scroll-area";
 import { Button } from "@/app/components/ui/button";
 import { Section, useCreateTest } from "@/app/context/create-test-context";
+import MultipleChoiceCard from "@/app/components/question-types/multiple-choice/card";
+import { MultipleChoiceQuestion } from "@/lib/multiple-choice-question";
 
 type QuestionFinderProps = {
   selected: IQuestion[];
@@ -36,10 +38,14 @@ export const QuestionFinder = ({
     if (!questions) return;
 
     const filteredByTag = questions.filter((question) => {
-      return selectedTags.every((tag) =>
-        question.tags.some((t) => t.id === tag.id),
+      return (
+        selectedTags.length === 0 ||
+        question.tags.some((tag) => {
+          return selectedTags.some((selectedTag) => selectedTag.id === tag.id);
+        })
       );
     });
+
     const filteredBySearch = filteredByTag.filter((question) => {
       return question
         .getText()
@@ -65,7 +71,7 @@ export const QuestionFinder = ({
 
   const handleBringQuestion = (
     question: IQuestion,
-    sectionNumber: number | null,
+    sectionNumber: number | null
   ) => {
     if (sectionNumber === null) return;
 
@@ -76,9 +82,13 @@ export const QuestionFinder = ({
   if (!questions) return <div>Carregando questões...</div>;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid gap-10 xl:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
-        {filteredQuestions.map((question) => {
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+      {filteredQuestions.length === 0 ? (
+        <div className="col-span-full text-center text-gray-500">
+          Nenhuma questão encontrada.
+        </div>
+      ) : (
+        filteredQuestions.map((question) => {
           const allocated = allocatedQuestions.get(question.id);
           const allocatedSection = sections.find((s) => s.id === allocated);
           const sectionNumber = allocatedSection
@@ -88,7 +98,7 @@ export const QuestionFinder = ({
           const index = q ? selected.indexOf(q) : -1;
 
           return (
-            <div className="relative group" key={question.id}>
+            <div className="relative group mb-4" key={question.id}>
               {index > -1 && (
                 <div className="absolute top-0 right-0 -translate-x-1/4  translate-y-1/4  rounded-full bg-blue-500 text-white font-bold flex items-center justify-center w-8 h-8 z-50 border-2 border-white shadow-lg">
                   {index + 1}
@@ -98,7 +108,7 @@ export const QuestionFinder = ({
                 roundChildren="none"
                 onClick={() => handleSelect(question)}
                 className={
-                  "h-[400px] bg-white shadow-md px-4 py-2 rounded-lg cursor-pointer" +
+                  "[&>[data-radix-scroll-area-viewport]>div]:h-full h-full max-h-[400px] bg-white shadow-md p-0 rounded-xl cursor-pointer w-full" +
                   (selected.some((q) => q.id === question.id)
                     ? " border-2 border-blue-500"
                     : " border-0")
@@ -131,12 +141,16 @@ export const QuestionFinder = ({
                     </div>
                   </div>
                 )}
-                <QuestionRenderer question={question} />
+                <MultipleChoiceCard
+                  alwaysOpen={true}
+                  question={question as MultipleChoiceQuestion}
+                  showTags={true}
+                />
               </ScrollArea>
             </div>
           );
-        })}
-      </div>
+        })
+      )}
     </div>
   );
 };

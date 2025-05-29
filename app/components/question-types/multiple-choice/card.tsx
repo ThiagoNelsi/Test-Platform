@@ -15,6 +15,7 @@ type Props = {
   onCheckedChange?: (id: number) => void;
   showTags?: boolean;
   maxHeight?: string;
+  alwaysOpen?: boolean;
 };
 
 export default function MultipleChoiceCard({
@@ -25,17 +26,21 @@ export default function MultipleChoiceCard({
   onCheckedChange,
   showTags = false,
   maxHeight = undefined,
+  alwaysOpen = false,
 }: Props) {
   const { subjects } = question;
 
   const getMaxHeight = () => {
-    return maxHeight ? `max-h-${maxHeight} overflow-y-auto` : ""
-  }
+    return maxHeight ? `max-h-${maxHeight} overflow-y-auto` : "";
+  };
 
   return (
-    <Card key={question.id} className={`overflow-hidden max-w-[80ch] ${
-      checked ? "border-primary" : "border-gray-200 dark:border-gray-700"
-    }`}>
+    <Card
+      key={question.id}
+      className={`h-full overflow-hidden max-w-[80ch] ${
+        checked ? "border-primary" : "border-gray-200 dark:border-gray-700"
+      }`}
+    >
       <CardContent className="h-full flex flex-col justify-between p-6 pb-2">
         {/* Header */}
         <div className="flex items-start gap-3">
@@ -50,10 +55,12 @@ export default function MultipleChoiceCard({
           <div className="flex-1">
             <div className="flex flex-wrap gap-2 mb-2">
               {question.source !== "MANUAL" && (
-                <Badge className="bg-primary">{question.source === "AI" ? "IA" : question.source}</Badge>
+                <Badge className="bg-primary">
+                  {question.source === "AI" ? "IA" : question.source}
+                </Badge>
               )}
 
-              {(question.level != null && question.level >= 0) && (
+              {question.level != null && question.level >= 0 && (
                 <Badge variant="outline">{getLevel(question.level)}</Badge>
               )}
 
@@ -87,45 +94,80 @@ export default function MultipleChoiceCard({
         </div>
 
         {/* Content */}
-        <div className={`w-full text-xs h-full overflow-hidden px-2 mb-4 ${getMaxHeight()}`}>
-          <details className="group">
-            <summary className="flex flex-col gap-4 cursor-pointer list-none justify-center py-2 text-left font-normal">
-              <p
-                className={`text-left font-normal whitespace-pre-wrap`}
-                dangerouslySetInnerHTML={{
-                  __html: question.data.statement,
-                }}
-              ></p>
-              <div className="flex items-center gap-2 text-xs">
-                <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
-                Ver alternativas
-              </div>
-            </summary>
-            <div className="mt-4 space-y-2 pb-4" >
-              {question.data.options.map((option, index) => (
-                <div key={option.id} className="flex items-center gap-2">
-                  <div className="w-8">
-                    <div
-                      className={`flex items-center justify-center font-medium w-8 h-8 border rounded-full ${
-                        question.data.answer === option.id
-                          ? "border-green-300 bg-green-100"
-                          : ""
-                      }`}
-                    >
-                      {alphabet[index]}
-                    </div>
-                  </div>
-                  <div
-                    className="whitespace-pre-wrap"
-                    dangerouslySetInnerHTML={{ __html: option.value }}
-                  />
+        <div
+          className={`w-full text-xs h-full overflow-hidden px-2 mb-4 ${getMaxHeight()}`}
+        >
+          {alwaysOpen ? (
+            <>
+              <Statement statement={question.data.statement} />
+              <Options
+                options={question.data.options}
+                answer={question.data.answer}
+              />
+            </>
+          ) : (
+            <details className="group">
+              <summary className="flex flex-col gap-4 cursor-pointer list-none justify-center py-2 text-left font-normal">
+                <Statement statement={question.data.statement} />
+                <div className="flex items-center gap-2 text-xs">
+                  <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
+                  Ver alternativas
                 </div>
-              ))}
-            </div>
-          </details>
+              </summary>
+              <Options
+                options={question.data.options}
+                answer={question.data.answer}
+              />
+            </details>
+          )}
         </div>
-        <footer className="flex items-center gap-2 border-t pt-2">{children}</footer>
+        <footer className="flex items-center gap-2 border-t pt-2">
+          {children}
+        </footer>
       </CardContent>
     </Card>
+  );
+}
+
+function Statement({ statement }: { statement: string }) {
+  return (
+    <p
+      className={`text-left font-normal whitespace-pre-wrap`}
+      dangerouslySetInnerHTML={{
+        __html: statement,
+      }}
+    ></p>
+  );
+}
+
+function Options({
+  options,
+  answer,
+}: {
+  options: MultipleChoiceQuestion["data"]["options"];
+  answer: MultipleChoiceQuestion["data"]["answer"];
+}) {
+  return (
+    <div className="mt-4 space-y-2 pb-4">
+      {options.map((option, index) => (
+        <div key={option.id} className="flex items-center gap-2">
+          <div className="w-8">
+            <div
+              className={`flex items-center justify-center font-medium w-8 h-8 border rounded-full ${
+                answer === option.id
+                  ? "border-green-300 bg-green-100"
+                  : ""
+              }`}
+            >
+              {alphabet[index]}
+            </div>
+          </div>
+          <div
+            className="whitespace-pre-wrap"
+            dangerouslySetInnerHTML={{ __html: option.value }}
+          />
+        </div>
+      ))}
+    </div>
   );
 }

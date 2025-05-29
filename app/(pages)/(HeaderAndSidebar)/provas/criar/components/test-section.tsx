@@ -27,7 +27,7 @@ export const TestSection = ({ number, section }: TestSectionProps) => {
       onOpenChange={setOpen}
     >
       <CollapsibleTrigger className="w-full flex items-center gap-2 justify-between">
-        <div className="flex items-center gap-2 text-xl">
+        <div className="flex items-center gap-2 text-base">
           {open ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
           <div className="flex flex-col gap-1 items-start">
             <h1 className="font-semibold">Seção {number}</h1>
@@ -43,7 +43,7 @@ export const TestSection = ({ number, section }: TestSectionProps) => {
         >
           <span
             onClick={() => removeSection(section)}
-            className="flex items-center text-sm gap-2 hover:underline cursor-pointer"
+            className="flex items-center text-xs gap-2 hover:underline cursor-pointer"
           >
             <IoClose /> Remover esta seção
           </span>

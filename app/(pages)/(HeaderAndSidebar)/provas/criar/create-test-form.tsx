@@ -102,7 +102,7 @@ const DurationInput = ({
       {duration > 0 ? (
         <p className="flex flex-col gap-1 text-xs text-neutral-700 -translate-y-1 ml-2">
           <span>
-            Ao acessar a prova o aluno terá{" "}
+            Após iniciar a prova o aluno terá{" "}
             <strong>
               {hours > 0 ? `${hours} hora${hours > 1 ? "s" : ""}` : ""}
               {hours > 0 && minutes > 0 ? " e " : ""}
@@ -607,7 +607,7 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
             />
           ))}
           <Button
-            className="w-64 bg-verdigris-400 hover:bg-verdigris-300"
+            className="mx-auto bg-verdigris-400 hover:bg-verdigris-300"
             onClick={addSection}
           >
             <MdAdd /> Adicionar seção de questões

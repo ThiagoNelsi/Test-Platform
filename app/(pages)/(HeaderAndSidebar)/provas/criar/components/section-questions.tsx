@@ -94,7 +94,7 @@ export default function SectionQuestions({
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 text-xs">
       <div className="mt-4 rounded-lg">
         <div className="space-y-4">
           <Card

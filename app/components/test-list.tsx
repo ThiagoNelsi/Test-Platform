@@ -177,12 +177,12 @@ export default function TestList({
                         </Confirm>
                       </>
                     ) : (
-                      <Link href={`#`}>
+                      <Link href={`/provas/criar?test=${test.id}`}>
                         <Button
                           variant="outline"
                           className="text-xs md:text-sm bg-blue-500 text-white border-0 hover:bg-blue-600 hover:text-white"
                         >
-                          Ver prova
+                          Editar prova
                         </Button>
                       </Link>
                     )}
