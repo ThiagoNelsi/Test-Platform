@@ -19,7 +19,7 @@ export type Question = {
   id: number;
   originalQuestionId: number | null;
   type: QuestionType;
-  data: any;
+  content: any;
   subjects: string[];
   tags: Tag[];
   createdAt: Date | null;

@@ -1,10 +1,10 @@
-import { MultipleChoiceQuestionData } from "@/lib/multiple-choice-question";
+import { MultipleChoiceQuestionContent } from "@/lib/multiple-choice-question";
 import { Separator } from "../../ui/separator";
 
 export default function MultipleChoiceRenderer({
   content,
 }: {
-  content: MultipleChoiceQuestionData;
+  content: MultipleChoiceQuestionContent;
 }) {
   const { statement, options } = content;
 

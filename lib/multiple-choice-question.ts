@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { IQuestion, Question, QuestionType, Tag } from "./types";
 import { extractTextFromHTML } from "./utils";
 
-export type MultipleChoiceQuestionData = {
+export type MultipleChoiceQuestionContent = {
   statement: string;
   options: Option[];
   answer: string;
@@ -13,7 +13,7 @@ export class MultipleChoiceQuestion implements IQuestion {
   public originalQuestionId: number | null;
   public type: QuestionType;
   public level: number | null;
-  public data: MultipleChoiceQuestionData;
+  public content: MultipleChoiceQuestionContent;
   public subjects: string[]
   public tags: Tag[];
   public authorId: number | null;
@@ -33,14 +33,14 @@ export class MultipleChoiceQuestion implements IQuestion {
     }
     this.type = question.type;
     this.level = question.level;
-    this.data = {
-      statement: question.data.statement,
-      options: Option.fromArray(question.data.options),
-      answer: question.data.answer,
+    this.content = {
+      statement: question.content.statement,
+      options: Option.fromArray(question.content.options),
+      answer: question.content.answer,
     };
 
-    if (typeof(this.data.answer) === "number") {
-      this.data.answer = this.data.options[this.data.answer].id;
+    if (typeof(this.content.answer) === "number") {
+      this.content.answer = this.content.options[this.content.answer].id;
     }
 
     this.subjects = question.subjects;
@@ -52,12 +52,12 @@ export class MultipleChoiceQuestion implements IQuestion {
   }
 
   getText(): string {
-    const optionsText = this.data.options
+    const optionsText = this.content.options
       .map((option) => {
         return extractTextFromHTML(option.value);
       })
       .join("\n");
-    return extractTextFromHTML(this.data.statement) + "\n" + optionsText;
+    return extractTextFromHTML(this.content.statement) + "\n" + optionsText;
   }
 
   static empty(emptyOptions: boolean = false): MultipleChoiceQuestion {
@@ -66,7 +66,7 @@ export class MultipleChoiceQuestion implements IQuestion {
       originalQuestionId: null,
       type: "multiple_choice",
       level: null,
-      data: {
+      content: {
         statement: "",
         options: emptyOptions ? [] : [new Option(""), new Option("")],
         answer: "",

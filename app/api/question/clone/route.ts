@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       level: question.level,
       source: question.source,
       subjects: question.subjects,
-      content: question.data,
+      content: question.content,
     }))
   })
 

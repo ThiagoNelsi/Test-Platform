@@ -9,15 +9,15 @@ type EditorContextType = {
   setQuestion: Dispatch<SetStateAction<PossibleQuestionTypes>>;
 
   setId: (id: PossibleQuestionTypes["id"]) => void;
-  setData: (data: PossibleQuestionTypes["data"]) => void;
+  setData: (data: PossibleQuestionTypes["content"]) => void;
   setLevel: (level: PossibleQuestionTypes["level"]) => void;
   setType: (type: PossibleQuestionTypes["type"]) => void;
   setSubjects: (subjects: PossibleQuestionTypes["subjects"]) => void;
   setTags: (tags: PossibleQuestionTypes["tags"]) => void;
 
-  setStatement: (statement: PossibleQuestionTypes["data"]["statement"]) => void;
-  setOptions: (options: PossibleQuestionTypes["data"]["options"]) => void;
-  setAnswer: (correctAnswer: PossibleQuestionTypes["data"]["answer"]) => void;
+  setStatement: (statement: PossibleQuestionTypes["content"]["statement"]) => void;
+  setOptions: (options: PossibleQuestionTypes["content"]["options"]) => void;
+  setAnswer: (correctAnswer: PossibleQuestionTypes["content"]["answer"]) => void;
 };
 
 const QuestionEditorContext = createContext<EditorContextType | undefined>(
@@ -35,8 +35,8 @@ export const QuestionEditorProvider = ({
     setQuestion((prev) => ({ ...prev, id } as PossibleQuestionTypes));
   }
 
-  const setData = (data: PossibleQuestionTypes["data"]) => {
-    setQuestion((prev) => ({ ...prev, data } as PossibleQuestionTypes));
+  const setData = (data: PossibleQuestionTypes["content"]) => {
+    setQuestion((prev) => ({ ...prev, content: data } as PossibleQuestionTypes));
   };
 
   const setLevel = (level: PossibleQuestionTypes["level"]) => {
@@ -55,31 +55,31 @@ export const QuestionEditorProvider = ({
     setQuestion((prev) => ({ ...prev, tags } as PossibleQuestionTypes));
   };
 
-  const setStatement = (statement: PossibleQuestionTypes["data"]["statement"]) => {
+  const setStatement = (statement: PossibleQuestionTypes["content"]["statement"]) => {
     setQuestion((prev) => ({
       ...prev,
-      data: {
-        ...prev.data,
+      content: {
+        ...prev.content,
         statement,
       },
     } as PossibleQuestionTypes));
   };
 
-  const setOptions = (options: PossibleQuestionTypes["data"]["options"]) => {
+  const setOptions = (options: PossibleQuestionTypes["content"]["options"]) => {
     setQuestion((prev) => ({
       ...prev,
-      data: {
-        ...prev.data,
+      content: {
+        ...prev.content,
         options,
       },
     } as PossibleQuestionTypes));
   }
 
-  const setAnswer = (answer: PossibleQuestionTypes["data"]["answer"]) => {
+  const setAnswer = (answer: PossibleQuestionTypes["content"]["answer"]) => {
     setQuestion((prev) => ({
       ...prev,
-      data: {
-        ...prev.data,
+      content: {
+        ...prev.content,
         answer,
       },
     } as PossibleQuestionTypes));

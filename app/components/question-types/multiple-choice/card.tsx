@@ -99,24 +99,24 @@ export default function MultipleChoiceCard({
         >
           {alwaysOpen ? (
             <>
-              <Statement statement={question.data.statement} />
+              <Statement statement={question.content.statement} />
               <Options
-                options={question.data.options}
-                answer={question.data.answer}
+                options={question.content.options}
+                answer={question.content.answer}
               />
             </>
           ) : (
             <details className="group">
               <summary className="flex flex-col gap-4 cursor-pointer list-none justify-center py-2 text-left font-normal">
-                <Statement statement={question.data.statement} />
+                <Statement statement={question.content.statement} />
                 <div className="flex items-center gap-2 text-xs">
                   <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
                   Ver alternativas
                 </div>
               </summary>
               <Options
-                options={question.data.options}
-                answer={question.data.answer}
+                options={question.content.options}
+                answer={question.content.answer}
               />
             </details>
           )}
@@ -144,8 +144,8 @@ function Options({
   options,
   answer,
 }: {
-  options: MultipleChoiceQuestion["data"]["options"];
-  answer: MultipleChoiceQuestion["data"]["answer"];
+  options: MultipleChoiceQuestion["content"]["options"];
+  answer: MultipleChoiceQuestion["content"]["answer"];
 }) {
   return (
     <div className="mt-4 space-y-2 pb-4">

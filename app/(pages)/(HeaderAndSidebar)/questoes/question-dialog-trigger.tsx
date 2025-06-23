@@ -21,7 +21,7 @@ export default function QuestionDialogTrigger({
 
   const setInitialData = (question: PossibleQuestionTypes) => {
     setId(question.id);
-    setData(question.data);
+    setData(question.content);
     setType(question.type);
     setLevel(question.level);
     setTags(question.tags);
@@ -29,7 +29,7 @@ export default function QuestionDialogTrigger({
 
   const clearInitialData = () => {
     const question = MultipleChoiceQuestion.empty();
-    setData(question.data);
+    setData(question.content);
     setType(question.type);
     setLevel(question.level);
     setTags(question.tags);

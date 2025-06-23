@@ -32,7 +32,7 @@ export const getQuestion = async (
   return {
     ...postgresData,
     type: postgresData.type as QuestionType,
-    data: postgresData.content,
+    content: postgresData.content,
   };
 };
 

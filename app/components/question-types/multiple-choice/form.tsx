@@ -17,8 +17,8 @@ export default function MultipleChoiceForm({}: MultipleChoiceFormProps) {
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!question.data || question.data.statement === undefined || question.data.options === undefined) {
-      setData(MultipleChoiceQuestion.empty().data);
+    if (!question.content || question.content.statement === undefined || question.content.options === undefined) {
+      setData(MultipleChoiceQuestion.empty().content);
       setOptions([
         new Option(""),
         new Option(""),
@@ -26,7 +26,7 @@ export default function MultipleChoiceForm({}: MultipleChoiceFormProps) {
     }
   }, []);
 
-  if (question.data?.statement === undefined || question.data?.options === undefined) {
+  if (question.content?.statement === undefined || question.content?.options === undefined) {
     return null;
   }
 
@@ -36,15 +36,15 @@ export default function MultipleChoiceForm({}: MultipleChoiceFormProps) {
         autofocus
         ref={editorRef}
         showToolbar={true}
-        content={question.data.statement}
+        content={question.content.statement}
         onChange={(content) => setStatement(content?.toString() ?? "")}
         placeholder="Digite o enunciado da questão..."
         className="min-h-72"
       />
       <Options
-        options={question.data.options}
+        options={question.content.options}
         setOptions={setOptions as Dispatch<SetStateAction<Option[]>>}
-        answer={question.data.answer}
+        answer={question.content.answer}
         setAnswer={setAnswer}
       />
     </div>

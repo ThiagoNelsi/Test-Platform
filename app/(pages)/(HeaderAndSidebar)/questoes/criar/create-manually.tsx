@@ -12,7 +12,7 @@ export default function CreateQuestionManually() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const { errors, ...validatedData } = valitadeMultipleChoice(question.data);
+    const { errors, ...validatedData } = valitadeMultipleChoice(question.content);
 
     if (errors) {
       return errorToast("- " + errors.join("\n- "));

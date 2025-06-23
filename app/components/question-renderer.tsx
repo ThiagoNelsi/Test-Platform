@@ -6,7 +6,7 @@ export default function QuestionRenderer({ question }: { question: Question }) {
 
   switch (type) {
     case "multiple_choice":
-      return <MultipleChoiceRenderer content={question.data} />;
+      return <MultipleChoiceRenderer content={question.content} />;
     default:
       return null;
   }

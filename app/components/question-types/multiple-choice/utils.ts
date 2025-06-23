@@ -1,6 +1,6 @@
-import { MultipleChoiceQuestionData } from "@/lib/multiple-choice-question";
+import { MultipleChoiceQuestionContent } from "@/lib/multiple-choice-question";
 
-export const valitadeMultipleChoice = (data: MultipleChoiceQuestionData) => {
+export const valitadeMultipleChoice = (data: MultipleChoiceQuestionContent) => {
   const errors = [];
 
   if (!data) {

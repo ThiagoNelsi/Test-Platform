@@ -96,7 +96,7 @@ export default function ExploreQuestionsPage() {
     let results = questions
 
     if (searchQuery) {
-      results = results.filter((q) => q.data.statement.toLowerCase().includes(searchQuery.toLowerCase()))
+      results = results.filter((q) => q.content.statement.toLowerCase().includes(searchQuery.toLowerCase()))
     }
 
     if (selectedSubjects.length > 0) {
@@ -497,21 +497,21 @@ export default function ExploreQuestionsPage() {
 
               {/* Question text */}
               <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
-                <p className="font-medium mb-6 whitespace-pre-wrap prose-lg">{viewQuestion.data.statement}</p>
+                <p className="font-medium mb-6 whitespace-pre-wrap prose-lg">{viewQuestion.content.statement}</p>
 
                 <div className="space-y-3">
-                  {viewQuestion.data.options.map((option, index) => (
+                  {viewQuestion.content.options.map((option, index) => (
                     <div
                       key={option.id}
                       className={`flex items-start gap-2 p-2 rounded-md ${
-                        index === Number(viewQuestion.data.answer)
+                        index === Number(viewQuestion.content.answer)
                           ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
                           : ""
                       }`}
                     >
                       <div
                         className={`font-medium min-w-[20px] ${
-                          index === Number(viewQuestion.data.answer) ? "text-green-600 dark:text-green-400" : ""
+                          index === Number(viewQuestion.content.answer) ? "text-green-600 dark:text-green-400" : ""
                         }`}
                       >
                         {alternatives[index].toUpperCase()})
