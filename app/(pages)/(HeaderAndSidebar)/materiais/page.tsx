@@ -4,19 +4,13 @@ import { Button } from "@/app/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getFileIcon } from "./utils";
 import { tryCatch } from "@/lib/try-catch";
 import { errorToast } from "@/lib/toasters";
-
-const statuses = {
-  UPLOADED: "Enviando",
-  PROCESSING: "Processando",
-  PROCESSED: "Pronto para usar",
-  FAILED: "Erro"
-} as const;
+import { Resource } from "@/lib/types";
+import ResourceCard from "./components/resource-card";
 
 export default function Page() {
-  const [resources, setResources] = useState<any[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,18 +55,9 @@ export default function Page() {
           <Plus className="w-4 h-4" /> Adicionar Material
         </Link>
       </Button>
-      <div className="grid gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {resources.map((resource) => (
-          <div className="flex items-center gap-4" key={resource.id}>
-            {getFileIcon({
-              type: resource.fileType
-            } as File)}
-            <div className="border p-4 rounded-md bg-white">
-              <h2 className="text-lg font-semibold">{resource.filename}</h2>
-              {resource.status !== 'PROCESSED' && <p className="flex items-center gap-4">{statuses[resource.status]}</p>}
-              <p>{resource.tags.join(", ")}</p>
-            </div>
-          </div>
+          <ResourceCard key={resource.id} resource={resource} />
         ))}
       </div>
     </div>

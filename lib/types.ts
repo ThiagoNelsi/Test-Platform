@@ -45,3 +45,19 @@ export type TestData = {
   classroomIds: number[];
   status: "draft" | "published" | "scheduled";
 };
+
+export type ResourceStatus = "UPLOADED" | "PROCESSING" | "PROCESSED" | "FAILED";
+
+export type Resource = {
+  id: number;
+  createdAt: Date;
+  deletedAt: Date | null;
+  processedAt: Date | null;
+  ownerId: number;
+  status: ResourceStatus;
+  filename: string;
+  fileType: string;
+  tags: string[];
+  objectKey: string;
+  jobId: string | null;
+}
