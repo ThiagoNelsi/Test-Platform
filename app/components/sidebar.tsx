@@ -14,7 +14,7 @@ const navItems = [
   { icon: FileText, label: "Provas e Simulados", href: "/provas" },
   { icon: BookOpen, label: "Meus Materiais", href: "/materiais" },
   { icon: Search, label: "Explorar questões", href: "/questoes/explorar" },
-  { icon: Sparkles, label: "Gerar questões com IA", href: "/questoes/criar" }
+  { icon: Sparkles, label: "Gerar questões com IA", href: "/questoes/criar?tab=ai" }
   // { icon: PenTool, label: "Correções", href: "/correcoes" },
   // { icon: BarChart, label: "Relatórios", href: "/relatorios" },
   // { icon: Settings, label: "Configurações", href: "/configuracoes" },
