@@ -68,8 +68,7 @@ export default function ExploreQuestionsPage() {
 
     const parsed = QuestionFactory.from(data.questions.map((question: any) => ({
       ...question,
-      content: undefined,
-      data: JSON.parse(question.content)
+      content: JSON.parse(question.content)
     })))
     setQuestions(parsed);
     setFilteredQuestions(parsed);
