@@ -30,10 +30,16 @@ export type StreamedQuestion = {
   topic?: string
 }
 
-export default function CreateWithAI() {
+type CreateWithAIProps = {
+  preSelectedResource?: string
+}
+
+export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps) {
   const [materials, setMaterials] = useState<Material[] | null>(null)
-  const [selectedMaterials, setSelectedMaterials] = useState<number[]>([])
-  const [showMaterialSelector, setShowMaterialSelector] = useState(true)
+  const [selectedMaterials, setSelectedMaterials] = useState<number[]>([
+    ...(preSelectedResource ? [parseInt(preSelectedResource)] : []),
+  ])
+  const [showMaterialSelector, setShowMaterialSelector] = useState(preSelectedResource === undefined ? true : false);
   const [aiPrompt, setAiPrompt] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [isReasoning, setIsReasoning] = useState(false)

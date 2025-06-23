@@ -10,9 +10,14 @@ import { Tabs, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
 import CreateQuestionManually from "./create-manually"
 import CreateWithAI from "./create-with-ai"
 import { QuestionEditorProvider } from "@/app/context/question-editor-context"
+import { useSearchParams } from "next/navigation"
 
 export default function CreateQuestionPage() {
-  const [activeTab, setActiveTab] = useState("manual")
+  const params = useSearchParams();
+  const initalTab = params.get("tab") || "manual";
+  const resourceId = params.get("resourceId");
+
+  const [activeTab, setActiveTab] = useState(initalTab);
 
   return (
     <QuestionEditorProvider>
@@ -34,7 +39,7 @@ export default function CreateQuestionPage() {
               </TabsList>
 
               <CreateQuestionManually />
-              <CreateWithAI />
+              <CreateWithAI preSelectedResource={resourceId ? resourceId : undefined} />
             </Tabs>
           </main>
         </div>
