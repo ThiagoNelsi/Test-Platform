@@ -4,7 +4,7 @@ import { TabsContent } from "@/app/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Label } from "@/app/components/ui/label";
 import { Button } from "@/app/components/ui/button";
-import { CircleHelp, FileText, ImageIcon, Lightbulb, Loader2, Sparkles, X } from "lucide-react";
+import { CircleHelp, FileText, ImageIcon, Lightbulb, Loader2, Plus, Sparkles, X } from "lucide-react";
 import { Textarea } from "@/app/components/ui/textarea";
 import MaterialSelectorDialog from "./material-selector";
 import { socket } from "@/app/socket";
@@ -328,21 +328,6 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
                 />
               </div>
 
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-2"
-                  onClick={() => setShowMaterialSelector(true)}
-                >
-                  <FileText className="h-4 w-4" />
-                  <span>
-                    {selectedMaterials.length
-                      ? `${selectedMaterials.length} material(is) selecionado(s)`
-                      : "Selecionar materiais"}
-                  </span>
-                </Button>
-              </div>
-
               {selectedMaterials.length > 0 && (
                 <div className="mt-3 space-y-2">
                   {selectedMaterials.map((id) => {
@@ -352,7 +337,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
                     return (
                       <div
                         key={id}
-                        className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-md"
+                        className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 border-2 rounded-md border-red-500"
                       >
                         {getMaterialIcon(material.fileType)}
                         <div className="flex-1 min-w-0">
@@ -374,6 +359,14 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
                   })}
                 </div>
               )}
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={() => setShowMaterialSelector(true)}
+              >
+                <Plus className="h-4 w-4" />
+                <span>Adicionar materiais</span>
+              </Button>
             </div>
             <div className="flex flex-col gap-4">
               <Label>Modelo</Label>

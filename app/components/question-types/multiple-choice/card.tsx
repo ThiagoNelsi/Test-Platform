@@ -6,6 +6,8 @@ import { MultipleChoiceQuestion } from "@/lib/multiple-choice-question";
 import { alphabet } from "@/lib/alphabet";
 import { getLevel } from "@/lib/levels";
 import { tagColors } from "@/lib/tag-colors";
+import { AlphabeticalRadioGroup } from "../../alphabetical-radio-input/radio-group";
+import { AlphabeticalRadioItem } from "../../alphabetical-radio-input/radio-item";
 
 type Props = {
   children?: React.ReactNode;
@@ -149,25 +151,20 @@ function Options({
 }) {
   return (
     <div className="mt-4 space-y-2 pb-4">
-      {options.map((option, index) => (
-        <div key={option.id} className="flex items-center gap-2">
-          <div className="w-8">
-            <div
-              className={`flex items-center justify-center font-medium w-8 h-8 border rounded-full ${
-                answer === option.id
-                  ? "border-green-300 bg-green-100"
-                  : ""
-              }`}
-            >
-              {alphabet[index]}
-            </div>
-          </div>
-          <div
-            className="whitespace-pre-wrap"
-            dangerouslySetInnerHTML={{ __html: option.value }}
+      <AlphabeticalRadioGroup
+        value={answer || ""}
+        onValueChange={() => {}}
+        viewOnly={true}
+        className="text-xs"
+      >
+        {options.map((option, index) => (
+          <AlphabeticalRadioItem
+            key={option.id}
+            value={option.id}
+            innerHTML={option.value || ""}
           />
-        </div>
-      ))}
+        ))}
+      </AlphabeticalRadioGroup>
     </div>
   );
 }

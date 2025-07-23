@@ -1,3 +1,4 @@
+import { PossibleQuestionTypes } from "./question";
 import { IQuestion } from "./types";
 
 export interface ISection<T> {
@@ -6,12 +7,7 @@ export interface ISection<T> {
     questions: T[];
 }
 
-type SubmissionSectionQuestion = Pick<IQuestion, 'id' | 'originalQuestionId' | 'type' | 'version'> & {
-    content: {
-        statement: string;
-        options: string[];
-    };
-}
+type SubmissionSectionQuestion = Pick<PossibleQuestionTypes, 'id' | 'originalQuestionId' | 'type' | 'version' | 'content'>
 
 class SectionQuestion {
     public questionId: number;

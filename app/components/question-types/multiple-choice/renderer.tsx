@@ -1,5 +1,7 @@
 import { MultipleChoiceQuestionContent } from "@/lib/multiple-choice-question";
 import { Separator } from "../../ui/separator";
+import { AlphabeticalRadioGroup } from "../../alphabetical-radio-input/radio-group";
+import { AlphabeticalRadioItem } from "../../alphabetical-radio-input/radio-item";
 
 export default function MultipleChoiceRenderer({
   content,
@@ -18,20 +20,19 @@ export default function MultipleChoiceRenderer({
       </div>
       <Separator className="my-5" />
       <div className="flex flex-col gap-2">
-        {options &&
-          options.map((option, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={option.id === content.answer}
-                onChange={() => {}}
-              />
-              <div
-                className="whitespaces-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: option.value || "" }}
-              />
-            </div>
+        <AlphabeticalRadioGroup
+          value={content.answer}
+          onValueChange={(value) => {}}
+          viewOnly
+        >
+          {options && options.map((option, index) => (
+            <AlphabeticalRadioItem
+              key={option.id}
+              value={option.id}
+              innerHTML={option.value || ""}
+            />
           ))}
+        </AlphabeticalRadioGroup>
       </div>
     </div>
   );

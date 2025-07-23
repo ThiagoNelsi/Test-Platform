@@ -36,10 +36,19 @@ const generateSections = async (test: Test) => {
     // random questions
     if (section.count != undefined) {
       const selectedQuestions = [];
+      const availableQuestions = [...section.questions];
+
+      if (availableQuestions.length < section.count) {
+        console.error("Not enough questions available for the section");
+        return null;
+      }
 
       for (let i = 0; i < section.count; i++) {
-        const randomIndex = Math.floor(Math.random() * section.questions.length);
-        const question = section.questions[randomIndex];
+        const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+
+        // remove the selected question from the available questions
+        const [question] = availableQuestions.splice(randomIndex, 1);
+
         const questionData = questions.find(q => {
           if (q.originalQuestionId) {
             return q.originalQuestionId === question.questionId;
@@ -57,10 +66,10 @@ const generateSections = async (test: Test) => {
 
     // shuffle
     if (section.shuffle != undefined) {
-      const shuffle = (array: typeof section.questions) => { 
-        for (let i = array.length - 1; i > 0; i--) { 
-          const j = Math.floor(Math.random() * (i + 1)); 
-          [array[i], array[j]] = [array[j], array[i]]; 
+      const shuffle = (array: typeof section.questions) => {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
       };

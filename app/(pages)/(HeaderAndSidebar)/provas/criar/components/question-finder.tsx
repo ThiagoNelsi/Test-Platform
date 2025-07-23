@@ -2,7 +2,6 @@
 
 import { IQuestion, Tag } from "@/lib/types";
 import { useEffect, useState } from "react";
-import QuestionRenderer from "@/app/components/question-renderer";
 import { ScrollArea } from "@/app/components/ui/scroll-area";
 import { Button } from "@/app/components/ui/button";
 import { Section, useCreateTest } from "@/app/context/create-test-context";

@@ -128,7 +128,7 @@ const DurationInput = ({
   );
 };
 
-const validateAndFormat = (data: TestData, isDraft: boolean) => {
+const validateAndFormat = (data: TestData, isDraft: boolean, enablePublishDate: boolean) => {
   console.log(isDraft);
   const errors = [];
 
@@ -147,7 +147,7 @@ const validateAndFormat = (data: TestData, isDraft: boolean) => {
           "Data de publicação não pode ser posterior à data de entrega",
         );
     }
-    if (data.publishDate && data.publishDate.getTime() < new Date().getTime())
+    if (enablePublishDate && data.publishDate && data.publishDate.getTime() < new Date().getTime())
       errors.push("Data de publicação inválida");
     if (data.classroomIds.length < 1) errors.push("Turma não definida");
 
@@ -363,6 +363,7 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
         status,
       },
       false,
+      enablePublishDate,
     );
 
     if (!result.valid && "errors" in result) {
@@ -399,6 +400,7 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
         status: "draft",
       },
       true,
+      enablePublishDate,
     );
 
     if (!result.valid && "errors" in result) {
