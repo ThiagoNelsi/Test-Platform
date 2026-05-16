@@ -44,8 +44,8 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isReasoning, setIsReasoning] = useState(false)
   const [streamedQuestions, setStreamedQuestions] = useState<StreamedQuestion[]>([])
-  const [model, setModel] = useState("o4-mini")
-  const [modelOptions, setModelOptions] = useState<string[]>(["o4-mini", "o3-mini", "gpt-4o-mini", "gpt-3.5-turbo"])
+  const [model, setModel] = useState("gpt-5.4-mini")
+  const [modelOptions, setModelOptions] = useState<string[]>(["gpt-5.4-mini", "o4-mini", "o3-mini", "gpt-4o-mini", "gpt-3.5-turbo"])
 
   // socket
   const [isConnected, setIsConnected] = useState(false);
