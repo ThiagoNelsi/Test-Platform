@@ -82,7 +82,7 @@ export default function SectionList({
         )}
       </CollapsibleTrigger>
       <CollapsibleContent className="pb-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
+        <div className="flex flex-col items-center gap-4 mb-4">
           {questions.map((question, index) => (
             <MultipleChoiceCard
               key={index}

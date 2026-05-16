@@ -39,7 +39,7 @@ export default function MultipleChoiceCard({
   return (
     <Card
       key={question.id}
-      className={`h-full overflow-hidden max-w-[80ch] ${
+      className={`w-full h-full overflow-hidden max-w-[80ch] ${
         checked ? "border-primary" : "border-gray-200 dark:border-gray-700"
       }`}
     >
