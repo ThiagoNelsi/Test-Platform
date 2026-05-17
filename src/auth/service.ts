@@ -1,4 +1,5 @@
 import type { CookieOptions } from 'express';
+import type { PrismaClient } from '@prisma/client';
 import { buildGoogleAuthUrl, exchangeCodeForTokens, getGoogleUser, type FetchLike } from './oauth';
 import { signSessionToken, verifySessionToken } from './jwt';
 
@@ -6,36 +7,15 @@ export type BackendUser = {
   id: number;
   name: string;
   email: string;
-  image: string | null;
-  googleSub?: string | null;
 };
 
 export type AuthUserRecord = {
   id: number;
   name: string;
   email: string;
-  image: string | null;
-  googleSub?: string | null;
 };
 
-export type AuthPrisma = {
-  user: {
-    findUnique(args: { where: { id?: number; email?: string } }): Promise<AuthUserRecord | null>;
-    create(args: {
-      data: {
-        email: string;
-        name: string;
-        image: string | null;
-        googleSub?: string | null;
-        password: string;
-      };
-    }): Promise<AuthUserRecord>;
-    update(args: {
-      where: { id: number };
-      data: Partial<Pick<AuthUserRecord, 'name' | 'image' | 'googleSub'>>;
-    }): Promise<AuthUserRecord>;
-  };
-};
+export type AuthPrisma = Pick<PrismaClient, 'user'>;
 
 export type AuthServiceDeps = {
   prisma: AuthPrisma;
@@ -55,46 +35,45 @@ function toPublicUser(user: AuthUserRecord): BackendUser {
     id: user.id,
     name: user.name,
     email: user.email,
-    image: user.image,
-    googleSub: user.googleSub,
   };
 }
 
 async function upsertGoogleUser(prisma: AuthPrisma, profile: { email?: string; name?: string; picture?: string | null; sub?: string }): Promise<AuthUserRecord> {
+
   if (!profile.email) {
     throw new Error('No email in Google profile');
   }
 
-  const existingUser = await prisma.user.findUnique({ where: { email: profile.email } });
+  const userSelect = {
+    id: true,
+    name: true,
+    email: true,
+  } as const;
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: profile.email },
+    select: userSelect,
+  });
 
   if (!existingUser) {
     return prisma.user.create({
       data: {
         email: profile.email,
         name: profile.name || 'Sem nome',
-        image: profile.picture || null,
-        googleSub: profile.sub || null,
         password: 'oauth',
       },
+      select: userSelect,
     });
   }
 
-  const updateData: Partial<Pick<AuthUserRecord, 'name' | 'image' | 'googleSub'>> = {};
+  const updateData: Partial<Pick<AuthUserRecord, 'name'>> = {};
 
   if (profile.name && existingUser.name !== profile.name) {
     updateData.name = profile.name;
   }
 
-  if (existingUser.image !== (profile.picture || null)) {
-    updateData.image = profile.picture || null;
-  }
-
-  if (profile.sub && existingUser.googleSub !== profile.sub) {
-    updateData.googleSub = profile.sub;
-  }
-
   if (Object.keys(updateData).length > 0) {
-    return prisma.user.update({ where: { id: existingUser.id }, data: updateData });
+    return prisma.user.update({ where: { id: existingUser.id }, data: updateData, select: userSelect });
   }
 
   return existingUser;
@@ -154,7 +133,14 @@ export function createAuthService(deps: AuthServiceDeps) {
         return null;
       }
 
-      const user = await deps.prisma.user.findUnique({ where: { id: payload.userId } });
+      const user = await deps.prisma.user.findUnique({
+        where: { id: payload.userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      });
 
       return user ? toPublicUser(user) : null;
     },
