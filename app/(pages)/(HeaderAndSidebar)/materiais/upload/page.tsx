@@ -286,7 +286,7 @@ export default function UploadMaterialsPage() {
             <AlertTitle>Dica de organização</AlertTitle>
             <AlertDescription>
               Você pode renomear arquivos e adicionar tags antes de fazer o upload. As tags facilitam a busca e
-              organização dos seus materiais posteriormente. Basta clicar no botão "Editar" ao lado do arquivo
+              organização dos seus materiais posteriormente. Basta clicar no botão &quot;Editar&quot; ao lado do arquivo
             </AlertDescription>
           </Alert>
 

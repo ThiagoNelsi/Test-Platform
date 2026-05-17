@@ -1,11 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { BookOpen, Check, ChevronDown, Filter, LoaderCircle, Plus, Search, X } from "lucide-react"
+import { BookOpen, Check, Filter, LoaderCircle, Plus, Search, X } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Badge } from "@/app/components/ui/badge"
-import { Card, CardContent } from "@/app/components/ui/card"
 import { Checkbox } from "@/app/components/ui/checkbox"
 import {
   Dialog,
@@ -16,7 +15,6 @@ import {
   DialogTitle,
 } from "@/app/components/ui/dialog"
 import { Pagination } from "./components/pagination"
-import { getQuestions } from "@/lib/question-service"
 import { QuestionFactory } from "@/lib/question"
 import { Tag } from "@/lib/types"
 import { errorToast } from "@/lib/toasters"

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { v4 } from "uuid";
 
 export async function POST(request: NextRequest) {
   const sessionCookie = request.cookies.get("session")?.value;

@@ -36,7 +36,8 @@ export function useAuth() {
     const backend = process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
     try {
       await fetch(`${backend.replace(/\/+$/g, "")}/auth/logout`, { method: "POST", credentials: "include" });
-    } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error: unknown) {
       // ignore
     }
     window.location.href = "/login";

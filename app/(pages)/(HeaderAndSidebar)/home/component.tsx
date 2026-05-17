@@ -6,7 +6,6 @@ import { MdAdd } from "react-icons/md";
 import { IoDocumentsOutline } from "react-icons/io5";
 import Link from "next/link";
 import { FaTasks } from "react-icons/fa";
-import { useState } from "react";
 
 type Props = {
   ownedClasses: ClassroomWithOwner[];
@@ -35,8 +34,6 @@ const TeacherActions = () => {
 };
 
 export default function Component({ ownedClasses }: Props) {
-  const [v, setV] = useState("option1");
-
   return (
     <div className="max-w-[1500px] size-full mx-auto overflow-auto">
       <TeacherActions />

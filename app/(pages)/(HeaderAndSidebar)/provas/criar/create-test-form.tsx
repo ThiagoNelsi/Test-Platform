@@ -61,7 +61,7 @@ const DurationInput = ({
 
   useEffect(() => {
     setDuration(hours * 60 + minutes);
-  }, [hours, minutes]);
+  }, [hours, minutes, setDuration]);
 
   useEffect(() => {
     setHours(Math.floor(duration / 60));
@@ -221,7 +221,6 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
     setAllocatedQuestions,
   } = useCreateTest();
 
-  const [testId, setTestId] = useState<number | null>(test?.id || null);
   const [testName, setTestName] = useState<string>(test?.name || "");
   const [testValue, setTestValue] = useState<number>(test?.value || 10);
   const [testDescription, setTestDescription] = useState<string>(
@@ -259,7 +258,7 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
       });
       setAllocatedQuestions(allocatedQuestions);
     }
-  }, [test]);
+  }, [test, setSections, setAllocatedQuestions]);
 
   useEffect(() => {
     const channel = new BroadcastChannel("question-change");
@@ -324,7 +323,68 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
     return () => {
       channel.close();
     };
-  }, [sections, questions]);
+  }, [sections, questions, updateSection, setQuestions]);
+
+
+  const handleSave = useCallback(
+    async (autoSave: boolean = false) => {
+      if (!test?.id) return;
+
+      const result = validateAndFormat(
+        {
+          name: testName,
+          value: testValue,
+          description: testDescription,
+          dueDate: testDueDate,
+          duration: testDuration,
+          publishDate,
+          sections,
+          classroomIds: selectedClassrooms,
+          status: "draft",
+        },
+        true,
+        enablePublishDate,
+      );
+
+      if (!result.valid && "errors" in result) {
+        const text = "Erros: \n - " + result.errors.join("\n - ");
+        errorToast(text);
+        return;
+      }
+
+      if (!("data" in result)) return;
+
+      const { data, error } = await tryCatch(updateTest(test?.id, result.data));
+
+      if (!data || error) {
+        if (autoSave) return;
+        errorToast("Erro ao salvar rascunho");
+      }
+
+      if (autoSave) return setAutoSaveStatus(new Date());
+
+      return successToast("Rascunho salvo com sucesso");
+    },
+    [
+      test?.id,
+      testName,
+      testValue,
+      testDescription,
+      testDueDate,
+      testDuration,
+      publishDate,
+      sections,
+      selectedClassrooms,
+      enablePublishDate,
+      setAutoSaveStatus,
+    ],
+  );
+
+  const saveTestData = useCallback(() => {
+    setAutoSaveStatus("saving");
+    handleSave(true);
+  }, [handleSave]);
+  const debounceSave = useDebounce(saveTestData, 5000);
 
   // auto save
   useEffect(() => {
@@ -337,6 +397,7 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
     testDuration,
     publishDate,
     sections,
+    debounceSave,
   ]);
 
   useEffect(() => {
@@ -384,54 +445,15 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
     return updated;
   };
 
-  const handleSave = async (autoSave: boolean = false) => {
-    if (!testId) return;
-
-    const result = validateAndFormat(
-      {
-        name: testName,
-        value: testValue,
-        description: testDescription,
-        dueDate: testDueDate,
-        duration: testDuration,
-        publishDate,
-        sections,
-        classroomIds: selectedClassrooms,
-        status: "draft",
-      },
-      true,
-      enablePublishDate,
-    );
-
-    if (!result.valid && "errors" in result) {
-      const text = "Erros: \n - " + result.errors.join("\n - ");
-      errorToast(text);
-      return;
-    }
-
-    if (!("data" in result)) return;
-
-    const { data, error } = await tryCatch(updateTest(testId, result.data));
-
-    if (!data || error) {
-      if (autoSave) return;
-      errorToast("Erro ao salvar rascunho");
-    }
-
-    if (autoSave) return setAutoSaveStatus(new Date());
-
-    return successToast("Rascunho salvo com sucesso");
-  };
-
   const handlePublish = async () => {
     const data = getValidatedData("published");
-    if (!data || !testId) return;
+    if (!data || !test?.id) return;
 
     const { error } = await tryCatch(handleSave(true));
     if (error) return;
 
     const response = await tryCatch(publishTest(
-      testId,
+      test?.id,
       data.classroomIds as number[],
     ));
 
@@ -445,13 +467,13 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
   const handleSchedulePublish = async () => {
     const data = getValidatedData("scheduled");
 
-    if (!data || !testId) return;
+    if (!data || !test?.id) return;
 
     const { error } = await tryCatch(handleSave(true));
     if (error) return;
 
     const response = await tryCatch(scheduleTest(
-      testId,
+      test?.id,
       data.classroomIds as number[],
     ));
     if (!response.data || response.error) return errorToast("Erro ao agendar publicação da prova");
@@ -461,17 +483,13 @@ export default function CreateTestForm({ test }: { test: TestData | null }) {
     router.push("/provas");
   };
 
-  const saveTestData = useCallback(() => {
-    setAutoSaveStatus("saving");
-    handleSave(true);
-  }, [handleSave]);
-  const debounceSave = useDebounce(saveTestData, 5000);
-
   const handleAddClassroom = (classroom: Classroom) => {
     if (selectedClassrooms.includes(classroom.id)) return;
 
     setSelectedClassrooms((prev) => [...prev, classroom.id]);
   };
+
+  if (!test) return <div>Carregando...</div>;
 
   return (
     <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-6 px-5">

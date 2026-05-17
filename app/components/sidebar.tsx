@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { BarChart, BookOpen, FileText, Home, Layers, Menu, Moon, PenTool, Search, Settings, Sparkles, Sun, Users } from "lucide-react"
+import { BookOpen, FileText, Layers, Menu, Search, Sparkles, Users } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { cn } from "@/lib/utils"
 import Link from "next/link"

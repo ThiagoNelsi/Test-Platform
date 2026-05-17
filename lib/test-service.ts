@@ -120,7 +120,7 @@ export const createTest = async (data: DataParam) => {
 
     const tests = await prisma.$transaction(async (prisma) => {
       if (!data.classroomIds) return;
-      const res = data.classroomIds.map(async (classroomId, index) => {
+      const res = data.classroomIds.map(async (classroomId) => {
         return await createTestAuxiliar(
           prisma,
           userId,

@@ -9,7 +9,6 @@ import {
   TableRow,
 } from "@/app/components/ui/table";
 import { useTable } from "@/app/context/table-context";
-import { QuestionFactory } from "@/lib/question";
 import {
   ColumnDef,
   flexRender,

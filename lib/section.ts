@@ -1,5 +1,4 @@
 import { PossibleQuestionTypes } from "./question";
-import { IQuestion } from "./types";
 
 export interface ISection<T> {
     shuffle?: boolean;

@@ -1,6 +1,6 @@
 "use server"
 
-import { Submission, Test } from "@prisma/client";
+import { Test } from "@prisma/client";
 import { getUserId } from "./auth";
 import prisma from "./prisma";
 import { Section } from "./section";

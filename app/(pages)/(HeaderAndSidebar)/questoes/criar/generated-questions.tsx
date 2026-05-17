@@ -2,7 +2,7 @@ import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Checkbox } from "@/app/components/ui/checkbox";
-import { createMultipleQuestions, createQuestion } from "@/lib/question-service";
+import { createMultipleQuestions } from "@/lib/question-service";
 import { Check, Loader2, Save, Sparkles, Tag } from "lucide-react";
 import { useState } from "react";
 import { StreamedQuestion } from "./create-with-ai";
@@ -16,7 +16,7 @@ type GeneratedQuestionsProps = {
   isReasoning: boolean;
 }
 
-export default function GeneratedQuestions({ generatedQuestions, setGeneratedQuestions, isGenerating, isReasoning }: GeneratedQuestionsProps) {
+export default function GeneratedQuestions({ generatedQuestions, isGenerating, isReasoning }: GeneratedQuestionsProps) {
   const [selectedGeneratedQuestions, setSelectedGeneratedQuestions] = useState<number[]>([])
   const [saveSuccess, setSaveSuccess] = useState(false)
 
@@ -41,7 +41,7 @@ export default function GeneratedQuestions({ generatedQuestions, setGeneratedQue
     })
 
     try {
-      const res = await createMultipleQuestions(questionsToSave)
+      await createMultipleQuestions(questionsToSave)
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch (error) {
@@ -151,7 +151,7 @@ export default function GeneratedQuestions({ generatedQuestions, setGeneratedQue
             <Sparkles className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">Nenhuma questão gerada</h3>
             <p className="text-sm text-muted-foreground max-w-md mb-6">
-              Configure as opções de geração e clique em "Gerar Questões" para criar questões com IA.
+              Configure as opções de geração e clique em &quot;Gerar Questões&quot; para criar questões com IA.
             </p>
           </div>
         )}

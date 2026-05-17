@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Button } from "@/app/components/ui/button";
 import { Label } from "@/app/components/ui/label";
-import { Switch } from "@/app/components/ui/switch";
 import { Input } from "@/app/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +12,7 @@ export interface LinkEditorProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const LinkEditBlock = React.forwardRef<HTMLDivElement, LinkEditorProps>(
-  ({ onSave, defaultIsNewTab, defaultUrl, defaultText, className }, ref) => {
+  ({ onSave, defaultUrl, defaultText, className }, ref) => {
     const formRef = React.useRef<HTMLDivElement>(null);
     const [url, setUrl] = React.useState(defaultUrl || "");
     const [text, setText] = React.useState(defaultText || "");

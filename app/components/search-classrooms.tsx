@@ -19,7 +19,6 @@ type SearchClassroomsProps = {
 export default function SearchClassrooms({
   items,
   onSelect,
-  children,
 }: SearchClassroomsProps) {
   const [open, setOpen] = useState(false);
   const [searchTerm] = useState("");

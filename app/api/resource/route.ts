@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
-import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
-import { TextractClient, ListAdaptersCommand, StartDocumentAnalysisCommand, StartDocumentTextDetectionCommand } from "@aws-sdk/client-textract";
+// import { SQSClient } from '@aws-sdk/client-sqs';
+import { TextractClient, StartDocumentAnalysisCommand } from "@aws-sdk/client-textract";
 import { NextRequest } from "next/server";
 import { ResourceStatus } from "@prisma/client";
 
@@ -9,11 +9,11 @@ const credentials = {
   secretAccessKey: process.env.AWS_SECRET_KEY || "",
 }
 
-const sqs = new SQSClient({
-  apiVersion: "2012-11-05",
-  region: process.env.AWS_REGION,
-  credentials,
-});
+// const sqs = new SQSClient({
+//   apiVersion: "2012-11-05",
+//   region: process.env.AWS_REGION,
+//   credentials,
+// });
 
 const textract = new TextractClient({
   region: process.env.AWS_REGION,
@@ -75,9 +75,9 @@ export async function POST(request: NextRequest) {
     });
 
     return Response.json({ resource: dbRef });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.log("Error creating resource: ", error);
-    return Response.json({ error: error.message });
+    return Response.json({ error: (error as Error).message });
   }
 }
 
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
     });
 
     return Response.json({ resources: dbRef });
-  } catch (error: any) {
-    return Response.json({ error: error.message });
+  } catch (error: unknown) {
+    return Response.json({ error: (error as Error).message });
   }
 }

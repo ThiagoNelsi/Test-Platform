@@ -1,7 +1,6 @@
 import { getUserId } from "@/lib/auth";
 import Header from "@/app/components/header";
 import { Sidebar } from "@/app/components/sidebar";
-import { getUnfinishedTests } from "@/lib/test-service";
 import NewClassroomModal from "../../components/new-classroom-modal";
 import { redirect } from "next/navigation";
 
@@ -15,10 +14,6 @@ export default async function Layout({ children }: Props) {
   if (!userId) {
     redirect("/login");
   }
-
-  // const todos = await getUnfinishedTests();
-
-  // if (!todos) return null;
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-y-auto">

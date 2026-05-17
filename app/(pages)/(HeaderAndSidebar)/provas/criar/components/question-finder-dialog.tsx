@@ -1,7 +1,5 @@
 import {
-  DialogClose,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/app/components/ui/dialog";
@@ -13,7 +11,6 @@ import { ScrollArea } from "@/app/components/ui/scroll-area";
 import { RemovableTag } from "@/app/components/removable-tag";
 import { SearchTags } from "@/app/components/search-tags";
 import { MdAdd } from "react-icons/md";
-import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Section, useCreateTest } from "@/app/context/create-test-context";
 import { AutosizeTextarea } from "@/app/components/ui/auto-resize-textarea";
 import { Card, CardContent } from "@/app/components/ui/card";

@@ -22,10 +22,10 @@ export default function MultipleChoiceRenderer({
       <div className="flex flex-col gap-2">
         <AlphabeticalRadioGroup
           value={content.answer}
-          onValueChange={(value) => {}}
+          onValueChange={() => {}}
           viewOnly
         >
-          {options && options.map((option, index) => (
+          {options && options.map((option) => (
             <AlphabeticalRadioItem
               key={option.id}
               value={option.id}

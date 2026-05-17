@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { RowSelectionState, Table } from "@tanstack/react-table";
 import { Tag } from "@/lib/types";
 

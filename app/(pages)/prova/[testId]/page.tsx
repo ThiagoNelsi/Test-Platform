@@ -3,14 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   AlertCircle,
-  ArrowLeft,
   CheckCircle,
   Clock,
   Eye,
   EyeClosed,
-  EyeOff,
   Save,
-  X,
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Progress } from "@/app/components/ui/progress";
@@ -124,7 +121,7 @@ export default function Test() {
       }
     }
     fetchExamData();
-  }, []);
+  }, [testId]);
 
   // Timer logic
   useEffect(() => {
@@ -150,7 +147,7 @@ export default function Test() {
     await finishSubmission(Number(examData?.submission.id), answers);
     setIsSubmitting("submitted");
     successToast("Prova entregue com sucesso!");
-  }, [answers]);
+  }, [answers, examData?.submission.id]);
 
   // Handle save and continue later
   const handleSaveProgress = useCallback(async () => {
@@ -160,7 +157,7 @@ export default function Test() {
     await saveSubmission(Number(examData?.submission.id), answers);
     setIsSavingProgress(false);
     infoToast("Progresso salvo com sucesso!");
-  }, [answers]);
+  }, [answers, examData?.submission.id, isSubmitting]);
 
   if (!examData) return <div>Carregando...</div>;
 

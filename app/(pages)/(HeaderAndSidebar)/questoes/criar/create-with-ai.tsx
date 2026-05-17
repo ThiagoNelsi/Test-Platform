@@ -4,12 +4,10 @@ import { TabsContent } from "@/app/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Label } from "@/app/components/ui/label";
 import { Button } from "@/app/components/ui/button";
-import { CircleHelp, FileText, ImageIcon, Lightbulb, Loader2, Plus, Sparkles, X } from "lucide-react";
+import { FileText, ImageIcon, Loader2, Plus, Sparkles, X } from "lucide-react";
 import { Textarea } from "@/app/components/ui/textarea";
 import MaterialSelectorDialog from "./material-selector";
 import { socket } from "@/app/socket";
-import { Tooltip, TooltipTrigger } from "@/app/components/ui/tooltip";
-import { TooltipContent } from "@radix-ui/react-tooltip";
 import HelpTooltip from "@/app/components/ui/help-tooltip";
 import PromptExamples from "./prompt-examples";
 
@@ -35,6 +33,9 @@ type CreateWithAIProps = {
 }
 
 export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps) {
+
+  const modelOptions = ["gpt-5.4-mini", "o4-mini", "o3-mini", "gpt-4o-mini", "gpt-3.5-turbo"]
+
   const [materials, setMaterials] = useState<Material[] | null>(null)
   const [selectedMaterials, setSelectedMaterials] = useState<number[]>([
     ...(preSelectedResource ? [parseInt(preSelectedResource)] : []),
@@ -45,7 +46,6 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
   const [isReasoning, setIsReasoning] = useState(false)
   const [streamedQuestions, setStreamedQuestions] = useState<StreamedQuestion[]>([])
   const [model, setModel] = useState("gpt-5.4-mini")
-  const [modelOptions, setModelOptions] = useState<string[]>(["gpt-5.4-mini", "o4-mini", "o3-mini", "gpt-4o-mini", "gpt-3.5-turbo"])
 
   // socket
   const [isConnected, setIsConnected] = useState(false);
@@ -134,7 +134,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
   // Função de parsing incremental
   function parseChunkedQuestions(chunk: string) {
     const state = parsingState.current;
-    let text = state.currentContent + chunk;
+    const text = state.currentContent + chunk;
     const tagRegex = /\[(QUESTION|STATEMENT|OPTION|ANSWER|TOPIC)\]/g;
     let match;
     let lastIndex = 0;

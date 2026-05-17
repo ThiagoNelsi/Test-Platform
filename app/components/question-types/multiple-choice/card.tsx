@@ -3,7 +3,6 @@ import { Checkbox } from "../../ui/checkbox";
 import { Badge } from "../../ui/badge";
 import { ChevronDown } from "lucide-react";
 import { MultipleChoiceQuestion } from "@/lib/multiple-choice-question";
-import { alphabet } from "@/lib/alphabet";
 import { getLevel } from "@/lib/levels";
 import { tagColors } from "@/lib/tag-colors";
 import { AlphabeticalRadioGroup } from "../../alphabetical-radio-input/radio-group";
@@ -76,7 +75,7 @@ export default function MultipleChoiceCard({
               })}
 
               {showTags &&
-                question.tags.map((tag, index) => {
+                question.tags.map((tag) => {
                   return tag ? (
                     <Badge
                       key={String(question.id) + tag.id}
@@ -157,7 +156,7 @@ function Options({
         viewOnly={true}
         className="text-xs"
       >
-        {options.map((option, index) => (
+        {options.map((option) => (
           <AlphabeticalRadioItem
             key={option.id}
             value={option.id}

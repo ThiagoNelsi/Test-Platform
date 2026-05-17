@@ -1,6 +1,6 @@
+import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
 import { SidebarProvider } from "./context/sidebar-context";
 import { NewClassroomModalProvider } from "./context/new-classroom-modal-context";
 import { Toaster } from "@/app/components/ui/sonner";
@@ -27,10 +27,11 @@ export default async function RootLayout({
   return (
     <html>
       <head>
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script
-              crossOrigin="anonymous"
-              src="//unpkg.com/react-scan/dist/auto.global.js"
-            />
+          crossOrigin="anonymous"
+          src="//unpkg.com/react-scan/dist/auto.global.js"
+        />
         {/* rest of your scripts go under */}
       </head>
       <body className={`${inter.variable} antialiased overflow-y-hidden`}>

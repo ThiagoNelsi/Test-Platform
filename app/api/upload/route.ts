@@ -29,12 +29,12 @@ export async function POST(request: Request) {
     })
 
     return Response.json({ url, fields })
-  } catch (error: any) {
-    return Response.json({ error: error.message })
+  } catch (error: unknown) {
+    return Response.json({ error: (error as Error).message })
   }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   const response = await s3.send(new ListObjectsCommand({
     Bucket: process.env.AWS_BUCKET_NAME ?? "",
   }));

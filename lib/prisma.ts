@@ -15,6 +15,7 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaNeon(pool);
 
 declare global {
+  // eslint-disable-next-line no-var
   var prisma: PrismaClient | undefined;
 }
 

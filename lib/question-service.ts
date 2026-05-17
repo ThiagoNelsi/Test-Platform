@@ -5,8 +5,7 @@ import { getUserId } from "./auth";
 import prisma from "./prisma";
 import { Question, QuestionType } from "@/lib/types";
 import {
-  Test,
-  Question as PostgresQuestion,
+  Test
 } from "@prisma/client";
 import { isEqual } from "lodash";
 
@@ -74,7 +73,7 @@ export const createQuestion = async (formData: FormData) => {
   const tags = JSON.parse(formData.get("tags") as string) as number[];
 
   try {
-    const question = await prisma.question.create({
+    await prisma.question.create({
       data: {
         type,
         level: levelOptions.indexOf(level),
@@ -99,7 +98,7 @@ export const createMultipleQuestions = async (questions: any[]) => {
   if (!userId) return null;
 
   try {
-    const createdQuestions = await prisma.question.createMany({
+    await prisma.question.createMany({
       data: questions.map((question) => ({
         type: question.type,
         level: question.level,

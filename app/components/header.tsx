@@ -1,17 +1,14 @@
 "use client";
 
 import { useAuth } from "../hooks/useAuth";
-import Image from "next/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { useState } from "react";
-import { Bell, ChevronDown, LogOut, LucideCircleUserRound, Plus, Search, Settings, User } from "lucide-react";
+import { Bell, ChevronDown, LogOut, LucideCircleUserRound, Settings, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { usePathname } from "next/navigation";
@@ -29,7 +26,6 @@ const headerTitles = {
 export default function Header() {
   const { user, signOut } = useAuth();
   const { name, image } = user ?? { name: undefined, image: undefined };
-  const [searchQuery, setSearchQuery] = useState("")
   const path = usePathname() as keyof typeof headerTitles;
 
   const handleSignOut = () => {

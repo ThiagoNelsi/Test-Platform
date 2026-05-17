@@ -9,7 +9,7 @@ import { MinimalTiptapEditor } from "../../minimal-tiptap";
 import Options from "./options";
 import { MultipleChoiceQuestion, Option } from "@/lib/multiple-choice-question";
 
-type MultipleChoiceFormProps = {};
+type MultipleChoiceFormProps = object;
 
 export default function MultipleChoiceForm({}: MultipleChoiceFormProps) {
   const { question, setStatement, setOptions, setData, setAnswer } = useQuestionEditor();
@@ -24,7 +24,7 @@ export default function MultipleChoiceForm({}: MultipleChoiceFormProps) {
         new Option(""),
       ]);
     }
-  }, []);
+  }, [question.content, setData, setOptions]);
 
   if (question.content?.statement === undefined || question.content?.options === undefined) {
     return null;

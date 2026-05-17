@@ -10,9 +10,7 @@ import {
 import MultipleChoiceForm from "./question-types/multiple-choice/form";
 import { Button } from "@/app/components/ui/button";
 import { QuestionType, Tag } from "@/lib/types";
-import { FormSection } from "./new-question-modal";
 import { useQuestionEditor } from "../context/question-editor-context";
-import { Separator } from "./ui/separator";
 import {
   Command,
   CommandEmpty,

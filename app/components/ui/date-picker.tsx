@@ -51,7 +51,7 @@ export function DatePicker({
       d.setMinutes(Number(minute));
       if (d.getTime() !== date?.getTime()) setDate(d);
     }
-  }, [selectedDate, selectedTime]);
+  }, [selectedDate, selectedTime, setDate, date]);
 
   React.useEffect(() => {
     if (date) {

@@ -26,63 +26,65 @@ export default function CreateTest() {
   const [questions, setQuestions] = useState<IQuestion[]>([]);
   const [test, setTest] = useState<TestData | null>(null);
 
+  
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    getTags().then((tags) => setTags(tags));
-    const res = await getQuestions();
-    const questions = QuestionFactory.from(res);
-    setQuestions(questions);
-    fetchTest(questions);
-  };
-
-  const fetchTest = async (questions: IQuestion[]) => {
-    let res;
-    if (testId) {
-      res = await getTest(Number(testId));
-    } else {
-      res = await createTest({
-        status: "draft",
-        sections: [],
+    const fetchTest = async (questions: IQuestion[]) => {
+      let res;
+      if (testId) {
+        res = await getTest(Number(testId));
+      } else {
+        res = await createTest({
+          status: "draft",
+          sections: [],
+        });
+      }
+  
+      if (!res) return;
+      // set url to test id
+      if (!testId) {
+        window.history.replaceState({}, "", `?test=${res.id}`);
+      }
+  
+      setTest({
+        id: res.id,
+        name: res.name,
+        value: res.value,
+        description: res.description || "",
+        dueDate: res.dueDate || undefined,
+        duration: res.timer || 0,
+        publishDate: res.publishDate || undefined,
+        sections: (res.sections as unknown as SectionFromServer[])?.map<Section>(
+          (section) => {
+            return {
+              shuffle: section.shuffle || false,
+              questions: section.questions
+                .map((question) => {
+                  return questions.find((q) => q.id === question.questionId);
+                })
+                .filter((q) => q !== undefined) as IQuestion[],
+              selectionMode: section.count ? "random" : "all",
+              randomQuestionCount: section.count,
+              id: Math.random().toString(),
+            };
+          },
+        ),
+        classroomIds: [res.classroomId || 0],
+        status: res.status as TestData["status"],
       });
-    }
+      return;
+    };
 
-    if (!res) return;
-    // set url to test id
-    if (!testId) {
-      window.history.replaceState({}, "", `?test=${res.id}`);
-    }
+    const fetchData = async () => {
+      getTags().then((tags) => setTags(tags));
+      const res = await getQuestions();
+      const questions = QuestionFactory.from(res);
+      setQuestions(questions);
+      fetchTest(questions);
+    };
 
-    setTest({
-      id: res.id,
-      name: res.name,
-      value: res.value,
-      description: res.description || "",
-      dueDate: res.dueDate || undefined,
-      duration: res.timer || 0,
-      publishDate: res.publishDate || undefined,
-      sections: (res.sections as unknown as SectionFromServer[])?.map<Section>(
-        (section) => {
-          return {
-            shuffle: section.shuffle || false,
-            questions: section.questions
-              .map((question) => {
-                return questions.find((q) => q.id === question.questionId);
-              })
-              .filter((q) => q !== undefined) as IQuestion[],
-            selectionMode: section.count ? "random" : "all",
-            randomQuestionCount: section.count,
-            id: Math.random().toString(),
-          };
-        },
-      ),
-      classroomIds: [res.classroomId || 0],
-      status: res.status as TestData["status"],
-    });
-    return;
-  };
+    fetchData();
+  }, [testId]);
+
 
   if (!test) {
     return <div>Loading...</div>;

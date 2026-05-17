@@ -35,6 +35,8 @@ const Card = memo(
   ),
 );
 
+Card.displayName = "SectionQuestionCard";
+
 export default function SectionQuestions({
   section,
   setOpen,

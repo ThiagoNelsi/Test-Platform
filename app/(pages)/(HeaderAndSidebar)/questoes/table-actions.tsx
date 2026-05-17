@@ -40,8 +40,6 @@ export default function TableActions({
   groupBy,
   groupByOptions,
   setGroupBy,
-  sections,
-  setSections,
   subSections,
   selectedSubSections,
   setSelectedSubSections,
@@ -86,7 +84,7 @@ export default function TableActions({
       return questionText.includes(searchValue);
     });
     setFilteredQuestions(filteredQuestions);
-  }, [search, questions]);
+  }, [search, questions, setFilteredQuestions]);
 
   const debounceFilter = useDebounce(filterQuestions, 300);
 

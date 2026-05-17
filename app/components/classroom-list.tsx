@@ -1,7 +1,6 @@
 import { ClassroomWithOwner } from "@/lib/classroomService";
 import Link from "next/link";
 import { FaRegCopy } from "react-icons/fa";
-import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
 import { useNewClassroomModal } from "../context/new-classroom-modal-context";

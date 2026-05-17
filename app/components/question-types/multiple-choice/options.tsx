@@ -1,9 +1,8 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import MovableItem from "../../movable-item";
 import { MinimalTiptapEditor } from "../../minimal-tiptap";
 import { Button } from "../../ui/button";
 import { Option } from "@/lib/multiple-choice-question";
-import { alphabet } from "@/lib/alphabet";
 import { AlphabeticalRadioGroup } from "../../alphabetical-radio-input/radio-group";
 import { AlphabeticalRadioItem } from "../../alphabetical-radio-input/radio-item";
 

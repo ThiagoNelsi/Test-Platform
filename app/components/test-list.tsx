@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
-import { FaCheck, FaTrash } from "react-icons/fa";
+import { FaCheck } from "react-icons/fa";
 import {
   Collapsible,
   CollapsibleContent,
