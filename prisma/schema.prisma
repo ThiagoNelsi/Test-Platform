@@ -13,6 +13,8 @@ model User {
   name         String
   email        String       @unique
   password     String
+  image        String?
+  googleSub    String?      @unique
   createdAt    DateTime     @default(now()) @db.Timestamptz(0)
   ownedClasses Classroom[]  @relation("Owner")
   comments     Comment[]

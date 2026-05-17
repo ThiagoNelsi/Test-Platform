@@ -63,7 +63,7 @@ export default function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder.svg?height=32&width=32" alt="Professor" />
+                <AvatarImage src={image || ''} alt="Professor" />
                 <AvatarFallback>
                   <LucideCircleUserRound className="h-6 w-6" />
                 </AvatarFallback>
