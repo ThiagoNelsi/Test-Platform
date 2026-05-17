@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut, useSession } from "next-auth/react";
+import { useAuth } from "../hooks/useAuth";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -27,13 +27,13 @@ const headerTitles = {
 } as const;
 
 export default function Header() {
-  const { data } = useSession();
-  const { name, image } = data?.user;
+  const { user, signOut } = useAuth();
+  const { name, image } = user ?? { name: undefined, image: undefined };
   const [searchQuery, setSearchQuery] = useState("")
   const path = usePathname() as keyof typeof headerTitles;
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: "http://localhost:3000/login" });
+    signOut();
   };
 
   return (
@@ -65,7 +65,7 @@ export default function Header() {
               <Avatar className="h-8 w-8">
                 <AvatarImage src="/placeholder.svg?height=32&width=32" alt="Professor" />
                 <AvatarFallback>
-                  <Image src={image} alt={`Foto de perfil de ${name}`} height={32} width={32} className="rounded-full" />
+                  <LucideCircleUserRound className="h-6 w-6" />
                 </AvatarFallback>
               </Avatar>
               <span className="hidden md:inline">

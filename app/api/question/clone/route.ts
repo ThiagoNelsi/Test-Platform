@@ -1,16 +1,20 @@
-import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../../auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 import { v4 } from "uuid";
-import { QuestionFactory } from "@/lib/question";
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const sessionCookie = request.cookies.get("session")?.value;
+  if (!sessionCookie) return NextResponse.json("Unauthorized", { status: 401 });
 
-  if (!session) {
-    return NextResponse.json("Unauthorized", { status: 401 });
-  }
+  const backend = process.env.BACKEND_URL ?? "";
+  const meRes = await fetch(`${backend}/auth/me`, {
+    headers: { cookie: `session=${sessionCookie}` },
+    cache: "no-store",
+  });
+  if (!meRes.ok) return NextResponse.json("Unauthorized", { status: 401 });
+  const me = await meRes.json();
+  const userId = me?.user?.id;
+  if (!userId) return NextResponse.json("Unauthorized", { status: 401 });
 
   const { questionIds } = await request.json();
 
@@ -30,39 +34,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json("Not Found", { status: 404 });
   }
 
-  const parsed = QuestionFactory.from(questions.map(question => {
+  const parsed = questions.map((question) => {
     const content = JSON.parse(question.content as string);
-
     return {
-      authorId: session.user.id,
+      authorId: userId,
       type: "multiple_choice",
       level: question.level,
       source: question.source,
       subjects: question.subjects,
-      data: {
-        statement: content.statement || "",
-        options: content.options,
-        answer: content.answer,
-      },
-      id: -1,
-      createdAt: new Date(),
-      version: 0,
-      tags: [],
-      originalQuestionId: -1,
-    }
-
-  }));
+      content,
+    };
+  });
 
   const cloned = await prisma.question.createMany({
-    data: parsed.map(question => ({
-      authorId: session.user.id,
-      type: question.type,
-      level: question.level,
-      source: question.source,
-      subjects: question.subjects,
-      content: question.content,
-    }))
-  })
+    data: parsed.map((q) => ({
+      authorId: q.authorId,
+      type: q.type,
+      level: q.level,
+      source: q.source,
+      subjects: q.subjects,
+      content: q.content as any,
+    })),
+  });
 
   return NextResponse.json(cloned);
 }

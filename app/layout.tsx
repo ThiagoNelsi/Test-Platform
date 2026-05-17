@@ -5,11 +5,7 @@ import { SidebarProvider } from "./context/sidebar-context";
 import { NewClassroomModalProvider } from "./context/new-classroom-modal-context";
 import { Toaster } from "@/app/components/ui/sonner";
 import SessionProvider from "./components/session-provider";
-import { getServerSession } from "next-auth";
-import { authOptions } from "./api/auth/[...nextauth]/route";
 import { TooltipProvider } from "./components/ui/tooltip";
-import { tryCatch } from "@/lib/try-catch";
-import { redirect } from "next/navigation";
 
 const inter = Inter({
   weight: ["100", "200", "300", "400", "500", "600", "700"],
@@ -28,13 +24,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { data: session, error } = await tryCatch(getServerSession(authOptions));
-
-  if (error) {
-    // redirect to login
-    redirect('/login')
-  }
-
   return (
     <html>
       <head>
@@ -45,11 +34,7 @@ export default async function RootLayout({
         {/* rest of your scripts go under */}
       </head>
       <body className={`${inter.variable} antialiased overflow-y-hidden`}>
-        <SessionProvider
-          session={session}
-          refetchOnWindowFocus={false}
-          refetchInterval={60 * 60}
-        >
+        <SessionProvider>
           <SidebarProvider>
             <NewClassroomModalProvider>
               <TooltipProvider>

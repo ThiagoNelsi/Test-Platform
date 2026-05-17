@@ -4,7 +4,7 @@ import prisma from "./prisma";
 import { getUserId } from "./auth";
 import { TestData } from "./types";
 import { revalidatePath } from "next/cache";
-import { InputJsonValue } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { Section } from "./section";
 
 export type Todo = {
@@ -296,7 +296,7 @@ export const publishTest = async (testId: number, classroomIds: number[]) => {
               id: undefined,
               classroomId: classroomId,
               status: "published",
-              sections: test.sections as InputJsonValue,
+              sections: test.sections as Prisma.InputJsonValue,
             },
           });
         });
@@ -365,7 +365,7 @@ export const scheduleTest = async (testId: number, classroomIds: number[]) => {
             id: undefined,
             classroomId: classroomId,
             status: "scheduled",
-            sections: test.sections as InputJsonValue,
+            sections: test.sections as Prisma.InputJsonValue,
           },
         });
       });

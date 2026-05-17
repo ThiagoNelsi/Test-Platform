@@ -1,9 +1,10 @@
-import { DeafultSession } from "next-auth";
-
 declare module "next-auth" {
   interface Session {
     user: {
       id: number;
-    } & DeafultSession["user"];
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
   }
 }

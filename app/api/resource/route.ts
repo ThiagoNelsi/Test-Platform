@@ -1,6 +1,4 @@
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { TextractClient, ListAdaptersCommand, StartDocumentAnalysisCommand, StartDocumentTextDetectionCommand } from "@aws-sdk/client-textract";
 import { NextRequest } from "next/server";
@@ -23,11 +21,18 @@ const textract = new TextractClient({
 })
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const sessionCookie = request.cookies.get("session")?.value;
+  if (!sessionCookie) return Response.json({ error: "Unauthorized" });
 
-  if (!session?.user || !session.user.id) {
-    return Response.json({ error: "Unauthorized" });
-  }
+  const backend = process.env.BACKEND_URL ?? "";
+  const meRes = await fetch(`${backend}/auth/me`, {
+    headers: { cookie: `session=${sessionCookie}` },
+    cache: "no-store",
+  });
+  if (!meRes.ok) return Response.json({ error: "Unauthorized" });
+  const me = await meRes.json();
+  const userId = me?.user?.id;
+  if (!userId) return Response.json({ error: "Unauthorized" });
 
   const { filename, fileType, objectKey, tags } = await request.json();
 
@@ -38,7 +43,7 @@ export async function POST(request: NextRequest) {
         fileType,
         tags,
         objectKey,
-        ownerId: session.user.id,
+        ownerId: userId,
         status: 'UPLOADED',
       },
     });
@@ -77,18 +82,25 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const sessionCookie = request.cookies.get("session")?.value;
+  if (!sessionCookie) return Response.json({ error: "Unauthorized" });
 
-  if (!session?.user || !session.user.id) {
-    return Response.json({ error: "Unauthorized" });
-  }
+  const backend = process.env.BACKEND_URL ?? "";
+  const meRes = await fetch(`${backend}/auth/me`, {
+    headers: { cookie: `session=${sessionCookie}` },
+    cache: "no-store",
+  });
+  if (!meRes.ok) return Response.json({ error: "Unauthorized" });
+  const me = await meRes.json();
+  const userId = me?.user?.id;
+  if (!userId) return Response.json({ error: "Unauthorized" });
 
   const status = request?.nextUrl?.searchParams.get("status") as ResourceStatus | null;
 
   try {
     const dbRef = await prisma?.resource.findMany({
       where: {
-        ownerId: session.user.id,
+        ownerId: userId,
         deletedAt: null,
         ...(status ? { status } : {}),
       },

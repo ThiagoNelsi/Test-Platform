@@ -1,11 +1,9 @@
-import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
-import { tryCatch } from "./lib/try-catch";
 
 export async function middleware(req: NextRequest) {
-  const { data: token, error } = await tryCatch(getToken({ req }));
+  const token = req.cookies.get("session")?.value;
 
-  if (!token || error) {
+  if (!token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 

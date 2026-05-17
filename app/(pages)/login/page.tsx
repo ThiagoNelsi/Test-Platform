@@ -1,12 +1,21 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { FaGoogle } from "react-icons/fa";
 import { Button } from "../../components/ui/button";
 
 export default function Login() {
   const handleLogin = () => {
-    signIn("google", { callbackUrl: "http://localhost:3000/home" });
+    const backend = process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
+
+    if (!backend) {
+      // Fail fast and surface the misconfiguration instead of silently redirecting to the frontend origin
+      console.error("NEXT_PUBLIC_BACKEND_URL is not set — login cannot be routed to backend.");
+      alert("Backend URL is not configured. Set NEXT_PUBLIC_BACKEND_URL in your frontend env.");
+      return;
+    }
+
+    const base = backend.replace(/\/+$/g, "");
+    window.location.href = `${base}/auth/google/start`;
   };
 
   return (
