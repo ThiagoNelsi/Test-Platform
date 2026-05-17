@@ -7,12 +7,16 @@ export type BackendUser = {
   id: number;
   name: string;
   email: string;
+  image: string | null;
+  googleSub: string | null;
 };
 
 export type AuthUserRecord = {
   id: number;
   name: string;
   email: string;
+  image: string | null;
+  googleSub: string | null;
 };
 
 export type AuthPrisma = Pick<PrismaClient, 'user'>;
@@ -35,6 +39,8 @@ function toPublicUser(user: AuthUserRecord): BackendUser {
     id: user.id,
     name: user.name,
     email: user.email,
+    image: user.image,
+    googleSub: user.googleSub,
   };
 }
 
@@ -48,6 +54,8 @@ async function upsertGoogleUser(prisma: AuthPrisma, profile: { email?: string; n
     id: true,
     name: true,
     email: true,
+    image: true,
+    googleSub: true,
   } as const;
 
   const existingUser = await prisma.user.findUnique({
@@ -60,16 +68,26 @@ async function upsertGoogleUser(prisma: AuthPrisma, profile: { email?: string; n
       data: {
         email: profile.email,
         name: profile.name || 'Sem nome',
+        image: profile.picture || null,
+        googleSub: profile.sub || null,
         password: 'oauth',
       },
       select: userSelect,
     });
   }
 
-  const updateData: Partial<Pick<AuthUserRecord, 'name'>> = {};
+  const updateData: Partial<Pick<AuthUserRecord, 'name' | 'image' | 'googleSub'>> = {};
 
   if (profile.name && existingUser.name !== profile.name) {
     updateData.name = profile.name;
+  }
+
+  if (existingUser.image !== (profile.picture || null)) {
+    updateData.image = profile.picture || null;
+  }
+
+  if (profile.sub && existingUser.googleSub !== profile.sub) {
+    updateData.googleSub = profile.sub;
   }
 
   if (Object.keys(updateData).length > 0) {
@@ -139,6 +157,8 @@ export function createAuthService(deps: AuthServiceDeps) {
           id: true,
           name: true,
           email: true,
+          image: true,
+          googleSub: true,
         },
       });
 

@@ -6,11 +6,11 @@ function createAuthServiceStub() {
   return {
     startGoogleAuth: vi.fn().mockReturnValue('http://google.local/auth'),
     handleGoogleCallback: vi.fn().mockResolvedValue({
-      user: { id: 1, name: 'User', email: 'user@example.com', image: null },
+      user: { id: 1, name: 'User', email: 'user@example.com', image: null, googleSub: null },
       sessionToken: 'session-token',
       redirectTo: 'http://frontend.local/home',
     }),
-    getCurrentUser: vi.fn().mockResolvedValue({ id: 1, name: 'User', email: 'user@example.com', image: null }),
+    getCurrentUser: vi.fn().mockResolvedValue({ id: 1, name: 'User', email: 'user@example.com', image: null, googleSub: null }),
     buildLogoutCookieOptions: vi.fn().mockReturnValue({ httpOnly: true, secure: false, sameSite: 'lax' as const }),
     buildSessionCookieOptions: vi.fn().mockReturnValue({ httpOnly: true, secure: false, sameSite: 'lax' as const }),
   };
@@ -46,7 +46,7 @@ describe('auth routes', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      user: { id: 1, name: 'User', email: 'user@example.com', image: null },
+      user: { id: 1, name: 'User', email: 'user@example.com', image: null, googleSub: null },
     });
   });
 

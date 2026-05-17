@@ -64,7 +64,7 @@ describe('auth service', () => {
     const result = await authService.handleGoogleCallback('code-123');
 
     expect(result.redirectTo).toBe('http://frontend.local');
-    expect(result.user).toMatchObject({ id: 7, email: 'new@example.com', name: 'New User' });
+    expect(result.user).toMatchObject({ id: 7, email: 'new@example.com', name: 'New User', image: 'https://img.example/avatar.png', googleSub: 'google-sub' });
     expect(prisma.user.create).toHaveBeenCalledOnce();
     expect(verifySessionToken(result.sessionToken, 'jwt-secret')).toEqual({ userId: 7 });
   });
@@ -99,8 +99,8 @@ describe('auth service', () => {
     const currentUser = await authService.getCurrentUser(signSessionToken({ userId: 11 }, 'jwt-secret'));
 
     expect(prisma.user.update).toHaveBeenCalledOnce();
-    expect(result.user).toMatchObject({ id: 11, name: 'New Name', email: 'user@example.com' });
-    expect(currentUser).toMatchObject({ id: 11, name: 'Old Name', email: 'user@example.com' });
+    expect(result.user).toMatchObject({ id: 11, name: 'New Name', email: 'user@example.com', image: 'https://img.example/new.png', googleSub: 'google-sub-2' });
+    expect(currentUser).toMatchObject({ id: 11, name: 'Old Name', email: 'user@example.com', image: null, googleSub: null });
   });
 
   it('returns null for invalid session tokens', async () => {
