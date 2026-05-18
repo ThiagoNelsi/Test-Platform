@@ -41,6 +41,8 @@ interface FileWithMetadata {
 }
 
 export default function UploadMaterialsPage() {
+  const backend = process.env.NEXT_PUBLIC_BACKEND_URL ?? ""
+  const backendBase = backend.replace(/\/+$/g, "")
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -176,13 +178,19 @@ export default function UploadMaterialsPage() {
   }
 
   const uploadFile = async (file: FileWithMetadata, fileId: string) => {
+    if (!backendBase) {
+      uploadErrorToast("Backend URL is not configured")
+      return false
+    }
+
     const { data: fetchResponse, error: fetchError } = await tryCatch(fetch(
-      '/api/upload',
+      `${backendBase}/api/upload`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ filename: file.file.name, contentType: file.file.type }),
       }
     ))
