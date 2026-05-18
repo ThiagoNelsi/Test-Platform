@@ -1,3 +1,4 @@
+import { S3Client } from '@aws-sdk/client-s3';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import express, { type Express } from 'express';
@@ -11,6 +12,7 @@ import { createPrismaClient } from './database/prisma';
 import { createQuestionGenerator } from './questions/generator';
 import { enemPrompt } from './questions/prompt';
 import { createAuthRouter } from './routes/auth';
+import { createUploadRouter } from './routes/upload';
 
 export type PromptPayload = {
   prompt?: string;
@@ -50,6 +52,20 @@ export function createApp(authService: ReturnType<typeof createAuthService>): Ex
   });
 
   app.use('/auth', createAuthRouter(authService));
+  app.use(
+    '/api/upload',
+    createUploadRouter({
+      bucketName: getOptionalEnv('AWS_BUCKET_NAME', ''),
+      region: getOptionalEnv('AWS_REGION', ''),
+      s3Client: new S3Client({
+        region: getOptionalEnv('AWS_REGION', ''),
+        credentials: {
+          accessKeyId: getOptionalEnv('AWS_ACCESS_KEY', ''),
+          secretAccessKey: getOptionalEnv('AWS_SECRET_KEY', ''),
+        },
+      }),
+    }),
+  );
 
   return app;
 }
