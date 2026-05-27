@@ -1,4 +1,5 @@
 import { S3Client } from '@aws-sdk/client-s3';
+import { TextractClient } from '@aws-sdk/client-textract';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import express, { type Express } from 'express';
@@ -12,6 +13,7 @@ import { createPrismaClient } from './database/prisma';
 import { createQuestionGenerator } from './questions/generator';
 import { enemPrompt } from './questions/prompt';
 import { createAuthRouter } from './routes/auth';
+import { createResourceRouter } from './routes/resource';
 import { createUploadRouter } from './routes/upload';
 
 export type PromptPayload = {
@@ -40,7 +42,19 @@ export async function handlePromptRequest(
   }
 }
 
-export function createApp(authService: ReturnType<typeof createAuthService>): Express {
+type ResourceRouteDeps = {
+  prisma: ReturnType<typeof createPrismaClient>;
+  textractClient: TextractClient;
+  bucketName: string;
+  snsTopicArn: string;
+  snsRoleArn: string;
+  outputBucketName: string;
+};
+
+export function createApp(
+  authService: ReturnType<typeof createAuthService>,
+  resourceDeps?: ResourceRouteDeps,
+): Express {
   const app = express();
 
   app.use(cors({ origin: getOptionalEnv('FRONTEND_URL', 'http://localhost:3000'), credentials: true }));
@@ -52,6 +66,20 @@ export function createApp(authService: ReturnType<typeof createAuthService>): Ex
   });
 
   app.use('/auth', createAuthRouter(authService));
+  if (resourceDeps) {
+    app.use(
+      '/api/resource',
+      createResourceRouter({
+        authService,
+        prisma: resourceDeps.prisma,
+        textractClient: resourceDeps.textractClient,
+        bucketName: resourceDeps.bucketName,
+        outputBucketName: resourceDeps.outputBucketName,
+        snsTopicArn: resourceDeps.snsTopicArn,
+        snsRoleArn: resourceDeps.snsRoleArn,
+      }),
+    );
+  }
   app.use(
     '/api/upload',
     createUploadRouter({
@@ -70,9 +98,9 @@ export function createApp(authService: ReturnType<typeof createAuthService>): Ex
   return app;
 }
 
-function createDefaultAuthService() {
+function createDefaultAuthService(prisma = createPrismaClient()) {
   return createAuthService({
-    prisma: createPrismaClient(),
+    prisma,
     fetchFn: fetch,
     jwtSecret: getRequiredEnv('JWT_SECRET'),
     googleClientId: getRequiredEnv('GOOGLE_CLIENT_ID'),
@@ -81,6 +109,23 @@ function createDefaultAuthService() {
     frontendUrl: getOptionalEnv('FRONTEND_URL', 'http://localhost:3000'),
     isProduction: process.env.NODE_ENV === 'production',
   });
+}
+
+function createDefaultResourceDeps(prisma: ReturnType<typeof createPrismaClient>): ResourceRouteDeps {
+  return {
+    prisma,
+    textractClient: new TextractClient({
+      region: getOptionalEnv('AWS_REGION', ''),
+      credentials: {
+        accessKeyId: getOptionalEnv('AWS_ACCESS_KEY', ''),
+        secretAccessKey: getOptionalEnv('AWS_SECRET_KEY', ''),
+      },
+    }),
+    bucketName: getOptionalEnv('AWS_BUCKET_NAME', ''),
+    snsTopicArn: getOptionalEnv('AWS_TEXTRACT_SNS_TOPIC_ARN', ''),
+    snsRoleArn: getOptionalEnv('AWS_TEXTRACT_SNS_ROLE_ARN', ''),
+    outputBucketName: getOptionalEnv('AWS_TEXTRACT_OUTPUT_BUCKET_NAME', ''),
+  };
 }
 
 function createDefaultQuestionGenerator() {
@@ -92,7 +137,10 @@ function createDefaultQuestionGenerator() {
 }
 
 if (require.main === module) {
-  const app = createApp(createDefaultAuthService());
+  const prisma = createPrismaClient();
+  const authService = createDefaultAuthService(prisma);
+  const resourceDeps = createDefaultResourceDeps(prisma);
+  const app = createApp(authService, resourceDeps);
   const server = http.createServer(app);
   const io = new Server(server, {
     cors: {
