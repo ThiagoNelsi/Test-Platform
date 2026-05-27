@@ -10,12 +10,22 @@ import { Resource } from "@/lib/types";
 import ResourceCard from "./components/resource-card";
 
 export default function Page() {
+  const backend = process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
+  const backendBase = backend.replace(/\/+$/g, "");
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchResources() {
-      const { data: fetchResponse, error: fetchError } = await tryCatch(fetch("/api/resource"));
+      if (!backendBase) {
+        errorToast("Backend URL is not configured");
+        setLoading(false);
+        return;
+      }
+
+      const { data: fetchResponse, error: fetchError } = await tryCatch(
+        fetch(`${backendBase}/api/resource`, { credentials: "include" }),
+      );
       if (fetchError || fetchResponse === null) {
         errorToast("Erro ao buscar materiais");
         setLoading(false);
@@ -34,7 +44,7 @@ export default function Page() {
     }
 
     fetchResources();
-  }, []);
+  }, [backendBase]);
   if (loading) {
     return <div>Loading...</div>;
   }

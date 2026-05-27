@@ -33,6 +33,8 @@ type CreateWithAIProps = {
 }
 
 export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps) {
+  const backend = process.env.NEXT_PUBLIC_BACKEND_URL ?? ""
+  const backendBase = backend.replace(/\/+$/g, "")
 
   const modelOptions = ["gpt-5.4-mini", "o4-mini", "o3-mini", "gpt-4o-mini", "gpt-3.5-turbo"]
 
@@ -52,6 +54,23 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
   const [transport, setTransport] = useState("N/A");
 
   useEffect(() => {
+    const fetchMaterials = async () => {
+      if (!backendBase) {
+        console.error("Backend URL is not configured")
+        return
+      }
+
+      const res = await fetch(`${backendBase}/api/resource?status=PROCESSED`, {
+        credentials: "include",
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setMaterials(data.resources)
+      } else {
+        console.error("Erro ao buscar materiais:", data.error)
+      }
+    }
+
     fetchMaterials();
 
     if (socket.connected) {
@@ -79,17 +98,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };
-  }, [])
-
-  const fetchMaterials = async () => {
-    const res = await fetch("/api/resource?status=PROCESSED")
-    const data = await res.json()
-    if (res.ok) {
-      setMaterials(data.resources)
-    } else {
-      console.error("Erro ao buscar materiais:", data.error)
-    }
-  }
+  }, [backendBase]);
 
   const toggleMaterialSelection = (id: number) => {
     setSelectedMaterials((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]))

@@ -233,8 +233,12 @@ export default function UploadMaterialsPage() {
     }
 
     // save the file URL to database
-    const { data: dbRef, error: dbError } = await tryCatch(fetch('/api/resource', {
+    const { data: dbRef, error: dbError } = await tryCatch(fetch(`${backendBase}/api/resource`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
       body: JSON.stringify({
         filename: file.file.name,
         fileType: file.file.type,
