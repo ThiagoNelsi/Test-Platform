@@ -15,6 +15,9 @@ import { enemPrompt } from './questions/prompt';
 import { createAuthRouter } from './routes/auth';
 import { createResourceRouter } from './routes/resource';
 import { createUploadRouter } from './routes/upload';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export type PromptPayload = {
   prompt?: string;
