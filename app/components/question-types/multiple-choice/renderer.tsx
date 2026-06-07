@@ -15,7 +15,7 @@ export default function MultipleChoiceRenderer({
       <div className="flex flex-col gap-5">
         <div
           className="whitespace-pre-wrap"
-          dangerouslySetInnerHTML={{ __html: statement }}
+          dangerouslySetInnerHTML={{ __html: statement.trim() }}
         />
       </div>
       <Separator className="my-5" />

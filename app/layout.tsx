@@ -28,10 +28,10 @@ export default async function RootLayout({
     <html>
       <head>
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script
+        {/* <script
           crossOrigin="anonymous"
           src="//unpkg.com/react-scan/dist/auto.global.js"
-        />
+        /> */}
         {/* rest of your scripts go under */}
       </head>
       <body className={`${inter.variable} antialiased overflow-y-hidden`}>
