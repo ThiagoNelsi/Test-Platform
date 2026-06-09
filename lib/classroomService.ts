@@ -1,129 +1,82 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { Classroom, User } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { getUserId } from "./auth";
+import { backendJson } from "./backend-api";
 
 type Owner = Pick<User, "name" | "id" | "email">;
 
 export type ClassroomWithOwner = { owner: Owner } & Classroom;
 
-export async function getClassrooms() {
-  const userId = await getUserId();
-  if (!userId) return null;
+type ClassroomsResponse = {
+  ownedClasses?: ClassroomWithOwner[];
+  classrooms?: ClassroomWithOwner[];
+};
 
-  const include = {
-    owner: {
-      select: {
-        id: true,
-        name: true,
-        email: true,
-      },
-    },
+function hydrateClassroom(classroom: ClassroomWithOwner): ClassroomWithOwner {
+  return {
+    ...classroom,
+    createdAt: new Date(classroom.createdAt),
   };
+}
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      ownedClasses: {
-        include,
-        orderBy: {
-          createdAt: "desc",
-        },
-      },
-      classrooms: {
-        include,
-        orderBy: {
-          createdAt: "desc",
-        },
-      },
-    },
-  });
+export async function getClassrooms() {
+  const { ok, data } = await backendJson<ClassroomsResponse>("/api/classrooms");
 
-  if (!user) return null;
-
-  const { ownedClasses, classrooms } = user;
+  if (!ok || !data) return null;
 
   return {
-    ownedClasses,
-    classrooms,
+    ownedClasses: (data.ownedClasses || []).map(hydrateClassroom),
+    classrooms: (data.classrooms || []).map(hydrateClassroom),
   };
 }
 
 export async function createClassroom(formData: FormData) {
-  const userId = await getUserId();
-  if (!userId) return null;
+  const name = String(formData.get("name") || "").trim();
 
-  const name = formData.get("name") as string;
-
-  const existingClassroom = await prisma.classroom.findFirst({
-    where: {
-      name,
-    },
+  const { ok, data } = await backendJson<{
+    error?: string;
+    classroom?: Classroom;
+  }>("/api/classrooms", {
+    method: "POST",
+    body: { name },
   });
 
-  if (existingClassroom) {
-    console.log("Classroom already exists");
-    return { error: "Classroom already exists" };
+  if (!ok || !data) {
+    return { error: data?.error || "Erro ao criar turma" };
   }
 
-  let code: string;
-
-  while (true) {
-    code = Math.random().toString(36).substring(2, 8).toUpperCase();
-
-    const existingCode = await prisma.classroom.findFirst({
-      where: {
-        code,
-      },
-    });
-
-    if (!existingCode) break;
+  if (data.error) {
+    return { error: data.error };
   }
 
-  const classroom: Classroom = await prisma.classroom.create({
-    data: {
-      name,
-      code,
-      ownerId: userId,
-    },
-  });
+  if (!data.classroom) {
+    return null;
+  }
 
-  revalidatePath(`/home`);
+  revalidatePath("/home");
 
-  return classroom;
+  return {
+    ...data.classroom,
+    createdAt: new Date(data.classroom.createdAt),
+  };
 }
 
 export async function joinClassroom(formData: FormData) {
-  const userId = await getUserId();
-  if (!userId) return null;
+  const code = String(formData.get("code") || "").toUpperCase().trim();
 
-  const code = (formData.get("code") as string).toUpperCase();
-
-  const classroom = await prisma.classroom.findFirst({
-    where: {
-      code,
+  const { ok, data } = await backendJson<{ error?: string }>(
+    "/api/classrooms/join",
+    {
+      method: "POST",
+      body: { code },
     },
-  });
+  );
 
-  if (!classroom) {
-    console.log("Classroom not found");
-    return { error: "Classroom not found" };
+  if (!ok) {
+    return { error: data?.error || "Erro ao entrar na turma" };
   }
 
-  await prisma.classroom.update({
-    where: {
-      id: classroom.id,
-    },
-    data: {
-      students: {
-        connect: {
-          id: userId,
-        },
-      },
-    },
-  });
-
-  revalidatePath(`/home`);
+  revalidatePath("/home");
+  return { ok: true };
 }

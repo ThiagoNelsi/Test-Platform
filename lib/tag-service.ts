@@ -1,69 +1,50 @@
 "use server";
 
 import { Tag } from "@/lib/types";
-import prisma from "./prisma";
-import { getUserId } from "./auth";
+import { backendJson } from "./backend-api";
 
 export const createTag = async (tag: Pick<Tag, "name" | "color">) => {
-  const userId = await getUserId();
-  if (!userId)
-    return {
-      error: "Usuário não autenticado",
-    };
-
-  const existingTag = await prisma.tag.findFirst({
-    where: {
-      userId,
-      name: tag.name,
+  const { ok, data } = await backendJson<{ error?: string; tag?: Tag }>(
+    "/api/tags",
+    {
+      method: "POST",
+      body: tag,
     },
-  });
+  );
 
-  if (existingTag)
+  if (!ok || !data) {
     return {
-      error: "Tag já existe",
+      error: data?.error || "Erro ao criar tag",
     };
+  }
 
-  const created = await prisma.tag.create({
-    data: {
-      ...tag,
-      userId,
-    },
-  });
+  if (data.error) {
+    return {
+      error: data.error,
+    };
+  }
 
   return {
     success: true,
-    tag: created,
+    tag: data.tag,
   };
 };
 
 export const getTags = async () => {
-  const userId = await getUserId();
-  if (!userId) return [];
+  const { ok, data } = await backendJson<{ tags?: Tag[] }>("/api/tags");
+  if (!ok || !data?.tags) return [];
 
-  return prisma.tag.findMany({
-    where: {
-      userId,
-    },
-  });
+  return data.tags;
 };
 
 export const getQuestionsPerTag = async () => {
-  const userId = await getUserId();
-  if (!userId) return [];
+  const { ok, data } = await backendJson<{
+    questionsPerTag?: { tagId: number; questions: number[] }[];
+  }>("/api/tags/questions-per-tag");
 
-  const questionsPerTag = await prisma.tag.findMany({
-    select: {
-      id: true,
-      questions: {
-        select: {
-          id: true,
-        },
-      },
-    },
-  });
+  if (!ok || !data?.questionsPerTag) {
+    return [];
+  }
 
-  return questionsPerTag.map((tag) => ({
-    tagId: tag.id,
-    questions: tag.questions.map((q) => q.id),
-  }));
+  return data.questionsPerTag;
 };

@@ -38,7 +38,7 @@ export const CreateTagPopover = ({
       return;
     }
 
-    if (res.success) {
+    if (res.success && res.tag) {
       inputRef.current.value = "";
       setSelectedColor(0);
       successToast("Tag criada com sucesso");
