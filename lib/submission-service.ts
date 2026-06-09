@@ -1,257 +1,85 @@
-"use server"
+"use server";
 
-import { Test } from "@prisma/client";
-import { getUserId } from "./auth";
-import prisma from "./prisma";
-import { Section } from "./section";
-import { InputJsonValue } from "@prisma/client/runtime/library";
+import { backendJson } from "./backend-api";
 
-const generateSections = async (test: Test) => {
-  const parsedSections = (test.sections as Array<any>).map((section: any) => Section.fromJSON(section));
-  const questionList = parsedSections.flatMap(section => section.questions);
-  const questions = await prisma.question.findMany({
-    where: {
-      OR: questionList.map(({ questionId, version }) => ({
-        OR: [
-          {
-            id: questionId
-          },
-          {
-            originalQuestionId: questionId,
-          }
-        ],
-        version,
-      }))
-    },
-    select: {
-      id: true,
-      originalQuestionId: true,
-      content: true,
-      type: true,
-      version: true,
-    },
-  });
+const hydrateSubmissionDates = <T extends Record<string, any>>(payload: T): T => {
+  if (!payload?.submission) return payload;
 
-  const sections = parsedSections.map((section) => {
-    // random questions
-    if (section.count != undefined) {
-      const selectedQuestions = [];
-      const availableQuestions = [...section.questions];
-
-      if (availableQuestions.length < section.count) {
-        console.error("Not enough questions available for the section");
-        return null;
-      }
-
-      for (let i = 0; i < section.count; i++) {
-        const randomIndex = Math.floor(Math.random() * availableQuestions.length);
-
-        // remove the selected question from the available questions
-        const [question] = availableQuestions.splice(randomIndex, 1);
-
-        const questionData = questions.find(q => {
-          if (q.originalQuestionId) {
-            return q.originalQuestionId === question.questionId;
-          }
-          return q.id === question.questionId;
-        });
-        selectedQuestions.push(questionData);
-      }
-
-      return {
-        count: section.count,
-        questions: selectedQuestions,
-      };
-    }
-
-    // shuffle
-    if (section.shuffle != undefined) {
-      const shuffle = (array: typeof section.questions) => {
-        for (let i = array.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-      };
-
-      const shuffledQuestions = shuffle(section.questions);
-
-      return {
-        shuffle: section.shuffle,
-        questions: shuffledQuestions.map((q) => {
-          return questions.find(question => {
-            if (question.originalQuestionId) {
-              return question.originalQuestionId === q.questionId;
-            }
-            return question.id === q.questionId;
-          })
-        }),
-      };
-    }
-  });
-
-  return sections;
-}
-
-const removeAnswer = (submission: any) => {
   return {
-    ...submission,
-    sections: (submission.sections as Array<any>).map((section: any) => ({
-      ...section,
-      questions: section.questions.map((question: any) => ({
-        ...question,
-        content: {
-          ...question.content,
-          answer: undefined,
-        },
-      }))
-    })),
-  }
-}
+    ...payload,
+    test: {
+      ...payload.test,
+      dueDate: payload.test?.dueDate ? new Date(payload.test.dueDate) : null,
+    },
+    submission: {
+      ...payload.submission,
+      startTime: payload.submission.startTime
+        ? new Date(payload.submission.startTime)
+        : null,
+      finishTime: payload.submission.finishTime
+        ? new Date(payload.submission.finishTime)
+        : null,
+    },
+  };
+};
 
 export const createSubmission = async (testId: number) => {
-  const userId = await getUserId();
-  if (!userId) return null;
-
-  const select = {
-    id: true,
-    answers: true,
-    finishTime: true,
-    score: true,
-    startTime: true,
-    sections: true,
-  }
-
-  // check if submission already exists
-  const submissionExists = await prisma.submission.findFirst({
-    where: {
-      testId,
-      userId,
-    },
-    select,
+  const { ok, data } = await backendJson<any>("/api/submissions", {
+    method: "POST",
+    body: { testId },
   });
 
-  // get test data
-  const test = await prisma.test.findFirst({
-    where: {
-      id: testId,
-      deletedAt: null,
-      status: "published"
+  if (!ok || !data) return null;
+
+  return hydrateSubmissionDates(data);
+};
+
+export const saveSubmission = async (
+  submissionId: number,
+  answers: Record<number, string>,
+) => {
+  const { ok, data } = await backendJson<any>(
+    `/api/submissions/${submissionId}/save`,
+    {
+      method: "PATCH",
+      body: { answers },
     },
-    include: {
-      classroom: {
-        select: {
-          name: true,
-          students: {
-            select: {
-              id: true,
-            }
-          },
-        }
-      },
-    }
-  });
+  );
 
-  if (!test) return null;
-  if (test.classroom?.students.find(student => student.id === userId) === undefined) {
-    console.log("\n\nUser not allowed to create submission");
-    return null;
-  }
-
-  if (submissionExists) {
-    console.log("\n\nSubmission already exists");
-    return {
-      test: {
-        id: test.id,
-        name: test.name,
-        description: test.description,
-        value: test.value,
-        dueDate: test.dueDate,
-        timer: test.timer,
-        classroom: test.classroom?.name,
-      },
-      submission: removeAnswer(submissionExists),
-    };
-  }
-
-  if (!test.sections) return null;
-
-  const sections = await generateSections(test);
-
-  if (!sections) return null;
-
-  const submission = await prisma.submission.create({
-    data: {
-      testId: test.id,
-      userId,
-      sections: sections as InputJsonValue,
-    },
-    select,
-  });
+  if (!ok || !data?.submission) return null;
 
   return {
-    test: {
-      id: test.id,
-      name: test.name,
-      description: test.description,
-      value: test.value,
-      dueDate: test.dueDate,
-      timer: test.timer,
-      classroom: test.classroom?.name,
-    },
-    submission: removeAnswer(submission),
+    ...data.submission,
+    startTime: data.submission.startTime
+      ? new Date(data.submission.startTime)
+      : null,
+    finishTime: data.submission.finishTime
+      ? new Date(data.submission.finishTime)
+      : null,
   };
-}
+};
 
-export const saveSubmission = async (submissionId: number, answers: Record<number, string>) => {
-  const userId = await getUserId();
-  if (!userId) return null;
-
-  const submission = await prisma.submission.findFirst({
-    where: {
-      id: submissionId,
-      userId,
-      finishTime: null,
+export const finishSubmission = async (
+  submissionId: number,
+  answers: Record<number, string>,
+) => {
+  const { ok, data } = await backendJson<any>(
+    `/api/submissions/${submissionId}/finish`,
+    {
+      method: "PATCH",
+      body: { answers },
     },
-  });
+  );
 
-  if (!submission) return null;
+  if (!ok || !data?.submission) return null;
 
-  const updatedSubmission = await prisma.submission.update({
-    where: {
-      id: submission.id,
-    },
-    data: {
-      answers,
-    },
-  });
-
-  return updatedSubmission;
-}
-
-export const finishSubmission = async (submissionId: number, answers: Record<number, string>) => {
-  const userId = await getUserId();
-  if (!userId) return null;
-
-  const submission = await prisma.submission.findFirst({
-    where: {
-      id: submissionId,
-      userId,
-      finishTime: null,
-    },
-  });
-
-  if (!submission) return null;
-
-  const updatedSubmission = await prisma.submission.update({
-    where: {
-      id: submission.id,
-    },
-    data: {
-      answers,
-      finishTime: new Date(),
-    },
-  });
-
-  return updatedSubmission;
-}
+  return {
+    ...data.submission,
+    startTime: data.submission.startTime
+      ? new Date(data.submission.startTime)
+      : null,
+    finishTime: data.submission.finishTime
+      ? new Date(data.submission.finishTime)
+      : null,
+  };
+};
