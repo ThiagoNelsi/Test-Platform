@@ -32,7 +32,7 @@ function normalizeLevel(level: unknown): number | null | undefined {
   return undefined;
 }
 
-function parseContent(value: unknown): Prisma.InputJsonValue | Prisma.JsonNull {
+function parseContent(value: unknown): Prisma.InputJsonValue | Prisma.JsonNullValueInput {
   if (value === null) return Prisma.JsonNull;
   if (typeof value === 'string') {
     return JSON.parse(value) as Prisma.InputJsonValue;
@@ -110,7 +110,7 @@ export function createQuestionsRouter(options: QuestionsRouterOptions): Router {
       return;
     }
 
-    let parsedContent: Prisma.InputJsonValue | Prisma.JsonNull;
+    let parsedContent: Prisma.InputJsonValue | Prisma.JsonNullValueInput;
     try {
       parsedContent = parseContent(content);
     } catch {
@@ -204,7 +204,7 @@ export function createQuestionsRouter(options: QuestionsRouterOptions): Router {
       .map((value: unknown) => Number(value))
       .filter((value: number) => Number.isInteger(value) && value > 0);
 
-    let parsedContent: Prisma.InputJsonValue | Prisma.JsonNull;
+    let parsedContent: Prisma.InputJsonValue | Prisma.JsonNullValueInput;
     try {
       parsedContent = parseContent(content);
     } catch {
