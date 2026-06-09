@@ -1,7 +1,9 @@
 import { StartDocumentAnalysisCommand, type TextractClient } from '@aws-sdk/client-textract';
 import type { PrismaClient, ResourceStatus } from '@prisma/client';
 import { Router, type Request, type Response } from 'express';
-import type { AuthService, BackendUser } from '../auth/service';
+import type { AuthService } from '../auth/service';
+import { requireUser } from './shared/auth';
+import { badRequest, internalServerError } from './shared/responses';
 
 export type ResourcePrisma = Pick<PrismaClient, 'resource'>;
 
@@ -15,28 +17,6 @@ type ResourceRouterOptions = {
   snsRoleArn: string;
 };
 
-async function requireUser(
-  req: Request,
-  res: Response,
-  authService: AuthService,
-): Promise<BackendUser | null> {
-  const token = req.cookies?.session as string | undefined;
-
-  if (!token) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return null;
-  }
-
-  const user = await authService.getCurrentUser(token);
-
-  if (!user) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return null;
-  }
-
-  return user;
-}
-
 export function createResourceRouter(options: ResourceRouterOptions): Router {
   const router = Router();
 
@@ -47,7 +27,7 @@ export function createResourceRouter(options: ResourceRouterOptions): Router {
     const { filename, fileType, objectKey, tags } = req.body ?? {};
 
     if (!filename || !fileType || !objectKey) {
-      res.status(400).json({ error: 'Missing required fields' });
+      badRequest(res, 'Missing required fields');
       return;
     }
 
@@ -95,8 +75,7 @@ export function createResourceRouter(options: ResourceRouterOptions): Router {
 
       res.json({ resource: dbRef });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create resource';
-      res.status(500).json({ error: message });
+      internalServerError(res, error, 'Failed to create resource');
     }
   });
 
@@ -120,8 +99,7 @@ export function createResourceRouter(options: ResourceRouterOptions): Router {
 
       res.json({ resources });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch resources';
-      res.status(500).json({ error: message });
+      internalServerError(res, error, 'Failed to fetch resources');
     }
   });
 
