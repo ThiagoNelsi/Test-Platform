@@ -13,7 +13,13 @@ import { createPrismaClient } from './database/prisma';
 import { createQuestionGenerator } from './questions/generator';
 import { enemPrompt } from './questions/prompt';
 import { createAuthRouter } from './routes/auth';
+import { createClassroomsRouter } from './routes/classrooms';
+import { createQuestionsRouter } from './routes/questions';
+import { createRepositoryRouter } from './routes/repository';
 import { createResourceRouter } from './routes/resource';
+import { createSubmissionsRouter } from './routes/submissions';
+import { createTagsRouter } from './routes/tags';
+import { createTestsRouter } from './routes/tests';
 import { createUploadRouter } from './routes/upload';
 import dotenv from 'dotenv';
 
@@ -70,6 +76,48 @@ export function createApp(
 
   app.use('/auth', createAuthRouter(authService));
   if (resourceDeps) {
+    app.use(
+      '/api/questions',
+      createQuestionsRouter({
+        authService,
+        prisma: resourceDeps.prisma,
+      }),
+    );
+    app.use(
+      '/api/repository',
+      createRepositoryRouter({
+        authService,
+        prisma: resourceDeps.prisma,
+      }),
+    );
+    app.use(
+      '/api/tests',
+      createTestsRouter({
+        authService,
+        prisma: resourceDeps.prisma,
+      }),
+    );
+    app.use(
+      '/api/submissions',
+      createSubmissionsRouter({
+        authService,
+        prisma: resourceDeps.prisma,
+      }),
+    );
+    app.use(
+      '/api/tags',
+      createTagsRouter({
+        authService,
+        prisma: resourceDeps.prisma,
+      }),
+    );
+    app.use(
+      '/api/classrooms',
+      createClassroomsRouter({
+        authService,
+        prisma: resourceDeps.prisma,
+      }),
+    );
     app.use(
       '/api/resource',
       createResourceRouter({
