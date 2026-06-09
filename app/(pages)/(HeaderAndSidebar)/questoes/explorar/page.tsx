@@ -21,6 +21,18 @@ import { errorToast } from "@/lib/toasters"
 import MultipleChoiceCard from "@/app/components/question-types/multiple-choice/card"
 
 const alternatives = ['A', 'B', 'C', 'D', 'E']
+const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/+$/g, '')
+
+const parseQuestionContent = (value: unknown) => {
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value)
+    } catch {
+      return value
+    }
+  }
+  return value
+}
 
 export default function ExploreQuestionsPage() {
   // State for filters
@@ -52,7 +64,7 @@ export default function ExploreQuestionsPage() {
 
   const fetchData = async () => {
     setLoading(true)
-    const response = await fetch("/api/repositorio");
+    const response = await fetch(`${backendUrl}/api/repository`, { credentials: 'include' });
 
     if (!response.ok) {
       errorToast("Erro ao buscar questões")
@@ -66,7 +78,7 @@ export default function ExploreQuestionsPage() {
 
     const parsed = QuestionFactory.from(data.questions.map((question: any) => ({
       ...question,
-      content: JSON.parse(question.content)
+      content: parseQuestionContent(question.content)
     })))
     setQuestions(parsed);
     setFilteredQuestions(parsed);
@@ -173,11 +185,12 @@ export default function ExploreQuestionsPage() {
 
   // Handle adding selected questions to personal bank
   const handleAddToPersonalBank = async () => {
-    const res = await fetch("/api/question/clone", {
+    const res = await fetch(`${backendUrl}/api/repository/clone`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: 'include',
       body: JSON.stringify({ questionIds: selectedQuestions }),
     })
 
