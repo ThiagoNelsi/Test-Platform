@@ -5,10 +5,9 @@ import { Dialog, DialogContent, DialogTitle } from "@/app/components/ui/dialog";
 import { useNewClassroomModal } from "../context/new-classroom-modal-context";
 import { Input } from "@/app/components/ui/input";
 import { Button } from "@/app/components/ui/button";
-import { createClassroom } from "@/lib/classroomService";
+import { createClassroom, type Classroom } from "@/lib/classroomService";
 import { Loader } from "lucide-react";
 import { FaRegCopy } from "react-icons/fa";
-import { Classroom } from "@prisma/client";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 

@@ -8,7 +8,7 @@ import {
   CommandList,
 } from "./ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Classroom } from "@prisma/client";
+import type { Classroom } from "@/lib/classroomService";
 
 type SearchClassroomsProps = {
   items: Classroom[];

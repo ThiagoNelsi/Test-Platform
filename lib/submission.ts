@@ -1,7 +1,14 @@
-import { Test } from "@prisma/client";
 import { SubmissionSection } from "./section";
 
-type TestData = Pick<Test, 'id' | 'name' | 'description' | 'value' | 'dueDate' | 'timer'> & { classroom: string };
+type TestData = {
+    id: number;
+    name: string;
+    description: string;
+    value: number;
+    dueDate: Date | null;
+    timer: number | null;
+    classroom: string;
+};
 
 type SubmissionData = {
     id: number;

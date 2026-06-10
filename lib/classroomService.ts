@@ -1,10 +1,21 @@
 "use server";
 
-import { Classroom, User } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { backendJson } from "./backend-api";
 
-type Owner = Pick<User, "name" | "id" | "email">;
+export type Classroom = {
+  id: number;
+  name: string;
+  code: string;
+  ownerId: number;
+  createdAt: Date;
+};
+
+type Owner = {
+  id: number;
+  name: string;
+  email: string;
+};
 
 export type ClassroomWithOwner = { owner: Owner } & Classroom;
 
