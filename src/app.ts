@@ -150,6 +150,12 @@ export function createApp(
 }
 
 function createDefaultAuthService(prisma = createPrismaClient()) {
+  const rawSameSite = getOptionalEnv('AUTH_COOKIE_SAME_SITE', 'lax').toLowerCase();
+  const cookieSameSite =
+    rawSameSite === 'none' || rawSameSite === 'strict' || rawSameSite === 'lax'
+      ? rawSameSite
+      : 'lax';
+
   return createAuthService({
     prisma,
     fetchFn: fetch,
@@ -159,6 +165,8 @@ function createDefaultAuthService(prisma = createPrismaClient()) {
     backendUrl: getOptionalEnv('BACKEND_URL', 'http://localhost:8000'),
     frontendUrl: getOptionalEnv('FRONTEND_URL', 'http://localhost:3000'),
     isProduction: process.env.NODE_ENV === 'production',
+    cookieSameSite,
+    cookieDomain: getOptionalEnv('AUTH_COOKIE_DOMAIN', ''),
   });
 }
 

@@ -30,6 +30,8 @@ export type AuthServiceDeps = {
   backendUrl: string;
   frontendUrl: string;
   isProduction: boolean;
+  cookieSameSite?: CookieOptions['sameSite'];
+  cookieDomain?: string;
 };
 
 const SESSION_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
@@ -97,20 +99,39 @@ async function upsertGoogleUser(prisma: AuthPrisma, profile: { email?: string; n
   return existingUser;
 }
 
-export function buildSessionCookieOptions(isProduction: boolean): CookieOptions {
+type CookieConfig = {
+  sameSite?: CookieOptions['sameSite'];
+  domain?: string;
+};
+
+function normalizeSameSite(sameSite?: CookieOptions['sameSite']): CookieOptions['sameSite'] {
+  if (sameSite === 'none' || sameSite === 'lax' || sameSite === 'strict' || sameSite === true || sameSite === false) {
+    return sameSite;
+  }
+
+  return 'lax';
+}
+
+export function buildSessionCookieOptions(isProduction: boolean, config: CookieConfig = {}): CookieOptions {
+  const sameSite = normalizeSameSite(config.sameSite);
   return {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: 'lax',
+    secure: isProduction || sameSite === 'none',
+    sameSite,
+    ...(config.domain ? { domain: config.domain } : {}),
+    path: '/',
     maxAge: SESSION_COOKIE_MAX_AGE,
   };
 }
 
-export function buildLogoutCookieOptions(isProduction: boolean): CookieOptions {
+export function buildLogoutCookieOptions(isProduction: boolean, config: CookieConfig = {}): CookieOptions {
+  const sameSite = normalizeSameSite(config.sameSite);
   return {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: 'lax',
+    secure: isProduction || sameSite === 'none',
+    sameSite,
+    ...(config.domain ? { domain: config.domain } : {}),
+    path: '/',
     expires: new Date(0),
   };
 }
@@ -166,11 +187,17 @@ export function createAuthService(deps: AuthServiceDeps) {
     },
 
     buildLogoutCookieOptions(): CookieOptions {
-      return buildLogoutCookieOptions(deps.isProduction);
+      return buildLogoutCookieOptions(deps.isProduction, {
+        sameSite: deps.cookieSameSite,
+        domain: deps.cookieDomain,
+      });
     },
 
     buildSessionCookieOptions(): CookieOptions {
-      return buildSessionCookieOptions(deps.isProduction);
+      return buildSessionCookieOptions(deps.isProduction, {
+        sameSite: deps.cookieSameSite,
+        domain: deps.cookieDomain,
+      });
     },
   };
 }
