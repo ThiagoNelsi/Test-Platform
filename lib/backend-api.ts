@@ -1,7 +1,3 @@
-"use server";
-
-import { cookies } from "next/headers";
-
 type BackendRequestOptions = Omit<RequestInit, "body"> & {
   body?: unknown;
 };
@@ -22,13 +18,7 @@ export async function backendFetch(
     throw new Error("Backend URL is not configured");
   }
 
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get("session")?.value;
-
   const headers = new Headers(options.headers);
-  if (sessionCookie) {
-    headers.set("cookie", `session=${sessionCookie}`);
-  }
 
   let body: BodyInit | undefined;
   if (options.body !== undefined) {
@@ -36,12 +26,17 @@ export async function backendFetch(
     body = JSON.stringify(options.body);
   }
 
-  return fetch(`${backendBase}${path}`, {
+  const response = fetch(`${backendBase}${path}`, {
     ...options,
     headers,
     body,
+    credentials: options.credentials ?? "include",
     cache: options.cache ?? "no-store",
   });
+
+  response.then(console.log).catch(console.error);
+
+  return response;
 }
 
 export async function backendJson<T>(
@@ -53,7 +48,8 @@ export async function backendJson<T>(
   let data: T | null = null;
   try {
     data = (await response.json()) as T;
-  } catch {
+  } catch (error) {
+    console.error("Failed to parse JSON response:", error);
     data = null;
   }
 

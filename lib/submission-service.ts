@@ -1,5 +1,3 @@
-"use server";
-
 import { backendJson } from "./backend-api";
 
 const hydrateSubmissionDates = <T extends Record<string, any>>(payload: T): T => {

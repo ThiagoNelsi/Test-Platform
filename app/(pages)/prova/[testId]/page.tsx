@@ -93,12 +93,7 @@ export default function Test() {
   useEffect(() => {
     async function fetchExamData() {
       const res = await createSubmission(Number(testId));
-      console.log(
-        "%c🤪 ~ file: /home/thiago/Test-Platform/app/prova/[testId]/page.tsx:77 [] -> res : ",
-        "color: #d673cf",
-        res
-      );
-
+    
       if (!res) {
         return errorToast("Erro ao carregar a prova.");
       }
