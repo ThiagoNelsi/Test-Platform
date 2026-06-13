@@ -1,1 +1,3 @@
-- [ ] Establish an ubiquitous language in the code, to prevent inconsistencies such as materials and resources 
+- [ ] Establish an ubiquitous language in the code, to prevent inconsistencies such as materials and resources
+- [ ] Fix AnyRecord usage
+  - [ ] Define strict contracts between backend and frontend

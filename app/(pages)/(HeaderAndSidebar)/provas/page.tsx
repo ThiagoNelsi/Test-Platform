@@ -1,18 +1,15 @@
+"use client"
+
 import TestList from "@/app/components/test-list";
 import { Button } from "@/app/components/ui/button";
+import { useTestListController } from "@/app/controllers/test-list-controller";
 import Link from "next/link";
 import { MdAdd } from "react-icons/md";
-import { getOwnedTests } from "@/lib/test-service";
-import { tryCatch } from "@/lib/try-catch";
 
-export default async function Tests() {
-  const { data: tests, error } = await tryCatch(getOwnedTests());
+export default function Tests() {
+  const { draftTests, scheduledTests, publishedTests } = useTestListController();
 
-  if (error || !tests) return <div>Erro ao carregar provas</div>;
-
-  const publishedTests = tests.filter((test) => test.status === "published");
-  const scheduledTests = tests.filter((test) => test.status === "scheduled");
-  const draftTests = tests.filter((test) => test.status === "draft");
+  console.log({ draftTests, scheduledTests, publishedTests });
 
   return (
     <div className="max-w-[100ch] mx-auto">
