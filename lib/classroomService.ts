@@ -1,3 +1,5 @@
+"use client";
+
 import { revalidatePath } from "next/cache";
 import { backendJson } from "./backend-api";
 

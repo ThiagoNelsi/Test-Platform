@@ -1,17 +1,11 @@
 "use client";
 
-import ClassroomList from "@/app/components/classroom-list";
-import { ClassroomWithOwner } from "@/lib/classroomService";
 import { MdAdd } from "react-icons/md";
 import { IoDocumentsOutline } from "react-icons/io5";
 import Link from "next/link";
 import { FaTasks } from "react-icons/fa";
 
-type Props = {
-  ownedClasses: ClassroomWithOwner[];
-};
-
-const TeacherActions = () => {
+export const TeacherActions = () => {
   return (
     <div className="flex items-center gap-10 border-b-2 border-gray-100 mb-8 px-4 py-2 text-sm">
       <Link
@@ -32,15 +26,3 @@ const TeacherActions = () => {
     </div>
   );
 };
-
-export default function Component({ ownedClasses }: Props) {
-  return (
-    <div className="max-w-[1500px] size-full mx-auto overflow-auto">
-      <TeacherActions />
-      <ClassroomList
-        isTeacher={true}
-        classrooms={ownedClasses}
-      />
-    </div>
-  );
-}
