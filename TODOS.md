@@ -1,0 +1,1 @@
+- [ ] Establish an ubiquitous language in the code, to prevent inconsistencies such as materials and resources 

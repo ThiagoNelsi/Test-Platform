@@ -3,51 +3,16 @@
 import { Button } from "@/app/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { tryCatch } from "@/lib/try-catch";
-import { errorToast } from "@/lib/toasters";
-import { Resource } from "@/lib/types";
 import ResourceCard from "./components/resource-card";
+import { useMaterialsController } from "@/app/controllers/materials-controller";
 
 export default function Page() {
-  const backend = process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
-  const backendBase = backend.replace(/\/+$/g, "");
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { resources, loading } = useMaterialsController();
 
-  useEffect(() => {
-    async function fetchResources() {
-      if (!backendBase) {
-        errorToast("Backend URL is not configured");
-        setLoading(false);
-        return;
-      }
-
-      const { data: fetchResponse, error: fetchError } = await tryCatch(
-        fetch(`${backendBase}/api/resource`, { credentials: "include" }),
-      );
-      if (fetchError || fetchResponse === null) {
-        errorToast("Erro ao buscar materiais");
-        setLoading(false);
-        return;
-      }
-
-      const { data, error } = await tryCatch(fetchResponse.json());
-
-      if (error) {
-        setLoading(false);
-        return;
-      }
-
-      setResources(data.resources);
-      setLoading(false);
-    }
-
-    fetchResources();
-  }, [backendBase]);
   if (loading) {
     return <div>Loading...</div>;
   }
+
   if (!resources || resources.length === 0) {
     return (
       <div>

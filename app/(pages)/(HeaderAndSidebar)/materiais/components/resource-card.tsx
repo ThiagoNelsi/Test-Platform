@@ -1,5 +1,7 @@
+"use client";
+
 import { Resource, ResourceStatus } from "@/lib/types";
-import { getFileIcon } from "../utils";
+import { FileIconComponent } from "../utils";
 import { Button } from "@/app/components/ui/button";
 import { Sparkles, Trash } from "lucide-react";
 import Confirm from "@/app/components/ui/confirm";
@@ -23,9 +25,7 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
   return (
     <div className="flex items-center gap-6 p-4 bg-white rounded-xl shadow-md border border-gray-200">
       <div className="flex items-start h-full w-5">
-        {getFileIcon({
-          type: resource.fileType,
-        } as File)}
+        <FileIconComponent fileType={resource.fileType} />
       </div>
       <div className="flex-1 flex flex-col gap-2">
         <div className="flex flex-wrap items-center justify-between">
