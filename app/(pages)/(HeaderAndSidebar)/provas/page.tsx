@@ -9,8 +9,6 @@ import { MdAdd } from "react-icons/md";
 export default function Tests() {
   const { draftTests, scheduledTests, publishedTests } = useTestListController();
 
-  console.log({ draftTests, scheduledTests, publishedTests });
-
   return (
     <div className="max-w-[100ch] mx-auto">
       <div className="flex flex-col gap-6 pb-64">
