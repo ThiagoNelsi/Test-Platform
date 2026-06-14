@@ -1,20 +1,14 @@
-import { getUserId } from "@/lib/auth";
+"use client";
+
 import Header from "@/app/components/header";
 import { Sidebar } from "@/app/components/sidebar";
 import NewClassroomModal from "../../components/new-classroom-modal";
-import { redirect } from "next/navigation";
 
 interface Props {
   children: React.ReactNode;
 }
 
-export default async function Layout({ children }: Props) {
-  const userId = await getUserId();
-
-  if (!userId) {
-    redirect("/login");
-  }
-
+export default function Layout({ children }: Props) {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-y-auto">
       <Sidebar />
