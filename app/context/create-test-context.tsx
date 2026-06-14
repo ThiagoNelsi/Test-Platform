@@ -1,4 +1,5 @@
-import { IQuestion, Tag } from "@/lib/types";
+import { Classroom } from "@/lib/classroomService";
+import { IQuestion, Tag, TestData } from "@/lib/types";
 import {
   createContext,
   Dispatch,
@@ -18,6 +19,9 @@ export type Section = {
 
 type CreateTestContextType = {
   tags: Tag[] | null;
+  setTags: Dispatch<SetStateAction<Tag[] | null>>;
+  test: TestData | null;
+  setTest: Dispatch<SetStateAction<TestData | null>>;
   questions: IQuestion[] | null;
   setQuestions: Dispatch<SetStateAction<IQuestion[]>>;
   addSection: () => void;
@@ -35,12 +39,31 @@ type CreateTestContextType = {
     question: IQuestion,
     direction: "up" | "down",
   ) => void;
+  testName: string;
+  setTestName: Dispatch<SetStateAction<string>>;
+  testValue: number;
+  setTestValue: Dispatch<SetStateAction<number>>;
+  testDescription: string;
+  setTestDescription: Dispatch<SetStateAction<string>>;
+  testDueDate: Date | undefined;
+  setTestDueDate: Dispatch<SetStateAction<Date | undefined>>;
+  testDuration: number;
+  setTestDuration: Dispatch<SetStateAction<number>>;
+  publishDate: Date | undefined;
+  setPublishDate: Dispatch<SetStateAction<Date | undefined>>;
+  enablePublishDate: boolean;
+  setEnablePublishDate: Dispatch<SetStateAction<boolean>>;
+  enableDueDate: boolean;
+  setEnableDueDate: Dispatch<SetStateAction<boolean>>;
+  classrooms: Classroom[];
+  setClassrooms: Dispatch<SetStateAction<Classroom[]>>;
+  selectedClassrooms: number[];
+  setSelectedClassrooms: Dispatch<SetStateAction<number[]>>;
+  autoSaveStatus: "saving" | Date | null;
+  setAutoSaveStatus: Dispatch<SetStateAction<"saving" | Date | null>>;
 };
 
 type CreateTestProviderProps = {
-  tags: Tag[] | null;
-  questions: IQuestion[] | null;
-  setQuestions: Dispatch<SetStateAction<IQuestion[]>>;
   children: ReactNode;
 };
 
@@ -48,12 +71,7 @@ export const CreateTestContext = createContext<CreateTestContextType>(
   {} as CreateTestContextType,
 );
 
-export const CreateTestProvider = ({
-  tags,
-  questions,
-  setQuestions,
-  children,
-}: CreateTestProviderProps) => {
+export const CreateTestProvider = ({ children }: CreateTestProviderProps) => {
   const createEmptySection = (): Section => ({
     id: Math.random().toString(),
     shuffle: false,
@@ -61,10 +79,21 @@ export const CreateTestProvider = ({
     selectionMode: "all",
   });
 
-  const [allocatedQuestions, setAllocatedQuestions] = useState(
-    new Map<number, string>(),
-  );
-
+  const [tags, setTags] = useState<Tag[] | null>(null);
+  const [questions, setQuestions] = useState<IQuestion[]>([]);
+  const [test, setTest] = useState<TestData | null>(null);
+  const [testName, setTestName] = useState<string>(test?.name || "");
+  const [testValue, setTestValue] = useState<number>(test?.value || 10);
+  const [testDescription, setTestDescription] = useState<string>(test?.description || "");
+  const [testDueDate, setTestDueDate] = useState<Date | undefined>(test?.dueDate || undefined);
+  const [testDuration, setTestDuration] = useState<number>(test?.duration || 0);
+  const [publishDate, setPublishDate] = useState<Date | undefined>(test?.publishDate || undefined);
+  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+  const [selectedClassrooms, setSelectedClassrooms] = useState<number[]>([]);
+  const [enablePublishDate, setEnablePublishDate] = useState<boolean>(Boolean(test?.publishDate));
+  const [enableDueDate, setEnableDueDate] = useState<boolean>(Boolean(test?.dueDate));
+  const [autoSaveStatus, setAutoSaveStatus] = useState<"saving" | Date | null>(null);
+  const [allocatedQuestions, setAllocatedQuestions] = useState(new Map<number, string>());
   const [sections, setSections] = useState<Section[]>([createEmptySection()]);
 
   const addSection = () => {
@@ -134,6 +163,9 @@ export const CreateTestProvider = ({
 
   const contextValue: CreateTestContextType = {
     tags,
+    setTags,
+    test,
+    setTest,
     allocatedQuestions,
     setAllocatedQuestions,
     sections,
@@ -147,6 +179,28 @@ export const CreateTestProvider = ({
     moveQuestion,
     addQuestion,
     removeQuestion,
+    testName,
+    setTestName,
+    testValue,
+    setTestValue,
+    testDescription,
+    setTestDescription,
+    testDueDate,
+    setTestDueDate,
+    testDuration,
+    setTestDuration,
+    publishDate,
+    setPublishDate,
+    enablePublishDate,
+    setEnablePublishDate,
+    enableDueDate,
+    setEnableDueDate,
+    classrooms,
+    setClassrooms,
+    selectedClassrooms,
+    setSelectedClassrooms,
+    autoSaveStatus,
+    setAutoSaveStatus,
   };
 
   return (
