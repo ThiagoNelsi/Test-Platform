@@ -10,10 +10,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
 import CreateQuestionManually from "./create-manually"
 import CreateWithAI from "./create-with-ai"
 import { QuestionEditorProvider } from "@/app/context/question-editor-context"
-import { useSearchParams } from "next/navigation"
+import { useAppSearchParams as useSearchParams } from "@/app/components/router-compat"
 
 export default function CreateQuestionPage() {
-  const params = useSearchParams();
+  const [params] = useSearchParams();
   const initalTab = params.get("tab") || "manual";
   const resourceId = params.get("resourceId");
 

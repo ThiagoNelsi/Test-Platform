@@ -4,7 +4,10 @@ import { IQuestion, TestData } from "@/lib/types";
 import { getQuestions } from "@/lib/question-service";
 import { QuestionFactory } from "@/lib/question";
 import { Section, useCreateTest } from "@/app/context/create-test-context";
-import { useRouter, useSearchParams } from "next/navigation";
+import {
+  useAppNavigate as useNavigate,
+  useAppSearchParams as useSearchParams,
+} from "@/app/components/router-compat";
 
 import { errorToast, infoToast, successToast } from "@/lib/toasters";
 import {
@@ -125,9 +128,9 @@ const validateAndFormat = (
 };
 
 export const useCreateTestController = (createTestContext: ReturnType<typeof useCreateTest>) => {
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   const testId = searchParams.get("test");
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const {
     tags,
@@ -200,7 +203,7 @@ export const useCreateTestController = (createTestContext: ReturnType<typeof use
       if (!res) return;
       // set url to test id
       if (!testId) {
-        window.history.replaceState({}, "", `?test=${res.id}`);
+        navigate({ search: `?test=${res.id}` }, { replace: true });
       }
 
       setTest({
@@ -241,7 +244,7 @@ export const useCreateTestController = (createTestContext: ReturnType<typeof use
     };
 
     fetchData();
-  }, [testId, setQuestions, setTags, setTest]);
+  }, [navigate, testId, setQuestions, setTags, setTest]);
 
   useEffect(() => {
     if (test && test.sections) {
@@ -448,7 +451,7 @@ export const useCreateTestController = (createTestContext: ReturnType<typeof use
     successToast("Prova publicada com sucesso");
 
     // redirect to test page
-    router.push("/provas");
+    navigate("/provas");
   };
 
   const handleSchedulePublish = async () => {
@@ -467,7 +470,7 @@ export const useCreateTestController = (createTestContext: ReturnType<typeof use
     successToast("Prova publicada com sucesso");
 
     // redirect to test page
-    router.push("/provas");
+    navigate("/provas");
   };
 
   const handleAddClassroom = (classroom: Classroom) => {

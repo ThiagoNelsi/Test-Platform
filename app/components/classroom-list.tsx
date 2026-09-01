@@ -1,5 +1,5 @@
 import { ClassroomWithOwner } from "@/lib/classroomService";
-import Link from "next/link";
+import { AppLink as Link } from "@/app/components/router-compat";
 import { FaRegCopy } from "react-icons/fa";
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
@@ -20,7 +20,7 @@ const ClassroomCard = ({
 
   return (
     <li className="bg-ash_gray-900 border-[1px] border-ash_gray-500 min-w-[300px] md:min-w-[400px] h-40 flex flex-col gap-2 hover:shadow-lg rounded transition cursor-pointer">
-      <Link href={`/classroom/${classroom.id}`} className="size-full p-4">
+      <Link to={`/classroom/${classroom.id}`} className="size-full p-4">
         <h2 className="font-medium mb-0.5 text-sm">{classroom.name}</h2>
         <p className="text-sm">{classroom.owner.name}</p>
       </Link>

@@ -23,7 +23,7 @@ import {
 } from "@/app/components/ui/alert-dialog";
 import { Card } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
-import { useParams } from "next/navigation";
+import { useAppParams as useParams } from "@/app/components/router-compat";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import {
   createSubmission,

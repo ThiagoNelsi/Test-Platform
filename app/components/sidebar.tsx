@@ -4,8 +4,7 @@ import { useState, useEffect } from "react"
 import { BookOpen, FileText, Layers, Menu, Search, Sparkles, Users } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { cn } from "@/lib/utils"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { AppLink as Link, useAppLocation } from "@/app/components/router-compat"
 
 const navItems = [
   // { icon: Home, label: "Dashboard", href: "/home" },
@@ -23,7 +22,7 @@ const navItems = [
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(true)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const pathname = usePathname()
+  const { pathname } = useAppLocation()
 
   // Update document style when sidebar state changes
   useEffect(() => {
@@ -105,12 +104,12 @@ export function Sidebar() {
         <nav className="flex-1 overflow-y-auto py-4">
           <ul className="space-y-1 px-2">
             {navItems.map((item, index) => {
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href.split("?")[0]
 
               return (
                 <li key={index}>
                   <Link
-                    href={item.href}
+                    to={item.href}
                     className={cn(
                       "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
                       "hover:bg-gray-100 dark:hover:bg-gray-700",
@@ -140,4 +139,3 @@ export function Sidebar() {
     </>
   )
 }
-

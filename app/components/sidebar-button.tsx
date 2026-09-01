@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink as Link } from "@/app/components/router-compat";
 
 type ButtonProps = {
   icon: React.ReactNode;
@@ -16,7 +16,7 @@ export default function SidebarButton({
   if (href)
     return (
       <Link
-        href={href}
+        to={href}
         className="flex items-center gap-2 p-2 hover:bg-neutral-300 rounded transition"
       >
         {icon}

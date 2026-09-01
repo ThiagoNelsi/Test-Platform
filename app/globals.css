@@ -14,7 +14,11 @@
 }
 
 body {
-  font-family: var(--font-inter);
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 @layer utilities {

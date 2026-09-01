@@ -11,7 +11,7 @@ import {
 import { Bell, ChevronDown, LogOut, LucideCircleUserRound, Settings, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { usePathname } from "next/navigation";
+import { useAppLocation } from "@/app/components/router-compat";
 
 const headerTitles = {
   '/home': 'Turmas',
@@ -26,7 +26,8 @@ const headerTitles = {
 export default function Header() {
   const { user, signOut } = useAuth();
   const { name, image } = user ?? { name: undefined, image: undefined };
-  const path = usePathname() as keyof typeof headerTitles;
+  const { pathname } = useAppLocation();
+  const path = pathname as keyof typeof headerTitles;
 
   const handleSignOut = () => {
     signOut();

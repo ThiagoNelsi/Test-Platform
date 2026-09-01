@@ -6,6 +6,7 @@ type User = { id: number; name?: string | null; email?: string | null; image?: s
 
 export function useAuth() {
   const [user, setUser] = useState<User>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -20,6 +21,10 @@ export function useAuth() {
       .catch(() => {
         if (!mounted) return;
         setUser(null);
+      })
+      .finally(() => {
+        if (!mounted) return;
+        setIsLoading(false);
       });
 
     return () => {
@@ -43,5 +48,5 @@ export function useAuth() {
     window.location.href = "/login";
   }, []);
 
-  return { user, signIn, signOut } as const;
+  return { user, isLoading, signIn, signOut } as const;
 }

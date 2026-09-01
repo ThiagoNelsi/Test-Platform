@@ -1,6 +1,6 @@
 import { CircleHelp } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
-import Link from "next/link";
+import { AppLink as Link } from "@/app/components/router-compat";
 
 type HelpTooltipProps = {
   children?: React.ReactNode;
@@ -21,7 +21,7 @@ export default function HelpTooltip({ children, text, delay, link }: HelpTooltip
             <div>{text}</div>
           )}
         </div>
-        {link && <Link href={link} className="text-blue-500 underline">Saiba mais</Link>}
+        {link && <Link to={link} className="text-blue-500 underline">Saiba mais</Link>}
       </TooltipContent>
     </Tooltip>
   )

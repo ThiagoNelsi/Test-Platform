@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AppLink as Link } from "@/app/components/router-compat";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
@@ -153,7 +153,7 @@ export default function TestList({
                   <div className="flex gap-6 items-end">
                     {test.status === "draft" ? (
                       <>
-                        <Link href={`/provas/criar?test=${test.id}`}>
+                        <Link to={`/provas/criar?test=${test.id}`}>
                           <Button
                             variant="outline"
                             className="text-xs md:text-sm bg-blue-500 text-white border-0 hover:bg-blue-600 hover:text-white"
@@ -177,7 +177,7 @@ export default function TestList({
                         </Confirm>
                       </>
                     ) : (
-                      <Link href={`/provas/criar?test=${test.id}`}>
+                      <Link to={`/provas/criar?test=${test.id}`}>
                         <Button
                           variant="outline"
                           className="text-xs md:text-sm bg-blue-500 text-white border-0 hover:bg-blue-600 hover:text-white"

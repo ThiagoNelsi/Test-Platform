@@ -6,7 +6,7 @@ import { MdAdd } from "react-icons/md";
 import Confirm, { ConfirmTrigger } from "@/app/components/ui/confirm";
 import { deleteQuestion } from "@/lib/question-service";
 import { Input } from "@/app/components/ui/input";
-import Link from "next/link";
+import { AppLink as Link } from "@/app/components/router-compat";
 import { PossibleQuestionTypes } from "@/lib/question";
 import { Separator } from "@/app/components/ui/separator";
 import GroupLabel from "./group-label";
@@ -92,7 +92,7 @@ export default function TableActions({
     <menu className="flex flex-col gap-4 mb-4">
       <div className="flex items-center gap-4 justify-between">
         <Button className="bg-blue-500 text-white hover:bg-blue-600">
-          <Link href="/questoes/criar" className="flex items-center gap-2">
+          <Link to="/questoes/criar" className="flex items-center gap-2">
             <MdAdd /> Criar questão
           </Link>
         </Button>

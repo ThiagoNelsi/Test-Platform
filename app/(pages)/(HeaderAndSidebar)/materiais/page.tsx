@@ -2,7 +2,7 @@
 
 import { Button } from "@/app/components/ui/button";
 import { Plus } from "lucide-react";
-import Link from "next/link";
+import { AppLink as Link } from "@/app/components/router-compat";
 import ResourceCard from "./components/resource-card";
 import { useMaterialsController } from "@/app/controllers/materials-controller";
 
@@ -26,7 +26,7 @@ export default function Page() {
     <div>
       <h1>Meus Materiais</h1>
       <Button className="mb-4 mt-4 bg-blue-500 hover:bg-blue-600 text-white">
-        <Link href="/materiais/upload" className="flex items-center gap-2">
+        <Link to="/materiais/upload" className="flex items-center gap-2">
           <Plus className="w-4 h-4" /> Adicionar Material
         </Link>
       </Button>

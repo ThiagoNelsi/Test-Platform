@@ -5,7 +5,7 @@ import { FileIconComponent } from "../utils";
 import { Button } from "@/app/components/ui/button";
 import { Sparkles, Trash } from "lucide-react";
 import Confirm from "@/app/components/ui/confirm";
-import Link from "next/link";
+import { AppLink as Link } from "@/app/components/router-compat";
 
 const statuses: Record<ResourceStatus, string> = {
   UPLOADED: "Enviado",
@@ -70,7 +70,7 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
             className="text-xs"
             disabled={resource.status !== "PROCESSED"}
           >
-            <Link href={`/questoes/criar?tab=ai&resourceId=${resource.id}`} className="flex items-center gap-2">
+            <Link to={`/questoes/criar?tab=ai&resourceId=${resource.id}`} className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 mr-2" />
               Gerar questões sobre esse material
             </Link>
