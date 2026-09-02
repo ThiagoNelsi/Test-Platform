@@ -1,0 +1,31 @@
+{
+  "name": "test-platform",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "api",
+    "frontend",
+    "api-contracts"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace api",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "build:contracts": "npm run build --workspace api-contracts",
+    "build:api": "npm run build --workspace api",
+    "build:frontend": "npm run build --workspace frontend",
+    "build": "npm run generate && npm run build:api && npm run build:frontend",
+    "test:api": "npm run test --workspace api",
+    "test:frontend": "npm run test --workspace frontend",
+    "test": "npm run generate && npm run test:api && npm run test:frontend",
+    "typecheck:contracts": "npm run typecheck --workspace api-contracts",
+    "typecheck:api": "npm run typecheck --workspace api",
+    "typecheck:frontend": "npm run type-check --workspace frontend",
+    "typecheck": "npm run generate && npm run typecheck:contracts && npm run typecheck:api && npm run typecheck:frontend",
+    "lint": "npm run lint --workspace frontend",
+    "generate": "npm run build:contracts && npm run prisma:generate",
+    "prisma:generate": "npm run prisma:generate --workspace api"
+  }
+}
