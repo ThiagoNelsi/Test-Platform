@@ -55,15 +55,22 @@ Configure `frontend/.env.local` com:
 VITE_BACKEND_URL=http://localhost:8000
 ```
 
-O Docker Compose fornece PostgreSQL e Adminer para desenvolvimento local:
-
-```bash
-docker compose up -d db adminer
-```
+O Docker Compose fornece PostgreSQL e Adminer para desenvolvimento local; o
+comando `pnpm dev` os inicia junto com as aplicações.
 
 ## Desenvolvimento
 
-Inicie cada aplicação em um terminal separado:
+Inicie a stack completa de desenvolvimento a partir da raiz:
+
+```bash
+pnpm dev
+```
+
+Esse comando gera os contratos e o Prisma, inicia PostgreSQL/Adminer e sobe a
+API e o frontend em paralelo. `Ctrl+C` encerra as aplicações; use
+`docker compose down` quando quiser parar os containers locais.
+
+Para executar somente uma aplicação:
 
 ```bash
 pnpm run dev:api

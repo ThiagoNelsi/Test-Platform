@@ -7,6 +7,9 @@
     "node": ">=20"
   },
   "scripts": {
+    "dev": "pnpm run generate && pnpm run dev:infra && pnpm run dev:apps",
+    "dev:infra": "docker compose up -d db adminer",
+    "dev:apps": "pnpm --parallel --filter api --filter test-platform-frontend run dev",
     "dev:api": "pnpm --filter api run dev",
     "dev:frontend": "pnpm --filter test-platform-frontend run dev",
     "build:contracts": "pnpm --filter api-contracts run build",
