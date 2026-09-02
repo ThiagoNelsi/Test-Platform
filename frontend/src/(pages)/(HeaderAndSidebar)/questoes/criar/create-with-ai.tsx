@@ -77,15 +77,15 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
     type = type.split("/")[1]
     switch (type) {
       case "pdf":
-        return <FileText className="h-5 w-5 text-red-500" />
+        return <FileText className="h-5 w-5 shrink-0 text-red-500" />
       case "docx":
-        return <FileText className="h-5 w-5 text-blue-500" />
+        return <FileText className="h-5 w-5 shrink-0 text-blue-500" />
       case "pptx":
-        return <FileText className="h-5 w-5 text-orange-500" />
+        return <FileText className="h-5 w-5 shrink-0 text-orange-500" />
       case "image":
-        return <ImageIcon className="h-5 w-5 text-green-500" />
+        return <ImageIcon className="h-5 w-5 shrink-0 text-green-500" />
       default:
-        return <FileText className="h-5 w-5 text-gray-500" />
+        return <FileText className="h-5 w-5 shrink-0 text-gray-500" />
     }
   }
 
