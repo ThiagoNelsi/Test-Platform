@@ -1,5 +1,6 @@
+import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
-import { handlePromptRequest } from '../src/app';
+import { createApp, handlePromptRequest } from '../src/app';
 
 describe('prompt request handler', () => {
   it('swallows generator failures and emits a socket error', async () => {
@@ -30,5 +31,32 @@ describe('prompt request handler', () => {
 
     expect(generator.generateQuestion).toHaveBeenCalledWith('', '', [], socket);
     expect(socket.emit).not.toHaveBeenCalled();
+  });
+});
+
+describe('application transport configuration', () => {
+  it('allows the Vite development origin by default', async () => {
+    const previousFrontendUrl = process.env.FRONTEND_URL;
+    delete process.env.FRONTEND_URL;
+
+    try {
+      const response = await request(createApp({} as never))
+        .get('/')
+        .set('Origin', 'http://localhost:5173');
+
+      expect(response.status).toBe(200);
+      expect(response.headers['access-control-allow-origin']).toBe(
+        'http://localhost:5173',
+      );
+      expect(response.headers['access-control-allow-credentials']).toBe(
+        'true',
+      );
+    } finally {
+      if (previousFrontendUrl === undefined) {
+        delete process.env.FRONTEND_URL;
+      } else {
+        process.env.FRONTEND_URL = previousFrontendUrl;
+      }
+    }
   });
 });

@@ -3,7 +3,10 @@ import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 import { createUploadRouter } from '../../src/routes/upload';
 
-function createTestApp(options: { presignResult?: { url: string; fields: Record<string, string> } }) {
+function createTestApp(options: {
+  bucketName?: string;
+  presignResult?: { url: string; fields: Record<string, string> };
+}) {
   const presignPost = vi.fn().mockResolvedValue(
     options.presignResult ?? { url: 'http://s3.local/post', fields: { key: 'value' } },
   );
@@ -16,7 +19,7 @@ function createTestApp(options: { presignResult?: { url: string; fields: Record<
   app.use(
     '/api/upload',
     createUploadRouter({
-      bucketName: 'bucket-name',
+      bucketName: options.bucketName ?? 'bucket-name',
       region: 'us-east-1',
       s3Client: s3Client as never,
       presignPost,
@@ -70,5 +73,21 @@ describe('upload routes', () => {
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({ error: 's3 down' });
+  });
+
+  it('reports missing bucket configuration without calling AWS', async () => {
+    const { app, presignPost, s3Client } = createTestApp({ bucketName: '' });
+
+    const postResponse = await request(app)
+      .post('/api/upload')
+      .send({ contentType: 'image/png' });
+    const getResponse = await request(app).get('/api/upload');
+
+    expect(postResponse.status).toBe(500);
+    expect(postResponse.body).toEqual({ error: 'AWS bucket not configured' });
+    expect(getResponse.status).toBe(500);
+    expect(getResponse.body).toEqual({ error: 'AWS bucket not configured' });
+    expect(presignPost).not.toHaveBeenCalled();
+    expect(s3Client.send).not.toHaveBeenCalled();
   });
 });

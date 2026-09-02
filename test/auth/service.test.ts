@@ -42,6 +42,33 @@ describe('auth service', () => {
     expect(buildLogoutCookieOptions(true)).toMatchObject({ httpOnly: true, secure: true, sameSite: 'lax' });
   });
 
+  it('keeps configured cross-site cookie attributes consistent for login and logout', () => {
+    const config = { sameSite: 'none' as const, domain: '.example.test' };
+
+    expect(buildSessionCookieOptions(false, config)).toMatchObject({
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      domain: '.example.test',
+      path: '/',
+    });
+    expect(buildLogoutCookieOptions(false, config)).toMatchObject({
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      domain: '.example.test',
+      path: '/',
+    });
+  });
+
+  it('falls back to a safe same-site policy for unsupported configuration', () => {
+    expect(
+      buildSessionCookieOptions(false, {
+        sameSite: 'unsupported' as never,
+      }),
+    ).toMatchObject({ secure: false, sameSite: 'lax' });
+  });
+
   it('creates a new user during Google callback', async () => {
     const fetchFn = createFetchSequence([
       { access_token: 'access-123' },

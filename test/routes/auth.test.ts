@@ -36,6 +36,7 @@ describe('auth routes', () => {
     expect(response.status).toBe(302);
     expect(response.headers.location).toBe('http://frontend.local/home');
     expect(response.headers['set-cookie'][0]).toContain('session=session-token');
+    expect(authService.buildSessionCookieOptions).toHaveBeenCalledOnce();
   });
 
   it('returns the current user', async () => {
@@ -58,5 +59,8 @@ describe('auth routes', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
+    expect(authService.buildLogoutCookieOptions).toHaveBeenCalledOnce();
+    expect(response.headers['set-cookie'][0]).toContain('session=;');
+    expect(response.headers['set-cookie'][0]).toContain('Expires=Thu, 01 Jan 1970 00:00:00 GMT');
   });
 });
