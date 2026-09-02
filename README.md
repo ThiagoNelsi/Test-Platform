@@ -21,7 +21,7 @@ requisição e resposta alinhados entre os dois aplicativos.
 ## Pré-requisitos
 
 - Node.js 20 ou mais recente.
-- npm.
+- pnpm 11 (a versão do projeto está fixada no `package.json`).
 - PostgreSQL/Neon para a API.
 - Credenciais do Google OAuth e OpenAI.
 - AWS opcional para upload e processamento de materiais.
@@ -31,8 +31,8 @@ requisição e resposta alinhados entre os dois aplicativos.
 Instale todas as dependências a partir da raiz:
 
 ```bash
-npm install
-npm run prisma:generate
+pnpm install
+pnpm run prisma:generate
 ```
 
 Configure `api/.env` com as credenciais do backend. Para desenvolvimento
@@ -66,8 +66,8 @@ docker compose up -d db adminer
 Inicie cada aplicação em um terminal separado:
 
 ```bash
-npm run dev:api
-npm run dev:frontend
+pnpm run dev:api
+pnpm run dev:frontend
 ```
 
 A API fica disponível em `http://localhost:8000` e o frontend em
@@ -78,10 +78,10 @@ A API fica disponível em `http://localhost:8000` e o frontend em
 Os comandos abaixo executam as validações do monorepo:
 
 ```bash
-npm test
-npm run typecheck
-npm run lint
-npm run build
+pnpm test
+pnpm run typecheck
+pnpm run lint
+pnpm run build
 ```
 
 O build do pacote `api-contracts` acontece antes dos consumidores para que os

@@ -2,30 +2,26 @@
   "name": "test-platform",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@11.24.0",
   "engines": {
     "node": ">=20"
   },
-  "workspaces": [
-    "api",
-    "frontend",
-    "api-contracts"
-  ],
   "scripts": {
-    "dev:api": "npm run dev --workspace api",
-    "dev:frontend": "npm run dev --workspace frontend",
-    "build:contracts": "npm run build --workspace api-contracts",
-    "build:api": "npm run build --workspace api",
-    "build:frontend": "npm run build --workspace frontend",
-    "build": "npm run generate && npm run build:api && npm run build:frontend",
-    "test:api": "npm run test --workspace api",
-    "test:frontend": "npm run test --workspace frontend",
-    "test": "npm run generate && npm run test:api && npm run test:frontend",
-    "typecheck:contracts": "npm run typecheck --workspace api-contracts",
-    "typecheck:api": "npm run typecheck --workspace api",
-    "typecheck:frontend": "npm run type-check --workspace frontend",
-    "typecheck": "npm run generate && npm run typecheck:contracts && npm run typecheck:api && npm run typecheck:frontend",
-    "lint": "npm run lint --workspace frontend",
-    "generate": "npm run build:contracts && npm run prisma:generate",
-    "prisma:generate": "npm run prisma:generate --workspace api"
+    "dev:api": "pnpm --filter api run dev",
+    "dev:frontend": "pnpm --filter sisprova run dev",
+    "build:contracts": "pnpm --filter api-contracts run build",
+    "build:api": "pnpm --filter api run build",
+    "build:frontend": "pnpm --filter sisprova run build",
+    "build": "pnpm run generate && pnpm run build:api && pnpm run build:frontend",
+    "test:api": "pnpm --filter api run test",
+    "test:frontend": "pnpm --filter sisprova run test",
+    "test": "pnpm run generate && pnpm run test:api && pnpm run test:frontend",
+    "typecheck:contracts": "pnpm --filter api-contracts run typecheck",
+    "typecheck:api": "pnpm --filter api run typecheck",
+    "typecheck:frontend": "pnpm --filter sisprova run type-check",
+    "typecheck": "pnpm run generate && pnpm run typecheck:contracts && pnpm run typecheck:api && pnpm run typecheck:frontend",
+    "lint": "pnpm --filter sisprova run lint",
+    "generate": "pnpm run build:contracts && pnpm run prisma:generate",
+    "prisma:generate": "pnpm --filter api run prisma:generate"
   }
 }

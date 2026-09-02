@@ -13,10 +13,10 @@ authentication, authorization, business rules, and persistence.
 
 ## Development
 
-Install dependencies from this directory:
+Install dependencies from the monorepo root:
 
 ```bash
-npm install --legacy-peer-deps
+pnpm install
 ```
 
 Create `.env` or `.env.local` with the browser-safe API URL:
@@ -28,7 +28,7 @@ VITE_BACKEND_URL=http://localhost:8000
 Start the Vite development server:
 
 ```bash
-npm run dev
+pnpm --filter sisprova run dev
 ```
 
 Open `http://localhost:5173`. The browser sends API requests with credentials
@@ -39,16 +39,16 @@ so the Express HTTP-only session cookie remains available across requests.
 Run the frontend checks from this directory:
 
 ```bash
-npm run type-check
-npm test
-npm run lint
-npm run build
+pnpm --filter sisprova run type-check
+pnpm --filter sisprova run test
+pnpm --filter sisprova run lint
+pnpm --filter sisprova run build
 ```
 
 The production build writes static assets to `dist/`. Preview that build with:
 
 ```bash
-npm run preview
+pnpm --filter sisprova run preview
 ```
 
 Deploy `dist/` to a static host or reverse proxy. Configure the host to serve
