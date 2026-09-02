@@ -10,8 +10,7 @@ entre as duas camadas.
 .
 ├── api/             # API Express, Prisma, Socket.IO e integrações externas
 ├── frontend/        # SPA Vite, React Router e componentes da interface
-├── api-contracts/   # Tipos de transporte consumidos por API e frontend
-└── docker-compose.yml
+└── api-contracts/   # Tipos de transporte consumidos por API e frontend
 ```
 
 O frontend não acessa o banco diretamente. A API concentra autenticação,
@@ -55,9 +54,6 @@ Configure `frontend/.env.local` com:
 VITE_BACKEND_URL=http://localhost:8000
 ```
 
-O Docker Compose fornece PostgreSQL e Adminer para desenvolvimento local; o
-comando `pnpm dev` os inicia junto com as aplicações.
-
 ## Desenvolvimento
 
 Inicie a stack completa de desenvolvimento a partir da raiz:
@@ -66,9 +62,8 @@ Inicie a stack completa de desenvolvimento a partir da raiz:
 pnpm dev
 ```
 
-Esse comando gera os contratos e o Prisma, inicia PostgreSQL/Adminer e sobe a
-API e o frontend em paralelo. `Ctrl+C` encerra as aplicações; use
-`docker compose down` quando quiser parar os containers locais.
+Esse comando gera os contratos e o Prisma e sobe a API e o frontend em
+paralelo. `Ctrl+C` encerra as duas aplicações.
 
 Para executar somente uma aplicação:
 
