@@ -1,4 +1,10 @@
 import type { PrismaClient } from '@prisma/client';
+import type {
+  CreateTagRequest,
+  CreateTagResponse,
+  QuestionsPerTagResponse,
+  TagsResponse,
+} from 'api-contracts';
 import { Router, type Request, type Response } from 'express';
 import type { AuthService } from '../auth/service';
 import { requireUser } from './shared/auth';
@@ -25,7 +31,8 @@ export function createTagsRouter(options: TagsRouterOptions): Router {
         },
       });
 
-      res.json({ tags });
+      const response: TagsResponse = { tags };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to fetch tags');
     }
@@ -35,8 +42,9 @@ export function createTagsRouter(options: TagsRouterOptions): Router {
     const user = await requireUser(req, res, options.authService);
     if (!user) return;
 
-    const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
-    const color = Number(req.body?.color);
+    const body = (req.body ?? {}) as Partial<CreateTagRequest>;
+    const name = typeof body.name === 'string' ? body.name.trim() : '';
+    const color = Number(body.color);
 
     if (!name || !Number.isInteger(color)) {
       badRequest(res, 'Missing required fields');
@@ -64,7 +72,8 @@ export function createTagsRouter(options: TagsRouterOptions): Router {
         },
       });
 
-      res.json({ success: true, tag });
+      const response: CreateTagResponse = { success: true, tag };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to create tag');
     }
@@ -89,12 +98,13 @@ export function createTagsRouter(options: TagsRouterOptions): Router {
         },
       });
 
-      res.json({
+      const response: QuestionsPerTagResponse = {
         questionsPerTag: questionsPerTag.map((tag) => ({
           tagId: tag.id,
           questions: tag.questions.map((question) => question.id),
         })),
-      });
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to fetch questions per tag');
     }

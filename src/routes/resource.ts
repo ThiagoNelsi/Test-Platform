@@ -1,9 +1,15 @@
 import { StartDocumentAnalysisCommand, type TextractClient } from '@aws-sdk/client-textract';
 import type { PrismaClient, ResourceStatus } from '@prisma/client';
+import type {
+  CreateResourceRequest,
+  CreateResourceResponse,
+  ResourcesResponse,
+} from 'api-contracts';
 import { Router, type Request, type Response } from 'express';
 import type { AuthService } from '../auth/service';
 import { requireUser } from './shared/auth';
 import { badRequest, internalServerError } from './shared/responses';
+import { toResourceDto } from './shared/serializers';
 
 export type ResourcePrisma = Pick<PrismaClient, 'resource'>;
 
@@ -24,7 +30,8 @@ export function createResourceRouter(options: ResourceRouterOptions): Router {
     const user = await requireUser(req, res, options.authService);
     if (!user) return;
 
-    const { filename, fileType, objectKey, tags } = req.body ?? {};
+    const { filename, fileType, objectKey, tags } =
+      (req.body ?? {}) as Partial<CreateResourceRequest>;
 
     if (!filename || !fileType || !objectKey) {
       badRequest(res, 'Missing required fields');
@@ -61,7 +68,7 @@ export function createResourceRouter(options: ResourceRouterOptions): Router {
         },
       });
 
-      const response = await options.textractClient.send(command);
+      const textractResponse = await options.textractClient.send(command);
 
       await options.prisma.resource.update({
         where: {
@@ -69,11 +76,14 @@ export function createResourceRouter(options: ResourceRouterOptions): Router {
         },
         data: {
           status: 'PROCESSING',
-          jobId: response.JobId,
+          jobId: textractResponse.JobId,
         },
       });
 
-      res.json({ resource: dbRef });
+      const response: CreateResourceResponse = {
+        resource: toResourceDto(dbRef),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to create resource');
     }
@@ -97,7 +107,10 @@ export function createResourceRouter(options: ResourceRouterOptions): Router {
         },
       });
 
-      res.json({ resources });
+      const response: ResourcesResponse = {
+        resources: resources.map(toResourceDto),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to fetch resources');
     }

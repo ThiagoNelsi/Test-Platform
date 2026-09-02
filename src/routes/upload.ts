@@ -1,7 +1,13 @@
 import { ListObjectsCommand, type S3Client } from '@aws-sdk/client-s3';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
+import type {
+  CreateUploadRequest,
+  PresignedPostResponse,
+  UploadObjectsResponse,
+} from 'api-contracts';
 import { Router, type Request, type Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import { badRequest, internalServerError } from './shared/responses';
 
 export type PresignedPostResult = {
   url: string;
@@ -26,15 +32,15 @@ export function createUploadRouter(options: UploadRouterOptions): Router {
   const expiresSeconds = options.expiresSeconds ?? 600;
 
   router.post('/', async (req: Request, res: Response) => {
-    const { contentType } = req.body ?? {};
+    const { contentType } = (req.body ?? {}) as Partial<CreateUploadRequest>;
 
     if (!contentType || typeof contentType !== 'string') {
-      res.status(400).json({ error: 'Missing contentType' });
+      badRequest(res, 'Missing contentType');
       return;
     }
 
     if (!options.bucketName) {
-      res.status(500).json({ error: 'AWS bucket not configured' });
+      internalServerError(res, undefined, 'AWS bucket not configured');
       return;
     }
 
@@ -53,16 +59,16 @@ export function createUploadRouter(options: UploadRouterOptions): Router {
         Expires: expiresSeconds,
       });
 
-      res.json({ url, fields });
+      const response: PresignedPostResponse = { url, fields };
+      res.json(response);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create presigned post';
-      res.status(500).json({ error: message });
+      internalServerError(res, error, 'Failed to create presigned post');
     }
   });
 
   router.get('/', async (_req: Request, res: Response) => {
     if (!options.bucketName) {
-      res.status(500).json({ error: 'AWS bucket not configured' });
+      internalServerError(res, undefined, 'AWS bucket not configured');
       return;
     }
 
@@ -73,10 +79,12 @@ export function createUploadRouter(options: UploadRouterOptions): Router {
         }),
       );
 
-      res.json(response?.Contents ?? []);
+      const objects: UploadObjectsResponse = (response?.Contents ?? []).map(
+        (object) => ({ Key: object.Key }),
+      );
+      res.json(objects);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to list objects';
-      res.status(500).json({ error: message });
+      internalServerError(res, error, 'Failed to list objects');
     }
   });
 

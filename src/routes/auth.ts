@@ -1,4 +1,5 @@
 import { Router, type Request, type Response } from 'express';
+import type { AuthMeResponse, LogoutResponse } from 'api-contracts';
 import type { AuthService } from '../auth/service';
 
 export function createAuthRouter(authService: AuthService): Router {
@@ -30,12 +31,14 @@ export function createAuthRouter(authService: AuthService): Router {
     const token = req.cookies?.session as string | undefined;
     const user = await authService.getCurrentUser(token);
 
-    res.json({ user });
+    const response: AuthMeResponse = { user };
+    res.json(response);
   });
 
   router.post('/logout', (_req: Request, res: Response) => {
     res.clearCookie('session', authService.buildLogoutCookieOptions());
-    res.json({ ok: true });
+    const response: LogoutResponse = { ok: true };
+    res.json(response);
   });
 
   return router;

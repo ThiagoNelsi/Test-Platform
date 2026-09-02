@@ -1,8 +1,16 @@
 import { Prisma, type PrismaClient, type Test } from '@prisma/client';
+import type {
+  CreateSubmissionRequest,
+  CreateSubmissionResponse,
+  FinishSubmissionResponse,
+  SaveSubmissionRequest,
+  SaveSubmissionResponse,
+} from 'api-contracts';
 import { Router, type Request, type Response } from 'express';
 import type { AuthService } from '../auth/service';
 import { requireUser } from './shared/auth';
-import { badRequest, internalServerError, notFound } from './shared/responses';
+import { badRequest, forbidden, internalServerError, notFound } from './shared/responses';
+import { toSubmissionDto, toSubmissionTestDto } from './shared/serializers';
 
 type QuestionRef = {
   questionId: number;
@@ -23,14 +31,6 @@ type SubmissionQuestion = {
   version: number;
 };
 
-type CreateSubmissionPayload = {
-  testId?: number;
-};
-
-type AnswersPayload = {
-  answers?: Record<string, string>;
-};
-
 export type SubmissionsPrisma = Pick<PrismaClient, 'submission' | 'test' | 'question'>;
 
 type SubmissionsRouterOptions = {
@@ -38,7 +38,7 @@ type SubmissionsRouterOptions = {
   prisma: SubmissionsPrisma;
 };
 
-function stripAnswers(submission: { sections: unknown } & Record<string, unknown>) {
+function stripAnswers<T extends { sections: unknown }>(submission: T): T {
   const sections = Array.isArray(submission.sections) ? submission.sections : [];
 
   return {
@@ -59,7 +59,7 @@ function stripAnswers(submission: { sections: unknown } & Record<string, unknown
         })),
       };
     }),
-  };
+  } as T;
 }
 
 function matchQuestion(
@@ -155,7 +155,7 @@ export function createSubmissionsRouter(options: SubmissionsRouterOptions): Rout
     const user = await requireUser(req, res, options.authService);
     if (!user) return;
 
-    const payload = (req.body ?? {}) as CreateSubmissionPayload;
+    const payload = (req.body ?? {}) as Partial<CreateSubmissionRequest>;
     const testId = Number(payload.testId);
 
     if (!Number.isInteger(testId) || testId <= 0) {
@@ -206,13 +206,13 @@ export function createSubmissionsRouter(options: SubmissionsRouterOptions): Rout
 
       const userAllowed = Boolean(test.classroom?.students.some((student) => student.id === user.id));
       if (!userAllowed) {
-        res.status(403).json({ error: 'Forbidden' });
+        forbidden(res);
         return;
       }
 
       if (submissionExists) {
-        res.json({
-          test: {
+        const response: CreateSubmissionResponse = {
+          test: toSubmissionTestDto({
             id: test.id,
             name: test.name,
             description: test.description,
@@ -220,9 +220,10 @@ export function createSubmissionsRouter(options: SubmissionsRouterOptions): Rout
             dueDate: test.dueDate,
             timer: test.timer,
             classroom: test.classroom?.name,
-          },
-          submission: stripAnswers(submissionExists),
-        });
+          }),
+          submission: toSubmissionDto(stripAnswers(submissionExists)),
+        };
+        res.json(response);
         return;
       }
 
@@ -242,8 +243,8 @@ export function createSubmissionsRouter(options: SubmissionsRouterOptions): Rout
         select,
       });
 
-      res.json({
-        test: {
+      const response: CreateSubmissionResponse = {
+        test: toSubmissionTestDto({
           id: test.id,
           name: test.name,
           description: test.description,
@@ -251,9 +252,10 @@ export function createSubmissionsRouter(options: SubmissionsRouterOptions): Rout
           dueDate: test.dueDate,
           timer: test.timer,
           classroom: test.classroom?.name,
-        },
-        submission: stripAnswers(submission),
-      });
+        }),
+        submission: toSubmissionDto(stripAnswers(submission)),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to create submission');
     }
@@ -269,7 +271,7 @@ export function createSubmissionsRouter(options: SubmissionsRouterOptions): Rout
       return;
     }
 
-    const payload = (req.body ?? {}) as AnswersPayload;
+    const payload = (req.body ?? {}) as Partial<SaveSubmissionRequest>;
     if (!payload.answers || typeof payload.answers !== 'object') {
       badRequest(res, 'Missing answers');
       return;
@@ -296,7 +298,10 @@ export function createSubmissionsRouter(options: SubmissionsRouterOptions): Rout
         },
       });
 
-      res.json({ submission: updatedSubmission });
+      const response: SaveSubmissionResponse = {
+        submission: toSubmissionDto(updatedSubmission),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to save submission');
     }
@@ -312,7 +317,7 @@ export function createSubmissionsRouter(options: SubmissionsRouterOptions): Rout
       return;
     }
 
-    const payload = (req.body ?? {}) as AnswersPayload;
+    const payload = (req.body ?? {}) as Partial<SaveSubmissionRequest>;
     if (!payload.answers || typeof payload.answers !== 'object') {
       badRequest(res, 'Missing answers');
       return;
@@ -340,7 +345,10 @@ export function createSubmissionsRouter(options: SubmissionsRouterOptions): Rout
         },
       });
 
-      res.json({ submission: updatedSubmission });
+      const response: FinishSubmissionResponse = {
+        submission: toSubmissionDto(updatedSubmission),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to finish submission');
     }

@@ -1,28 +1,18 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
+import type {
+  DeleteTestResponse,
+  OwnedTestsResponse,
+  TestResponse,
+  TestUpsertRequest,
+  TestsResponse,
+} from 'api-contracts';
 import { Router, type Request, type Response } from 'express';
 import type { AuthService } from '../auth/service';
 import { requireUser } from './shared/auth';
 import { badRequest, internalServerError, notFound } from './shared/responses';
+import { toTestDto, toTestSummaryDto } from './shared/serializers';
 
-type DataParam = {
-  name?: string;
-  value?: number;
-  dueDate?: string | Date | null;
-  duration?: number | null;
-  description?: string | null;
-  publishDate?: string | Date | null;
-  status?: string;
-  classroomIds?: number[];
-  sections: {
-    selectionMode: string;
-    shuffle?: boolean;
-    questions: {
-      id: number;
-      version?: number;
-    }[];
-    randomQuestionCount?: number;
-  }[];
-};
+type DataParam = TestUpsertRequest;
 
 export type TestsPrisma = Pick<PrismaClient, 'test' | 'question' | 'classroom' | '$transaction'>;
 
@@ -150,7 +140,10 @@ export function createTestsRouter(options: TestsRouterOptions): Router {
         },
       });
 
-      res.json({ tests });
+      const response: OwnedTestsResponse = {
+        tests: tests.map(toTestSummaryDto),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to fetch tests');
     }
@@ -180,7 +173,8 @@ export function createTestsRouter(options: TestsRouterOptions): Router {
         return;
       }
 
-      res.json({ test });
+      const response: TestResponse = { test: toTestDto(test) };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to fetch test');
     }
@@ -217,7 +211,8 @@ export function createTestsRouter(options: TestsRouterOptions): Router {
           },
         });
 
-        res.json({ test });
+        const response: TestResponse = { test: toTestDto(test) };
+        res.json(response);
         return;
       }
 
@@ -248,7 +243,10 @@ export function createTestsRouter(options: TestsRouterOptions): Router {
         );
       });
 
-      res.json({ tests });
+      const response: TestsResponse = {
+        tests: tests.map(toTestDto),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to create test');
     }
@@ -301,7 +299,8 @@ export function createTestsRouter(options: TestsRouterOptions): Router {
         },
       });
 
-      res.json({ test });
+      const response: TestResponse = { test: toTestDto(test) };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to update test');
     }
@@ -341,7 +340,10 @@ export function createTestsRouter(options: TestsRouterOptions): Router {
           },
         });
 
-        res.json({ tests: [publishedTest] });
+        const response: TestsResponse = {
+          tests: [toTestDto(publishedTest)],
+        };
+        res.json(response);
         return;
       }
 
@@ -385,7 +387,10 @@ export function createTestsRouter(options: TestsRouterOptions): Router {
         return [updated, ...clones];
       });
 
-      res.json({ tests: publishedTests });
+      const response: TestsResponse = {
+        tests: publishedTests.map(toTestDto),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to publish test');
     }
@@ -460,7 +465,10 @@ export function createTestsRouter(options: TestsRouterOptions): Router {
         return [updated, ...clones];
       });
 
-      res.json({ tests: scheduledTests });
+      const response: TestsResponse = {
+        tests: scheduledTests.map(toTestDto),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to schedule test');
     }
@@ -496,7 +504,11 @@ export function createTestsRouter(options: TestsRouterOptions): Router {
           where: { id },
           data: { deletedAt: new Date() },
         });
-        res.json({ test: deletedTest, deleted: 'soft' });
+        const response: DeleteTestResponse = {
+          test: toTestDto(deletedTest),
+          deleted: 'soft',
+        };
+        res.json(response);
         return;
       }
 
@@ -504,7 +516,8 @@ export function createTestsRouter(options: TestsRouterOptions): Router {
         where: { id },
       });
 
-      res.json({ ok: true, deleted: 'hard' });
+      const response: DeleteTestResponse = { ok: true, deleted: 'hard' };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to delete test');
     }

@@ -1,8 +1,19 @@
 import { Prisma, type PrismaClient, type Test } from '@prisma/client';
+import type {
+  BulkCreateResponse,
+  CreateQuestionRequest,
+  CreateQuestionsBulkRequest,
+  QuestionDeleteResponse,
+  QuestionMutationResponse,
+  QuestionResponse,
+  QuestionsResponse,
+  UpdateQuestionRequest,
+} from 'api-contracts';
 import { Router, type Request, type Response } from 'express';
 import type { AuthService } from '../auth/service';
 import { requireUser } from './shared/auth';
 import { badRequest, internalServerError, notFound } from './shared/responses';
+import { toQuestionDto } from './shared/serializers';
 
 export type QuestionsPrisma = Pick<PrismaClient, 'question' | '$queryRaw' | '$transaction'>;
 
@@ -74,7 +85,10 @@ export function createQuestionsRouter(options: QuestionsRouterOptions): Router {
           return;
         }
 
-        res.json({ question });
+        const response: QuestionResponse = {
+          question: toQuestionDto(question),
+        };
+        res.json(response);
         return;
       }
 
@@ -88,7 +102,10 @@ export function createQuestionsRouter(options: QuestionsRouterOptions): Router {
         orderBy: { updatedAt: 'desc' },
       });
 
-      res.json({ questions });
+      const response: QuestionsResponse = {
+        questions: questions.map(toQuestionDto),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to fetch questions');
     }
@@ -98,7 +115,8 @@ export function createQuestionsRouter(options: QuestionsRouterOptions): Router {
     const user = await requireUser(req, res, options.authService);
     if (!user) return;
 
-    const { type, level, content, source, tags } = req.body ?? {};
+    const { type, level, content, source, tags } =
+      (req.body ?? {}) as CreateQuestionRequest;
     if (!type || content === undefined) {
       badRequest(res, 'Missing required fields');
       return;
@@ -141,7 +159,10 @@ export function createQuestionsRouter(options: QuestionsRouterOptions): Router {
         include: { tags: true },
       });
 
-      res.json({ question });
+      const response: QuestionResponse = {
+        question: toQuestionDto(question),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to create question');
     }
@@ -151,7 +172,7 @@ export function createQuestionsRouter(options: QuestionsRouterOptions): Router {
     const user = await requireUser(req, res, options.authService);
     if (!user) return;
 
-    const questions = req.body?.questions;
+    const questions = (req.body as CreateQuestionsBulkRequest | undefined)?.questions;
     if (!Array.isArray(questions) || questions.length === 0) {
       badRequest(res, 'Missing questions');
       return;
@@ -172,7 +193,8 @@ export function createQuestionsRouter(options: QuestionsRouterOptions): Router {
       }
 
       const result = await options.prisma.question.createMany({ data: parsed });
-      res.json(result);
+      const response: BulkCreateResponse = result;
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to create questions');
     }
@@ -188,7 +210,8 @@ export function createQuestionsRouter(options: QuestionsRouterOptions): Router {
       return;
     }
 
-    const { type, level, content, tags } = req.body ?? {};
+    const { type, level, content, tags } =
+      (req.body ?? {}) as UpdateQuestionRequest;
     if (!type || content === undefined || !Array.isArray(tags)) {
       badRequest(res, 'Missing required fields');
       return;
@@ -239,7 +262,11 @@ export function createQuestionsRouter(options: QuestionsRouterOptions): Router {
       );
 
       if (equalPayload) {
-        res.json({ ok: true, updated: false });
+        const response: QuestionMutationResponse = {
+          ok: true,
+          updated: false,
+        };
+        res.json(response);
         return;
       }
 
@@ -306,7 +333,11 @@ export function createQuestionsRouter(options: QuestionsRouterOptions): Router {
         });
       });
 
-      res.json({ ok: true, updated: true });
+      const response: QuestionMutationResponse = {
+        ok: true,
+        updated: true,
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to update question');
     }
@@ -347,7 +378,11 @@ export function createQuestionsRouter(options: QuestionsRouterOptions): Router {
         return;
       }
 
-      res.json({ ok: true, count: result.count });
+      const response: QuestionDeleteResponse = {
+        ok: true,
+        count: result.count,
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to delete questions');
     }

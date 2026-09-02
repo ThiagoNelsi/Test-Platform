@@ -1,8 +1,16 @@
 import type { PrismaClient } from '@prisma/client';
+import type {
+  ClassroomsResponse,
+  CreateClassroomRequest,
+  CreateClassroomResponse,
+  JoinClassroomRequest,
+  JoinClassroomResponse,
+} from 'api-contracts';
 import { Router, type Request, type Response } from 'express';
 import type { AuthService } from '../auth/service';
 import { requireUser } from './shared/auth';
 import { badRequest, internalServerError, notFound } from './shared/responses';
+import { toClassroomDto, toClassroomWithOwnerDto } from './shared/serializers';
 
 export type ClassroomsPrisma = Pick<PrismaClient, 'classroom' | 'user'>;
 
@@ -56,10 +64,11 @@ export function createClassroomsRouter(options: ClassroomsRouterOptions): Router
         return;
       }
 
-      res.json({
-        ownedClasses: currentUser.ownedClasses,
-        classrooms: currentUser.classrooms,
-      });
+      const response: ClassroomsResponse = {
+        ownedClasses: currentUser.ownedClasses.map(toClassroomWithOwnerDto),
+        classrooms: currentUser.classrooms.map(toClassroomWithOwnerDto),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to fetch classrooms');
     }
@@ -69,7 +78,8 @@ export function createClassroomsRouter(options: ClassroomsRouterOptions): Router
     const user = await requireUser(req, res, options.authService);
     if (!user) return;
 
-    const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+    const body = (req.body ?? {}) as Partial<CreateClassroomRequest>;
+    const name = typeof body.name === 'string' ? body.name.trim() : '';
 
     if (!name) {
       badRequest(res, 'Missing classroom name');
@@ -113,7 +123,10 @@ export function createClassroomsRouter(options: ClassroomsRouterOptions): Router
         },
       });
 
-      res.json({ classroom });
+      const response: CreateClassroomResponse = {
+        classroom: toClassroomDto(classroom),
+      };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to create classroom');
     }
@@ -123,7 +136,8 @@ export function createClassroomsRouter(options: ClassroomsRouterOptions): Router
     const user = await requireUser(req, res, options.authService);
     if (!user) return;
 
-    const code = typeof req.body?.code === 'string' ? req.body.code.trim().toUpperCase() : '';
+    const body = (req.body ?? {}) as Partial<JoinClassroomRequest>;
+    const code = typeof body.code === 'string' ? body.code.trim().toUpperCase() : '';
     if (!code) {
       badRequest(res, 'Missing classroom code');
       return;
@@ -154,7 +168,8 @@ export function createClassroomsRouter(options: ClassroomsRouterOptions): Router
         },
       });
 
-      res.json({ ok: true });
+      const response: JoinClassroomResponse = { ok: true };
+      res.json(response);
     } catch (error) {
       internalServerError(res, error, 'Failed to join classroom');
     }

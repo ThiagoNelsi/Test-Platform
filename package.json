@@ -20,6 +20,7 @@
     "@neondatabase/serverless": "^1.0.1",
     "@prisma/adapter-neon": "^6.7.0",
     "@prisma/client": "^6.7.0",
+    "api-contracts": "file:../api-contracts",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",

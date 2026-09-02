@@ -66,7 +66,7 @@ export function createApp(
 ): Express {
   const app = express();
 
-  app.use(cors({ origin: getOptionalEnv('FRONTEND_URL', 'http://localhost:3000'), credentials: true }));
+  app.use(cors({ origin: getOptionalEnv('FRONTEND_URL', 'http://localhost:5173'), credentials: true }));
   app.use(cookieParser());
   app.use(express.json());
 
@@ -163,7 +163,7 @@ function createDefaultAuthService(prisma = createPrismaClient()) {
     googleClientId: getRequiredEnv('GOOGLE_CLIENT_ID'),
     googleClientSecret: getRequiredEnv('GOOGLE_CLIENT_SECRET'),
     backendUrl: getOptionalEnv('BACKEND_URL', 'http://localhost:8000'),
-    frontendUrl: getOptionalEnv('FRONTEND_URL', 'http://localhost:3000'),
+    frontendUrl: getOptionalEnv('FRONTEND_URL', 'http://localhost:5173'),
     isProduction: process.env.NODE_ENV === 'production',
     cookieSameSite,
     cookieDomain: getOptionalEnv('AUTH_COOKIE_DOMAIN', ''),
@@ -203,7 +203,7 @@ if (require.main === module) {
   const server = http.createServer(app);
   const io = new Server(server, {
     cors: {
-      origin: getOptionalEnv('FRONTEND_URL', 'http://localhost:3000'),
+      origin: getOptionalEnv('FRONTEND_URL', 'http://localhost:5173'),
       credentials: true,
     },
   });
