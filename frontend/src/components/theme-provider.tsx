@@ -45,6 +45,12 @@ function getStoredTheme(storageKey: string): Theme | null {
 
   try {
     const storedTheme = window.localStorage.getItem(storageKey);
+    // "system" was the previous default; treat it as unset after switching
+    // the application default to light mode.
+    if (storedTheme === "system") {
+      return null;
+    }
+
     return isTheme(storedTheme) ? storedTheme : null;
   } catch {
     return null;
@@ -53,7 +59,7 @@ function getStoredTheme(storageKey: string): Theme | null {
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "light",
   storageKey = "test-platform-theme",
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
