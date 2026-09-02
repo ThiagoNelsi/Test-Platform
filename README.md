@@ -19,7 +19,7 @@ requisição e resposta alinhados entre os dois aplicativos.
 
 ## Pré-requisitos
 
-- Node.js 20 ou mais recente.
+- Node.js 22.13 ou mais recente.
 - pnpm 11 (a versão do projeto está fixada no `package.json`).
 - PostgreSQL/Neon para a API.
 - Credenciais do Google OAuth e OpenAI.
