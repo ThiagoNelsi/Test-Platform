@@ -1,6 +1,13 @@
-"use server";
-
-import { revalidatePath } from "next/cache";
+import type {
+  BulkCreateResponse,
+  CreateQuestionRequest,
+  CreateQuestionsBulkRequest,
+  QuestionDeleteResponse,
+  QuestionMutationResponse,
+  QuestionResponse,
+  QuestionsResponse,
+  UpdateQuestionRequest,
+} from "api-contracts";
 import { Question, QuestionType } from "@/lib/types";
 import { backendJson } from "./backend-api";
 
@@ -18,7 +25,7 @@ const parseQuestionContent = (value: unknown) => {
   }
 };
 
-const toQuestion = (question: any): Question => {
+const toQuestion = (question: QuestionResponse["question"]): Question => {
   return {
     ...question,
     type: question.type as QuestionType,
@@ -30,119 +37,75 @@ const toQuestion = (question: any): Question => {
 export const getQuestion = async (
   questionId: number,
 ): Promise<Question | null> => {
-  const { ok, data } = await backendJson<{ question?: any }>(
+  const data = await backendJson<QuestionResponse>(
     `/api/questions?id=${questionId}`,
   );
 
-  if (!ok || !data?.question) {
-    return null;
-  }
-
-  return toQuestion(data.question);
+  return data.question ? toQuestion(data.question) : null;
 };
 
 export const getQuestions = async (): Promise<Question[]> => {
-  const { ok, data } = await backendJson<{ questions?: any[] }>(
-    "/api/questions",
-  );
-
-  if (!ok || !data?.questions) {
-    return [];
-  }
+  const data = await backendJson<QuestionsResponse>("/api/questions");
 
   return data.questions.map((question) => toQuestion(question));
 };
 
 export const createQuestion = async (formData: FormData) => {
-  const type = formData.get("type") as string;
-  const level = formData.get("level") as string;
-  const data = formData.get("data") as string;
-  const source = formData.get("source") as string;
-  const tags = JSON.parse((formData.get("tags") as string) || "[]") as number[];
+  const type = String(formData.get("type") || "");
+  const level = String(formData.get("level") || "");
+  const data = String(formData.get("data") || "{}");
+  const source = formData.get("source");
+  const tags = JSON.parse(String(formData.get("tags") || "[]")) as number[];
+  const body: CreateQuestionRequest = {
+    type,
+    level: levelOptions.indexOf(level),
+    content: JSON.parse(data),
+    source: typeof source === "string" ? source || "MANUAL" : "MANUAL",
+    tags,
+  };
 
-  try {
-    const { ok } = await backendJson("/api/questions", {
-      method: "POST",
-      body: {
-        type,
-        level: levelOptions.indexOf(level),
-        content: JSON.parse(data),
-        source: source || "MANUAL",
-        tags,
-      },
-    });
+  await backendJson<QuestionResponse>("/api/questions", {
+    method: "POST",
+    body,
+  });
 
-    if (!ok) return false;
-
-    revalidatePath("/questoes");
-    return true;
-  } catch (err) {
-    console.log(err);
-    return false;
-  }
+  return true;
 };
 
-export const createMultipleQuestions = async (questions: any[]) => {
-  try {
-    const { ok } = await backendJson("/api/questions/bulk", {
-      method: "POST",
-      body: {
-        questions,
-      },
-    });
-
-    if (!ok) return false;
-
-    revalidatePath("/questoes");
-    return true;
-  } catch (err) {
-    console.log(err);
-    return false;
-  }
-}
+export const createMultipleQuestions = async (
+  questions: CreateQuestionRequest[],
+) => {
+  const body: CreateQuestionsBulkRequest = { questions };
+  return backendJson<BulkCreateResponse>("/api/questions/bulk", {
+    method: "POST",
+    body,
+  });
+};
 
 export const updateQuestion = async (
   questionId: number,
   formData: FormData,
 ) => {
-  const type = formData.get("type") as string;
-  const level = formData.get("level") as string;
-  const data = formData.get("data") as string;
-  const tags = JSON.parse((formData.get("tags") as string) || "[]") as number[];
+  const type = String(formData.get("type") || "");
+  const level = String(formData.get("level") || "");
+  const data = String(formData.get("data") || "{}");
+  const tags = JSON.parse(String(formData.get("tags") || "[]")) as number[];
+  const body: UpdateQuestionRequest = {
+    type,
+    level: levelOptions.indexOf(level),
+    content: JSON.parse(data),
+    tags,
+  };
 
-  try {
-    const { ok } = await backendJson(`/api/questions/${questionId}`, {
-      method: "PATCH",
-      body: {
-        type,
-        level: levelOptions.indexOf(level),
-        content: JSON.parse(data),
-        tags,
-      },
-    });
-
-    if (!ok) return false;
-
-    revalidatePath("/questoes");
-    return true;
-  } catch (err) {
-    return false;
-  }
+  return backendJson<QuestionMutationResponse>(`/api/questions/${questionId}`, {
+    method: "PATCH",
+    body,
+  });
 };
 
 export const deleteQuestion = async (questionIds: number[]) => {
-  try {
-    const { ok } = await backendJson("/api/questions", {
-      method: "DELETE",
-      body: { questionIds },
-    });
-
-    if (!ok) return false;
-
-    revalidatePath("/questoes");
-    return true;
-  } catch (error) {
-    console.error("Erro ao deletar questões:", error);
-    return false;
-  }
+  return backendJson<QuestionDeleteResponse>("/api/questions", {
+    method: "DELETE",
+    body: { questionIds },
+  });
 };

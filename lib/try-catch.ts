@@ -1,5 +1,3 @@
-const DEBUG = true
-
 type Success<T> = {
   data: T;
   error: null;
@@ -19,7 +17,6 @@ export async function tryCatch<T, E = Error>(
     const data = await promise;
     return { data, error: null };
   } catch (error) {
-    if (DEBUG) console.error('Error:', error);
     return { data: null, error: error as E };
   }
 }

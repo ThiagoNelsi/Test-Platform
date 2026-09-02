@@ -1,50 +1,29 @@
-"use server";
-
+import type {
+  CreateTagRequest,
+  CreateTagResponse,
+  QuestionsPerTagResponse,
+  TagsResponse,
+} from "api-contracts";
 import { Tag } from "@/lib/types";
 import { backendJson } from "./backend-api";
 
 export const createTag = async (tag: Pick<Tag, "name" | "color">) => {
-  const { ok, data } = await backendJson<{ error?: string; tag?: Tag }>(
-    "/api/tags",
-    {
-      method: "POST",
-      body: tag,
-    },
-  );
-
-  if (!ok || !data) {
-    return {
-      error: data?.error || "Erro ao criar tag",
-    };
-  }
-
-  if (data.error) {
-    return {
-      error: data.error,
-    };
-  }
-
-  return {
-    success: true,
-    tag: data.tag,
-  };
+  const body: CreateTagRequest = tag;
+  return backendJson<CreateTagResponse>("/api/tags", {
+    method: "POST",
+    body,
+  });
 };
 
-export const getTags = async () => {
-  const { ok, data } = await backendJson<{ tags?: Tag[] }>("/api/tags");
-  if (!ok || !data?.tags) return [];
-
+export const getTags = async (): Promise<Tag[]> => {
+  const data = await backendJson<TagsResponse>("/api/tags");
   return data.tags;
 };
 
 export const getQuestionsPerTag = async () => {
-  const { ok, data } = await backendJson<{
-    questionsPerTag?: { tagId: number; questions: number[] }[];
-  }>("/api/tags/questions-per-tag");
-
-  if (!ok || !data?.questionsPerTag) {
-    return [];
-  }
+  const data = await backendJson<QuestionsPerTagResponse>(
+    "/api/tags/questions-per-tag",
+  );
 
   return data.questionsPerTag;
 };

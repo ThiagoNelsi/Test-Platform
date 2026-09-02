@@ -1,4 +1,4 @@
-import { Section } from "@/app/context/create-test-context";
+import { Section } from "@/src/context/create-test-context";
 
 export type QuestionType = "multiple_choice" | "true_or_false";
 

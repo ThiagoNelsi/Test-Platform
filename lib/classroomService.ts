@@ -1,6 +1,9 @@
-"use client";
-
-import { revalidatePath } from "next/cache";
+import type {
+  ClassroomsResponse,
+  ClassroomDto,
+  CreateClassroomResponse,
+  JoinClassroomResponse,
+} from "api-contracts";
 import { backendJson } from "./backend-api";
 
 export type Classroom = {
@@ -19,12 +22,7 @@ type Owner = {
 
 export type ClassroomWithOwner = { owner: Owner } & Classroom;
 
-type ClassroomsResponse = {
-  ownedClasses?: ClassroomWithOwner[];
-  classrooms?: ClassroomWithOwner[];
-};
-
-function hydrateClassroom(classroom: ClassroomWithOwner): ClassroomWithOwner {
+function hydrateClassroom(classroom: ClassroomDto): Classroom {
   return {
     ...classroom,
     createdAt: new Date(classroom.createdAt),
@@ -32,62 +30,35 @@ function hydrateClassroom(classroom: ClassroomWithOwner): ClassroomWithOwner {
 }
 
 export async function getClassrooms() {
-  const { ok, data } = await backendJson<ClassroomsResponse>("/api/classrooms");
-
-  if (!ok || !data) return null;
+  const data = await backendJson<ClassroomsResponse>("/api/classrooms");
 
   return {
-    ownedClasses: (data.ownedClasses || []).map(hydrateClassroom),
-    classrooms: (data.classrooms || []).map(hydrateClassroom),
+    ownedClasses: data.ownedClasses.map((classroom) => ({
+      ...hydrateClassroom(classroom),
+      owner: classroom.owner,
+    })),
+    classrooms: data.classrooms.map((classroom) => ({
+      ...hydrateClassroom(classroom),
+      owner: classroom.owner,
+    })),
   };
 }
 
 export async function createClassroom(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
-
-  const { ok, data } = await backendJson<{
-    error?: string;
-    classroom?: Classroom;
-  }>("/api/classrooms", {
+  const data = await backendJson<CreateClassroomResponse>("/api/classrooms", {
     method: "POST",
     body: { name },
   });
 
-  if (!ok || !data) {
-    return { error: data?.error || "Erro ao criar turma" };
-  }
-
-  if (data.error) {
-    return { error: data.error };
-  }
-
-  if (!data.classroom) {
-    return null;
-  }
-
-  revalidatePath("/home");
-
-  return {
-    ...data.classroom,
-    createdAt: new Date(data.classroom.createdAt),
-  };
+  return hydrateClassroom(data.classroom);
 }
 
 export async function joinClassroom(formData: FormData) {
   const code = String(formData.get("code") || "").toUpperCase().trim();
 
-  const { ok, data } = await backendJson<{ error?: string }>(
-    "/api/classrooms/join",
-    {
-      method: "POST",
-      body: { code },
-    },
-  );
-
-  if (!ok) {
-    return { error: data?.error || "Erro ao entrar na turma" };
-  }
-
-  revalidatePath("/home");
-  return { ok: true };
+  return backendJson<JoinClassroomResponse>("/api/classrooms/join", {
+    method: "POST",
+    body: { code },
+  });
 }

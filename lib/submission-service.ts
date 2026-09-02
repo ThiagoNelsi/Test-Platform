@@ -1,33 +1,48 @@
+import type {
+  CreateSubmissionRequest,
+  CreateSubmissionResponse,
+  FinishSubmissionRequest,
+  FinishSubmissionResponse,
+  SaveSubmissionRequest,
+  SaveSubmissionResponse,
+  SubmissionAnswers,
+} from "api-contracts";
 import { backendJson } from "./backend-api";
 
-const hydrateSubmissionDates = <T extends Record<string, any>>(payload: T): T => {
-  if (!payload?.submission) return payload;
+function toSubmissionAnswers(
+  answers: Record<number, string>,
+): SubmissionAnswers {
+  return Object.fromEntries(
+    Object.entries(answers).map(([questionId, answer]) => [
+      String(questionId),
+      answer,
+    ]),
+  );
+}
 
+function hydrateSubmissionDates(data: CreateSubmissionResponse) {
   return {
-    ...payload,
+    ...data,
     test: {
-      ...payload.test,
-      dueDate: payload.test?.dueDate ? new Date(payload.test.dueDate) : null,
+      ...data.test,
+      dueDate: data.test.dueDate ? new Date(data.test.dueDate) : null,
     },
     submission: {
-      ...payload.submission,
-      startTime: payload.submission.startTime
-        ? new Date(payload.submission.startTime)
-        : null,
-      finishTime: payload.submission.finishTime
-        ? new Date(payload.submission.finishTime)
+      ...data.submission,
+      startTime: new Date(data.submission.startTime),
+      finishTime: data.submission.finishTime
+        ? new Date(data.submission.finishTime)
         : null,
     },
   };
-};
+}
 
 export const createSubmission = async (testId: number) => {
-  const { ok, data } = await backendJson<any>("/api/submissions", {
+  const body: CreateSubmissionRequest = { testId };
+  const data = await backendJson<CreateSubmissionResponse>("/api/submissions", {
     method: "POST",
-    body: { testId },
+    body,
   });
-
-  if (!ok || !data) return null;
 
   return hydrateSubmissionDates(data);
 };
@@ -36,21 +51,20 @@ export const saveSubmission = async (
   submissionId: number,
   answers: Record<number, string>,
 ) => {
-  const { ok, data } = await backendJson<any>(
+  const body: SaveSubmissionRequest = {
+    answers: toSubmissionAnswers(answers),
+  };
+  const data = await backendJson<SaveSubmissionResponse>(
     `/api/submissions/${submissionId}/save`,
     {
       method: "PATCH",
-      body: { answers },
+      body,
     },
   );
 
-  if (!ok || !data?.submission) return null;
-
   return {
     ...data.submission,
-    startTime: data.submission.startTime
-      ? new Date(data.submission.startTime)
-      : null,
+    startTime: new Date(data.submission.startTime),
     finishTime: data.submission.finishTime
       ? new Date(data.submission.finishTime)
       : null,
@@ -61,21 +75,20 @@ export const finishSubmission = async (
   submissionId: number,
   answers: Record<number, string>,
 ) => {
-  const { ok, data } = await backendJson<any>(
+  const body: FinishSubmissionRequest = {
+    answers: toSubmissionAnswers(answers),
+  };
+  const data = await backendJson<FinishSubmissionResponse>(
     `/api/submissions/${submissionId}/finish`,
     {
       method: "PATCH",
-      body: { answers },
+      body,
     },
   );
 
-  if (!ok || !data?.submission) return null;
-
   return {
     ...data.submission,
-    startTime: data.submission.startTime
-      ? new Date(data.submission.startTime)
-      : null,
+    startTime: new Date(data.submission.startTime),
     finishTime: data.submission.finishTime
       ? new Date(data.submission.finishTime)
       : null,

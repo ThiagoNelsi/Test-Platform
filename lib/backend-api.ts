@@ -1,12 +1,85 @@
+export type UnauthorizedHandler = (error: ApiError) => void;
+
+export class ApiError extends Error {
+  readonly status: number;
+  readonly payload: unknown;
+
+  constructor(status: number, message: string, payload?: unknown) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.payload = payload;
+  }
+}
+
+export function getApiErrorMessage(
+  error: unknown,
+  fallbackMessage: string,
+): string {
+  return error instanceof ApiError ? error.message : fallbackMessage;
+}
+
 type BackendRequestOptions = Omit<RequestInit, "body"> & {
   body?: unknown;
+  handleUnauthorized?: boolean;
 };
 
-function getBackendBaseUrl() {
-  const base =
-    process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
+let unauthorizedHandler: UnauthorizedHandler | undefined;
 
-  return base.replace(/\/+$/g, "");
+export function setUnauthorizedHandler(
+  handler: UnauthorizedHandler | undefined,
+): () => void {
+  unauthorizedHandler = handler;
+
+  return () => {
+    if (unauthorizedHandler === handler) {
+      unauthorizedHandler = undefined;
+    }
+  };
+}
+
+export function getBackendBaseUrl() {
+  return (import.meta.env?.VITE_BACKEND_URL ?? "").trim().replace(/\/+$/g, "");
+}
+
+async function readPayload(response: Response): Promise<unknown> {
+  try {
+    return await response.clone().json();
+  } catch {
+    return null;
+  }
+}
+
+function getErrorMessage(payload: unknown, fallback: string): string {
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "error" in payload &&
+    typeof payload.error === "string"
+  ) {
+    return payload.error;
+  }
+
+  return fallback;
+}
+
+function handleHttpError(
+  response: Response,
+  payload: unknown,
+  shouldHandleUnauthorized: boolean,
+): never {
+  const fallback = `Backend request failed with status ${response.status}`;
+  const error = new ApiError(
+    response.status,
+    getErrorMessage(payload, fallback),
+    payload,
+  );
+
+  if (response.status === 401 && shouldHandleUnauthorized) {
+    unauthorizedHandler?.(error);
+  }
+
+  throw error;
 }
 
 export async function backendFetch(
@@ -14,27 +87,28 @@ export async function backendFetch(
   options: BackendRequestOptions = {},
 ) {
   const backendBase = getBackendBaseUrl();
-  if (!backendBase) {
-    throw new Error("Backend URL is not configured");
-  }
+  const { body: requestBody, handleUnauthorized = true, ...requestOptions } = options;
 
-  const headers = new Headers(options.headers);
+  const headers = new Headers(requestOptions.headers);
 
   let body: BodyInit | undefined;
-  if (options.body !== undefined) {
+  if (requestBody !== undefined) {
     headers.set("Content-Type", "application/json");
-    body = JSON.stringify(options.body);
+    body = JSON.stringify(requestBody);
   }
 
-  const response = fetch(`${backendBase}${path}`, {
-    ...options,
+  const response = await fetch(`${backendBase}${path}`, {
+    ...requestOptions,
     headers,
     body,
-    credentials: options.credentials ?? "include",
-    cache: options.cache ?? "no-store",
+    credentials: requestOptions.credentials ?? "include",
+    cache: requestOptions.cache ?? "no-store",
   });
 
-  response.then(console.log).catch(console.error);
+  if (!response.ok) {
+    const payload = await readPayload(response);
+    handleHttpError(response, payload, handleUnauthorized);
+  }
 
   return response;
 }
@@ -42,20 +116,19 @@ export async function backendFetch(
 export async function backendJson<T>(
   path: string,
   options: BackendRequestOptions = {},
-): Promise<{ ok: boolean; status: number; data: T | null }> {
+): Promise<T> {
   const response = await backendFetch(path, options);
 
-  let data: T | null = null;
+  let data: T;
   try {
     data = (await response.json()) as T;
   } catch (error) {
-    console.error("Failed to parse JSON response:", error);
-    data = null;
+    throw new ApiError(
+      response.status,
+      "Backend returned an invalid JSON response",
+      error,
+    );
   }
 
-  return {
-    ok: response.ok,
-    status: response.status,
-    data,
-  };
+  return data;
 }

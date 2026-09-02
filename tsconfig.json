@@ -12,17 +12,18 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "types": ["vite/client", "node"],
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
     "paths": {
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "lib/**/*.ts",
+    "vite.config.ts",
+    "tailwind.config.ts"
+  ],
   "exclude": ["node_modules"]
 }

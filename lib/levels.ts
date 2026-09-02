@@ -9,7 +9,5 @@ export const getLevel = (level: number) => {
     return "Não definido"
   }
 
-  console.log(levels[Number(level)], level)
-
   return levels[Number(level)] || "Não definido"
 }

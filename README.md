@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Test Platform frontend
 
-## Getting Started
+The frontend is a browser-only React single-page application. Vite builds the
+application, React Router handles navigation, and the Express API owns
+authentication, authorization, business rules, and persistence.
 
-First, run the development server:
+## Requirements
+
+- Node.js 20 or newer.
+- npm.
+- A running Test Platform API at `http://localhost:8000`, unless you configure
+  another URL.
+
+## Development
+
+Install dependencies from this directory:
+
+```bash
+npm install --legacy-peer-deps
+```
+
+Create `.env` or `.env.local` with the browser-safe API URL:
+
+```dotenv
+VITE_BACKEND_URL=http://localhost:8000
+```
+
+Start the Vite development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:5173`. The browser sends API requests with credentials
+so the Express HTTP-only session cookie remains available across requests.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Validation and production build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run the frontend checks from this directory:
 
-## Learn More
+```bash
+npm run type-check
+npm test
+npm run lint
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+The production build writes static assets to `dist/`. Preview that build with:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run preview
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Deploy `dist/` to a static host or reverse proxy. Configure the host to serve
+`dist/index.html` for every application route, including `/home`,
+`/questoes`, and `/prova/:testId`; this fallback is required for direct refresh
+of React Router URLs. Set `VITE_BACKEND_URL` to the API origin before building.
 
-## Deploy on Vercel
+## Source layout
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `src/main.tsx` starts the React application.
+- `src/router.tsx` defines public, protected, and fallback routes.
+- `src/layouts.tsx` composes application providers and authenticated layouts.
+- `src/components/`, `src/context/`, `src/controllers/`, and `src/hooks/`
+  contain browser UI and state logic.
+- `lib/` contains API clients, transport types, and domain adapters.
+- `public/` contains static assets copied into the build.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The frontend does not contain database clients, AWS credentials, server-only
+environment variables, or Next.js runtime code. All protected operations go
+through the Express API.

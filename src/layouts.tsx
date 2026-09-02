@@ -1,12 +1,14 @@
 import { Link, Outlet } from "react-router-dom";
-import { NewClassroomModalProvider } from "@/app/context/new-classroom-modal-context";
-import { SidebarProvider } from "@/app/context/sidebar-context";
-import SessionProvider from "@/app/components/session-provider";
-import { Toaster } from "@/app/components/ui/sonner";
-import { TooltipProvider } from "@/app/components/ui/tooltip";
-import Header from "@/app/components/header";
-import { Sidebar } from "@/app/components/sidebar";
-import NewClassroomModal from "@/app/components/new-classroom-modal";
+import { NewClassroomModalProvider } from "@/src/context/new-classroom-modal-context";
+import { SidebarProvider } from "@/src/context/sidebar-context";
+import SessionProvider from "@/src/components/session-provider";
+import QueryProvider from "@/src/components/query-provider";
+import { ThemeProvider } from "@/src/components/theme-provider";
+import { Toaster } from "@/src/components/ui/sonner";
+import { TooltipProvider } from "@/src/components/ui/tooltip";
+import Header from "@/src/components/header";
+import { Sidebar } from "@/src/components/sidebar";
+import NewClassroomModal from "@/src/components/new-classroom-modal";
 
 export function RootLayout() {
   return (
@@ -39,13 +41,17 @@ export function AuthenticatedLayout() {
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
-      <SidebarProvider>
-        <NewClassroomModalProvider>
-          <TooltipProvider>{children}</TooltipProvider>
-        </NewClassroomModalProvider>
-      </SidebarProvider>
-    </SessionProvider>
+    <ThemeProvider>
+      <QueryProvider>
+        <SessionProvider>
+          <SidebarProvider>
+            <NewClassroomModalProvider>
+              <TooltipProvider>{children}</TooltipProvider>
+            </NewClassroomModalProvider>
+          </SidebarProvider>
+        </SessionProvider>
+      </QueryProvider>
+    </ThemeProvider>
   );
 }
 
