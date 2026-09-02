@@ -13,7 +13,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: 123
-      POSTGRES_DB: sisprova
+      POSTGRES_DB: test_platform
     ports:
       - "5432:5432"
 

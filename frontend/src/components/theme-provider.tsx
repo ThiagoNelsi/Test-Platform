@@ -54,7 +54,7 @@ function getStoredTheme(storageKey: string): Theme | null {
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  storageKey = "sisprova-theme",
+  storageKey = "test-platform-theme",
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
     () => getStoredTheme(storageKey) ?? defaultTheme,

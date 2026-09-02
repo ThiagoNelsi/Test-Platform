@@ -28,7 +28,7 @@ VITE_BACKEND_URL=http://localhost:8000
 Start the Vite development server:
 
 ```bash
-pnpm --filter sisprova run dev
+pnpm --filter test-platform-frontend run dev
 ```
 
 Open `http://localhost:5173`. The browser sends API requests with credentials
@@ -39,16 +39,16 @@ so the Express HTTP-only session cookie remains available across requests.
 Run the frontend checks from this directory:
 
 ```bash
-pnpm --filter sisprova run type-check
-pnpm --filter sisprova run test
-pnpm --filter sisprova run lint
-pnpm --filter sisprova run build
+pnpm --filter test-platform-frontend run type-check
+pnpm --filter test-platform-frontend run test
+pnpm --filter test-platform-frontend run lint
+pnpm --filter test-platform-frontend run build
 ```
 
 The production build writes static assets to `dist/`. Preview that build with:
 
 ```bash
-pnpm --filter sisprova run preview
+pnpm --filter test-platform-frontend run preview
 ```
 
 Deploy `dist/` to a static host or reverse proxy. Configure the host to serve
