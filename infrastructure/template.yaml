@@ -1,0 +1,332 @@
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+
+Resources:
+  #SNS
+  TextractSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub AmazonTextract-${AWS::StackName}-${Environment}
+      Subscription:
+        - Endpoint: !GetAtt ProcessedDocumentsQueue.Arn
+          Protocol: sqs
+
+  TextractSNSTopicToProcessedDocumentsQueueConnector:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Resource: !GetAtt ProcessedDocumentsQueue.Arn
+            Action: sqs:SendMessage
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref TextractSNSTopic
+        Version: '2012-10-17'
+      Queues:
+        - !Ref ProcessedDocumentsQueue
+
+  # SQS Queues
+  ProcessedDocumentsQueue:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      VisibilityTimeout: 120
+      MessageRetentionPeriod: 345600 # 4 days
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt ProcessedDocumentsDQL.Arn
+        maxReceiveCount: 5
+
+  DocumentChunksQueue:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      VisibilityTimeout: 120
+      MessageRetentionPeriod: 345600 # 4 days
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DocumentChunksDQL.Arn
+        maxReceiveCount: 5
+
+  ProcessedDocumentsDQL:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      MessageRetentionPeriod: 1209600 # 14 days
+
+  DocumentChunksDQL:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      MessageRetentionPeriod: 1209600 # 14 days
+
+  # Lambda Functions
+  ChunkingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: ChunkingFunction
+      CodeUri: ../document-ingestion/src/handlers
+      Handler: chunking-function.handler
+      Runtime: nodejs22.x
+      MemorySize: 1024
+      Timeout: 30
+      Tracing: Active
+      Events:
+        ProcessedDocumentsQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ProcessedDocumentsQueue.Arn
+            BatchSize: 1
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+      Environment:
+        Variables:
+          ENV: !Ref Environment
+          DOCUMENTCHUNKSQUEUE_QUEUE_NAME: !GetAtt DocumentChunksQueue.QueueName
+          DOCUMENTCHUNKSQUEUE_QUEUE_ARN: !GetAtt DocumentChunksQueue.Arn
+          DOCUMENTCHUNKSQUEUE_QUEUE_URL: !Ref DocumentChunksQueue
+          EMBEDDING_BATCHES_TABLE_NAME: !Ref EmbeddingBatchesTable
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt DocumentChunksQueue.QueueName
+        - Version: '2012-10-17'
+          Statement:
+            - Sid: ReadTextractResults
+              Effect: Allow
+              Action:
+                - textract:GetDocumentAnalysis
+              Resource: '*'
+            - Sid: TrackEmbeddingBatches
+              Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource: !GetAtt EmbeddingBatchesTable.Arn
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - chunking-function.ts
+        Minify: true
+        Target: es2022
+
+  ChunkingFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ChunkingFunction}
+      RetentionInDays: 14
+
+  # DynamoDB Tables
+  EmbeddingBatchesTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: embedding-batches
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: document
+          AttributeType: S
+      KeySchema:
+        - AttributeName: document
+          KeyType: HASH
+
+  # S3 Buckets
+  UploadedResourcesBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: uploaded-resources-bucket
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      CorsConfiguration:
+        CorsRules:
+          - Id: AllowFrontendUploads
+            AllowedOrigins:
+              - http://localhost:5173
+              # - https://dominio.com
+            AllowedMethods:
+              - GET
+              - POST
+              - PUT
+              - HEAD
+            AllowedHeaders:
+              - Content-Type
+              - x-amz-*
+            MaxAge: 300
+      VersioningConfiguration:
+        Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Ref S3AccessLogsBucket
+        LogFilePrefix: uploaded-resources/
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  TextractOutputBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: textract-output-bucket
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Ref S3AccessLogsBucket
+        LogFilePrefix: uploaded-resources/
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  S3AccessLogsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+
+  # Parameters and Secrets
+  UploadedResourcesBucketParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /test-platform/${Environment}/s3/uploaded-resources-bucket
+      Type: String
+      Value: !Ref UploadedResourcesBucket
+
+  TextractOutputBucketParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /test-platform/${Environment}/s3/textract-output-bucket
+      Type: String
+      Value: !Ref TextractOutputBucket
+
+  TextractSNSTopicArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /test-platform/${Environment}/textract/sns-topic-arn
+      Type: String
+      Value: !Ref TextractSNSTopic
+
+  TextractSNSRoleArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /test-platform/${Environment}/textract/sns-role-arn
+      Type: String
+      Value: !GetAtt TextractSNSRole.Arn
+
+  # IAM
+  TextractSNSRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowTextractToAssumeRole
+            Effect: Allow
+            Principal:
+              Service: textract.amazonaws.com
+            Action:
+              - sts:AssumeRole
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub arn:${AWS::Partition}:textract:${AWS::Region}:${AWS::AccountId}:*
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+      Policies:
+        - PolicyName: !Sub test-platform-${Environment}-textract-sns-publish
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: PublishTextractCompletion
+                Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Ref TextractSNSTopic
+
+  BackendIamUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub test-platform-${Environment}-backend
+      Policies:
+        - PolicyName: !Sub test-platform-${Environment}-s3-upload
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: UploadObjects
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource: !Sub ${UploadedResourcesBucket.Arn}/*
+              - Sid: ReadUploadedObjects
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub ${UploadedResourcesBucket.Arn}/*
+              - Sid: ListUploadedObjects
+                Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !GetAtt UploadedResourcesBucket.Arn
+              - Sid: WriteTextractOutput
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:AbortMultipartUpload
+                Resource: !Sub ${TextractOutputBucket.Arn}/*
+              - Sid: ListTextractOutput
+                Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:ListBucketMultipartUploads
+                Resource: !GetAtt TextractOutputBucket.Arn
+              - Sid: StartTextractAnalysis
+                Effect: Allow
+                Action:
+                  - textract:StartDocumentAnalysis
+                Resource: '*'
+              - Sid: PassTextractNotificationRole
+                Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource: !GetAtt TextractSNSRole.Arn
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: textract.amazonaws.com

@@ -134,6 +134,7 @@ export function createApp(
   app.use(
     '/api/upload',
     createUploadRouter({
+      authService,
       bucketName: getOptionalEnv('AWS_BUCKET_NAME', ''),
       region: getOptionalEnv('AWS_REGION', ''),
       s3Client: new S3Client({

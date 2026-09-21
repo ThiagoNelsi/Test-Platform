@@ -26,6 +26,7 @@ build/
 coverage/
 **/coverage/
 *.tsbuildinfo
+.aws-sam/
 
 # Local tooling and logs
 .DS_Store

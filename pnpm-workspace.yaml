@@ -2,6 +2,7 @@ packages:
   - api
   - frontend
   - api-contracts
+  - document-ingestion
 
 allowBuilds:
   '@prisma/client': true

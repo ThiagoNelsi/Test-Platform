@@ -8,6 +8,8 @@ import type {
 import { Router, type Request, type Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { badRequest, internalServerError } from './shared/responses';
+import { AuthService } from '../auth/service';
+import { requireUser } from './shared/auth';
 
 export type PresignedPostResult = {
   url: string;
@@ -17,6 +19,7 @@ export type PresignedPostResult = {
 type PresignedPostFactory = typeof createPresignedPost;
 
 type UploadRouterOptions = {
+  authService: AuthService;
   bucketName: string;
   region: string;
   s3Client: S3Client;
@@ -32,6 +35,9 @@ export function createUploadRouter(options: UploadRouterOptions): Router {
   const expiresSeconds = options.expiresSeconds ?? 600;
 
   router.post('/', async (req: Request, res: Response) => {
+    const user = await requireUser(req, res, options.authService);
+    if (!user) return
+
     const { contentType } = (req.body ?? {}) as Partial<CreateUploadRequest>;
 
     if (!contentType || typeof contentType !== 'string') {
@@ -44,16 +50,17 @@ export function createUploadRouter(options: UploadRouterOptions): Router {
       return;
     }
 
+    const objectKey = `${user.id}/${uuidv4()}`;
+
     try {
       const { url, fields } = await presignPost(options.s3Client, {
         Bucket: options.bucketName,
-        Key: uuidv4(),
+        Key: objectKey,
         Conditions: [
           ['content-length-range', 0, maxSizeBytes],
           ['starts-with', '$Content-Type', contentType],
         ],
         Fields: {
-          acl: 'public-read',
           'Content-Type': contentType,
         },
         Expires: expiresSeconds,
@@ -66,7 +73,10 @@ export function createUploadRouter(options: UploadRouterOptions): Router {
     }
   });
 
-  router.get('/', async (_req: Request, res: Response) => {
+  router.get('/', async (req: Request, res: Response) => {
+    const user = await requireUser(req, res, options.authService);
+    if (!user) return
+
     if (!options.bucketName) {
       internalServerError(res, undefined, 'AWS bucket not configured');
       return;
@@ -79,9 +89,10 @@ export function createUploadRouter(options: UploadRouterOptions): Router {
         }),
       );
 
-      const objects: UploadObjectsResponse = (response?.Contents ?? []).map(
-        (object) => ({ Key: object.Key }),
-      );
+      const objects: UploadObjectsResponse = (response?.Contents ?? []).map((object) => {
+        return object.Key?.startsWith(`${user.id}/`) ? { Key: object.Key } : null
+      }).filter(o => o !== null);
+
       res.json(objects);
     } catch (error) {
       internalServerError(res, error, 'Failed to list objects');

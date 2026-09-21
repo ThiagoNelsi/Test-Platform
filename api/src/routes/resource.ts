@@ -38,6 +38,11 @@ export function createResourceRouter(options: ResourceRouterOptions): Router {
       return;
     }
 
+    if (!objectKey.startsWith(`${user.id}/`)) {
+      res.status(403).json({ error: 'Invalid object ownership' });
+      return;
+    }
+
     try {
       const dbRef = await options.prisma.resource.create({
         data: {
