@@ -76,7 +76,7 @@ Resources:
       Description: !Sub
         - Stack ${AWS::StackName} Function ${ResourceName}
         - ResourceName: ChunkingFunction
-      CodeUri: ../document-ingestion/src/handlers
+      CodeUri: ../document-ingestion/src
       Handler: chunking-function.handler
       Runtime: nodejs22.x
       MemorySize: 1024
@@ -117,7 +117,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         EntryPoints:
-          - chunking-function.ts
+          - handlers/chunking-function.ts
         Minify: true
         Target: es2022
 
