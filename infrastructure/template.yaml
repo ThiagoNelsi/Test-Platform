@@ -3,7 +3,10 @@ Transform: AWS::Serverless-2016-10-31
 Parameters:
   Environment:
     Type: String
-    Default: prod
+    Default: dev
+  Prefix:
+    Type: String
+    Default: test-platform
 
 Resources:
   #SNS
@@ -18,6 +21,8 @@ Resources:
   TextractSNSTopicToProcessedDocumentsQueueConnector:
     Type: AWS::SQS::QueuePolicy
     Properties:
+      Queues:
+        - !Ref ProcessedDocumentsQueue
       PolicyDocument:
         Statement:
           - Effect: Allow
@@ -29,8 +34,6 @@ Resources:
               ArnEquals:
                 aws:SourceArn: !Ref TextractSNSTopic
         Version: '2012-10-17'
-      Queues:
-        - !Ref ProcessedDocumentsQueue
 
   # SQS Queues
   ProcessedDocumentsQueue:
@@ -55,6 +58,7 @@ Resources:
         deadLetterTargetArn: !GetAtt DocumentChunksDQL.Arn
         maxReceiveCount: 5
 
+  # SQS DLQs
   ProcessedDocumentsDQL:
     Type: AWS::SQS::Queue
     DeletionPolicy: Retain
@@ -135,7 +139,6 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      TableName: embedding-batches
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: document
@@ -147,10 +150,10 @@ Resources:
   # S3 Buckets
   UploadedResourcesBucket:
     Type: AWS::S3::Bucket
+    DependsOn: S3AccessLogsBucketPolicy
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      BucketName: uploaded-resources-bucket
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -186,10 +189,10 @@ Resources:
 
   TextractOutputBucket:
     Type: AWS::S3::Bucket
+    DependsOn: S3AccessLogsBucketPolicy
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      BucketName: textract-output-bucket
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -199,7 +202,7 @@ Resources:
         Status: Enabled
       LoggingConfiguration:
         DestinationBucketName: !Ref S3AccessLogsBucket
-        LogFilePrefix: uploaded-resources/
+        LogFilePrefix: textract-output/
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -222,32 +225,64 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
+  S3AccessLogsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3AccessLogsBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowUploadedResourcesAccessLogs
+            Effect: Allow
+            Principal:
+              Service: logging.s3.amazonaws.com
+            Action:
+              - s3:PutObject
+            Resource: !Sub ${S3AccessLogsBucket.Arn}/uploaded-resources/*
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub arn:${AWS::Partition}:s3:::*
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+          - Sid: AllowTextractOutputAccessLogs
+            Effect: Allow
+            Principal:
+              Service: logging.s3.amazonaws.com
+            Action:
+              - s3:PutObject
+            Resource: !Sub ${S3AccessLogsBucket.Arn}/textract-output/*
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub arn:${AWS::Partition}:s3:::*
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+
   # Parameters and Secrets
   UploadedResourcesBucketParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub /test-platform/${Environment}/s3/uploaded-resources-bucket
+      Name: !Sub /${Prefix}/${Environment}/s3/uploaded-resources-bucket
       Type: String
       Value: !Ref UploadedResourcesBucket
 
   TextractOutputBucketParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub /test-platform/${Environment}/s3/textract-output-bucket
+      Name: !Sub /${Prefix}/${Environment}/s3/textract-output-bucket
       Type: String
       Value: !Ref TextractOutputBucket
 
   TextractSNSTopicArnParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub /test-platform/${Environment}/textract/sns-topic-arn
+      Name: !Sub /${Prefix}/${Environment}/textract/sns-topic-arn
       Type: String
       Value: !Ref TextractSNSTopic
 
   TextractSNSRoleArnParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub /test-platform/${Environment}/textract/sns-role-arn
+      Name: !Sub /${Prefix}/${Environment}/textract/sns-role-arn
       Type: String
       Value: !GetAtt TextractSNSRole.Arn
 
@@ -270,7 +305,7 @@ Resources:
               StringEquals:
                 aws:SourceAccount: !Ref AWS::AccountId
       Policies:
-        - PolicyName: !Sub test-platform-${Environment}-textract-sns-publish
+        - PolicyName: !Sub ${Prefix}-${Environment}-textract-sns-publish
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -283,9 +318,9 @@ Resources:
   BackendIamUser:
     Type: AWS::IAM::User
     Properties:
-      UserName: !Sub test-platform-${Environment}-backend
+      UserName: !Sub ${Prefix}-${Environment}-backend
       Policies:
-        - PolicyName: !Sub test-platform-${Environment}-s3-upload
+        - PolicyName: !Sub ${Prefix}-${Environment}-s3-upload
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -310,6 +345,7 @@ Resources:
                   - s3:GetObject
                   - s3:PutObject
                   - s3:AbortMultipartUpload
+                  - s3:ListMultipartUploadParts
                 Resource: !Sub ${TextractOutputBucket.Arn}/*
               - Sid: ListTextractOutput
                 Effect: Allow

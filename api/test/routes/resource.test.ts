@@ -73,7 +73,7 @@ describe('resource routes', () => {
       .send({
         filename: 'file.pdf',
         fileType: 'application/pdf',
-        objectKey: 'object-key',
+        objectKey: '1/object-key',
         tags: ['tag-1'],
       });
 

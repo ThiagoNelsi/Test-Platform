@@ -1,7 +1,20 @@
+import cookieParser from 'cookie-parser';
 import express from 'express';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 import { createUploadRouter } from '../../src/routes/upload';
+
+function createAuthServiceStub() {
+  return {
+    getCurrentUser: vi.fn().mockResolvedValue({
+      id: 1,
+      name: 'User',
+      email: 'user@example.com',
+      image: null,
+      googleSub: null,
+    }),
+  };
+}
 
 function createTestApp(options: {
   bucketName?: string;
@@ -10,15 +23,18 @@ function createTestApp(options: {
   const presignPost = vi.fn().mockResolvedValue(
     options.presignResult ?? { url: 'http://s3.local/post', fields: { key: 'value' } },
   );
+  const authService = createAuthServiceStub();
   const s3Client = {
-    send: vi.fn().mockResolvedValue({ Contents: [{ Key: 'file-1' }] }),
+    send: vi.fn().mockResolvedValue({ Contents: [{ Key: '1/file-1' }] }),
   };
 
   const app = express();
+  app.use(cookieParser());
   app.use(express.json());
   app.use(
     '/api/upload',
     createUploadRouter({
+      authService: authService as never,
       bucketName: options.bucketName ?? 'bucket-name',
       region: 'us-east-1',
       s3Client: s3Client as never,
@@ -30,11 +46,21 @@ function createTestApp(options: {
 }
 
 describe('upload routes', () => {
+  it('rejects unauthenticated access', async () => {
+    const { app } = createTestApp({});
+
+    const response = await request(app).get('/api/upload');
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: 'Unauthorized' });
+  });
+
   it('returns a presigned post', async () => {
     const { app, presignPost } = createTestApp({});
 
     const response = await request(app)
       .post('/api/upload')
+      .set('Cookie', ['session=session-token'])
       .send({ contentType: 'image/png' });
 
     expect(response.status).toBe(200);
@@ -48,7 +74,10 @@ describe('upload routes', () => {
   it('rejects requests missing contentType', async () => {
     const { app, presignPost } = createTestApp({});
 
-    const response = await request(app).post('/api/upload').send({});
+    const response = await request(app)
+      .post('/api/upload')
+      .set('Cookie', ['session=session-token'])
+      .send({});
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({ error: 'Missing contentType' });
@@ -58,10 +87,12 @@ describe('upload routes', () => {
   it('lists bucket contents', async () => {
     const { app, s3Client } = createTestApp({});
 
-    const response = await request(app).get('/api/upload');
+    const response = await request(app)
+      .get('/api/upload')
+      .set('Cookie', ['session=session-token']);
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual([{ Key: 'file-1' }]);
+    expect(response.body).toEqual([{ Key: '1/file-1' }]);
     expect(s3Client.send).toHaveBeenCalledOnce();
   });
 
@@ -69,7 +100,9 @@ describe('upload routes', () => {
     const { app, s3Client } = createTestApp({});
     s3Client.send.mockRejectedValueOnce(new Error('s3 down'));
 
-    const response = await request(app).get('/api/upload');
+    const response = await request(app)
+      .get('/api/upload')
+      .set('Cookie', ['session=session-token']);
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({ error: 's3 down' });
@@ -80,8 +113,11 @@ describe('upload routes', () => {
 
     const postResponse = await request(app)
       .post('/api/upload')
+      .set('Cookie', ['session=session-token'])
       .send({ contentType: 'image/png' });
-    const getResponse = await request(app).get('/api/upload');
+    const getResponse = await request(app)
+      .get('/api/upload')
+      .set('Cookie', ['session=session-token']);
 
     expect(postResponse.status).toBe(500);
     expect(postResponse.body).toEqual({ error: 'AWS bucket not configured' });
