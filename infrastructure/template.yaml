@@ -456,3 +456,10 @@ Resources:
                 Condition:
                   StringEquals:
                     iam:PassedToService: textract.amazonaws.com
+              - Sid: ReadSSMParameters
+                Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${Prefix}/${Environment}/*

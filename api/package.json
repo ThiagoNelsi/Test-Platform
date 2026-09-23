@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node src/app.ts",
+    "dev": "tsx watch src/app.ts",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -16,6 +16,7 @@
   "description": "",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.744.0",
+    "@aws-sdk/client-ssm": "^3.1137.0",
     "@aws-sdk/client-textract": "^3.744.0",
     "@aws-sdk/s3-presigned-post": "^3.744.0",
     "@neondatabase/serverless": "^1.0.1",
@@ -43,7 +44,7 @@
     "@types/ws": "^8.18.1",
     "prisma": "^6.7.0",
     "supertest": "^7.2.2",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.23.15",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   }

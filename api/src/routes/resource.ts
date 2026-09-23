@@ -1,4 +1,5 @@
 import { StartDocumentAnalysisCommand, type TextractClient } from '@aws-sdk/client-textract';
+import { createHash } from 'node:crypto';
 import type { PrismaClient, ResourceStatus } from '@prisma/client';
 import type {
   CreateResourceRequest,
@@ -66,7 +67,7 @@ export function createResourceRouter(options: ResourceRouterOptions): Router {
         OutputConfig: {
           S3Bucket: options.outputBucketName,
         },
-        ClientRequestToken: objectKey,
+        ClientRequestToken: createHash('sha256').update(objectKey).digest('hex'),
         NotificationChannel: {
           SNSTopicArn: options.snsTopicArn,
           RoleArn: options.snsRoleArn,

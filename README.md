@@ -23,7 +23,7 @@ requisição e resposta alinhados entre os dois aplicativos.
 - pnpm 11 (a versão do projeto está fixada no `package.json`).
 - PostgreSQL/Neon para a API.
 - Credenciais do Google OAuth e OpenAI.
-- AWS opcional para upload e processamento de materiais.
+- Credenciais AWS com acesso ao SSM Parameter Store para iniciar a API.
 
 ## Instalação
 
@@ -46,7 +46,17 @@ JWT_SECRET=
 OPENAI_API_KEY=
 FRONTEND_URL=http://localhost:5173
 BACKEND_URL=http://localhost:8000
+AWS_REGION=us-east-1
+SSM_PARAMETER_PATH=/test-platform/dev
 ```
+
+A API busca uma vez, ao iniciar, os nomes dos buckets e os ARNs de SNS e IAM
+no SSM Parameter Store. O caminho acima corresponde aos parâmetros do stack
+SAM padrão. Se `Prefix` ou `Environment` forem diferentes no deploy, ajuste
+`SSM_PARAMETER_PATH` para `/<Prefix>/<Environment>`. A identidade AWS usada
+pela API precisa de `ssm:GetParameters` para esses quatro parâmetros.
+Localmente, use credenciais do perfil AWS ou `AWS_ACCESS_KEY` e
+`AWS_SECRET_KEY` no `api/.env`.
 
 Configure `frontend/.env.local` com:
 
@@ -63,7 +73,8 @@ pnpm dev
 ```
 
 Esse comando gera os contratos e o Prisma e sobe a API e o frontend em
-paralelo. `Ctrl+C` encerra as duas aplicações.
+paralelo. A API reinicia automaticamente ao salvar arquivos importados.
+`Ctrl+C` encerra as duas aplicações.
 
 Para executar somente uma aplicação:
 

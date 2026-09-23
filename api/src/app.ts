@@ -1,4 +1,5 @@
 import { S3Client } from '@aws-sdk/client-s3';
+import { SSMClient } from '@aws-sdk/client-ssm';
 import { TextractClient } from '@aws-sdk/client-textract';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -7,6 +8,7 @@ import http from 'http';
 import OpenAI from 'openai';
 import { Server, type Socket } from 'socket.io';
 import { createAuthService } from './auth/service';
+import { loadAwsResources, type AwsResources } from './config/aws-resources';
 import { getOptionalEnv, getRequiredEnv } from './config/env';
 import { createEmbeddingsClient } from './database/embeddings';
 import { createPrismaClient } from './database/prisma';
@@ -53,6 +55,7 @@ export async function handlePromptRequest(
 
 type ResourceRouteDeps = {
   prisma: ReturnType<typeof createPrismaClient>;
+  s3Client: S3Client;
   textractClient: TextractClient;
   bucketName: string;
   snsTopicArn: string;
@@ -135,15 +138,9 @@ export function createApp(
     '/api/upload',
     createUploadRouter({
       authService,
-      bucketName: getOptionalEnv('AWS_BUCKET_NAME', ''),
+      bucketName: resourceDeps?.bucketName ?? '',
       region: getOptionalEnv('AWS_REGION', ''),
-      s3Client: new S3Client({
-        region: getOptionalEnv('AWS_REGION', ''),
-        credentials: {
-          accessKeyId: getOptionalEnv('AWS_ACCESS_KEY', ''),
-          secretAccessKey: getOptionalEnv('AWS_SECRET_KEY', ''),
-        },
-      }),
+      s3Client: resourceDeps?.s3Client ?? new S3Client(awsClientConfig()),
     }),
   );
 
@@ -171,20 +168,30 @@ function createDefaultAuthService(prisma = createPrismaClient()) {
   });
 }
 
-function createDefaultResourceDeps(prisma: ReturnType<typeof createPrismaClient>): ResourceRouteDeps {
+function awsClientConfig() {
+  const accessKeyId = getOptionalEnv('AWS_ACCESS_KEY', '');
+  const secretAccessKey = getOptionalEnv('AWS_SECRET_KEY', '');
+
+  return {
+    region: getOptionalEnv('AWS_REGION', '') || undefined,
+    ...(accessKeyId && secretAccessKey
+      ? { credentials: { accessKeyId, secretAccessKey } }
+      : {}),
+  };
+}
+
+function createDefaultResourceDeps(
+  prisma: ReturnType<typeof createPrismaClient>,
+  resources: AwsResources,
+): ResourceRouteDeps {
   return {
     prisma,
-    textractClient: new TextractClient({
-      region: getOptionalEnv('AWS_REGION', ''),
-      credentials: {
-        accessKeyId: getOptionalEnv('AWS_ACCESS_KEY', ''),
-        secretAccessKey: getOptionalEnv('AWS_SECRET_KEY', ''),
-      },
-    }),
-    bucketName: getOptionalEnv('AWS_BUCKET_NAME', ''),
-    snsTopicArn: getOptionalEnv('AWS_TEXTRACT_SNS_TOPIC_ARN', ''),
-    snsRoleArn: getOptionalEnv('AWS_TEXTRACT_SNS_ROLE_ARN', ''),
-    outputBucketName: getOptionalEnv('AWS_TEXTRACT_OUTPUT_BUCKET_NAME', ''),
+    s3Client: new S3Client(awsClientConfig()),
+    textractClient: new TextractClient(awsClientConfig()),
+    bucketName: resources.uploadedResourcesBucket,
+    snsTopicArn: resources.textractSnsTopicArn,
+    snsRoleArn: resources.textractSnsRoleArn,
+    outputBucketName: resources.textractOutputBucket,
   };
 }
 
@@ -196,10 +203,14 @@ function createDefaultQuestionGenerator() {
   });
 }
 
-if (require.main === module) {
+async function startServer(): Promise<void> {
+  const resources = await loadAwsResources(
+    new SSMClient(awsClientConfig()),
+    getOptionalEnv('SSM_PARAMETER_PATH', '/test-platform/dev'),
+  );
   const prisma = createPrismaClient();
   const authService = createDefaultAuthService(prisma);
-  const resourceDeps = createDefaultResourceDeps(prisma);
+  const resourceDeps = createDefaultResourceDeps(prisma, resources);
   const app = createApp(authService, resourceDeps);
   const server = http.createServer(app);
   const io = new Server(server, {
@@ -229,5 +240,12 @@ if (require.main === module) {
 
   server.listen(8000, () => {
     console.log('Server is listening on port: 8000');
+  });
+}
+
+if (require.main === module) {
+  void startServer().catch((error) => {
+    console.error('Failed to start API', error);
+    process.exitCode = 1;
   });
 }

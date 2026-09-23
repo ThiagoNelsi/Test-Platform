@@ -1,6 +1,7 @@
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import request from 'supertest';
+import { StartDocumentAnalysisCommand } from '@aws-sdk/client-textract';
 import { describe, expect, it, vi } from 'vitest';
 import { createResourceRouter } from '../../src/routes/resource';
 
@@ -82,6 +83,9 @@ describe('resource routes', () => {
     expect(prisma.resource.create).toHaveBeenCalledOnce();
     expect(prisma.resource.update).toHaveBeenCalledOnce();
     expect(textractClient.send).toHaveBeenCalledOnce();
+    const command = textractClient.send.mock.calls[0][0] as StartDocumentAnalysisCommand;
+    expect(command.input.DocumentLocation?.S3Object?.Name).toBe('1/object-key');
+    expect(command.input.ClientRequestToken).toMatch(/^[a-zA-Z0-9_-]{1,64}$/);
   });
 
   it('lists resources for the current user', async () => {
