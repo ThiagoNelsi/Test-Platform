@@ -44,7 +44,7 @@ Resources:
       VisibilityTimeout: 120
       MessageRetentionPeriod: 345600 # 4 days
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt ProcessedDocumentsDQL.Arn
+        deadLetterTargetArn: !GetAtt ProcessedDocumentsDLQ.Arn
         maxReceiveCount: 5
 
   DocumentChunksQueue:
@@ -55,18 +55,18 @@ Resources:
       VisibilityTimeout: 120
       MessageRetentionPeriod: 345600 # 4 days
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DocumentChunksDQL.Arn
+        deadLetterTargetArn: !GetAtt DocumentChunksDLQ.Arn
         maxReceiveCount: 5
 
   # SQS DLQs
-  ProcessedDocumentsDQL:
+  ProcessedDocumentsDLQ:
     Type: AWS::SQS::Queue
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
       MessageRetentionPeriod: 1209600 # 14 days
 
-  DocumentChunksDQL:
+  DocumentChunksDLQ:
     Type: AWS::SQS::Queue
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
