@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createBatches, getOverlapText, splitText, type DocumentChunk } from "./chunking";
+import { createBatches, getOverlapText, splitText, stableBatchId, type DocumentChunk } from "./chunking";
 
 describe("document chunking", () => {
   it("keeps word boundaries and overlaps adjacent chunks", () => {
@@ -31,9 +31,13 @@ describe("document chunking", () => {
       { text: "small", pages: [2] },
     ];
 
-    expect(createBatches(chunks, 10, (text) => (text === "oversized" ? 11 : 2))).toEqual([
-      { chunks: [chunks[0]], size: 11 },
-      { chunks: [chunks[1]], size: 2 },
+    const countTokens = (text: string) => (text === "oversized" ? 11 : 2);
+    const batches = createBatches(chunks, 10, countTokens, "job-1");
+
+    expect(batches).toEqual([
+      { id: stableBatchId("job-1", 0, [chunks[0]]), chunks: [chunks[0]], size: 11, pages: [1] },
+      { id: stableBatchId("job-1", 1, [chunks[1]]), chunks: [chunks[1]], size: 2, pages: [2] },
     ]);
+    expect(createBatches(chunks, 10, countTokens, "job-1")).toEqual(batches);
   });
 });

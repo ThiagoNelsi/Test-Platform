@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import type { SendMessageBatchRequestEntry } from "@aws-sdk/client-sqs";
 import type { ChunkBatch } from "../ingestion/chunking";
 
@@ -17,19 +16,13 @@ export type PublishChunkBatchesInput = {
   batches: ChunkBatch[];
 };
 
-function stableBatchId(jobId: string, index: number, batch: ChunkBatch): string {
-  return createHash("sha256")
-    .update(`${jobId}:${index}:${JSON.stringify(batch.chunks)}`)
-    .digest("hex");
-}
-
 function createEntries(input: PublishChunkBatchesInput): SendMessageBatchRequestEntry[] {
   return input.batches.map((batch, index) => ({
     Id: String(index),
     MessageBody: JSON.stringify({
       chunks: batch.chunks,
       document: input.document,
-      batchId: stableBatchId(input.jobId, index, batch),
+      batchId: batch.id,
       batchIndex: index,
       totalBatches: input.batches.length,
     }),

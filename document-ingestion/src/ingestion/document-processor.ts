@@ -13,6 +13,7 @@ export type TextractNotification = {
 export type BatchTrackingRecord = {
   document: string;
   jobId: string;
+  batches: { id: string; status: "pending" }[];
   totalBatches: number;
   updatedAt: string;
 };
@@ -51,6 +52,7 @@ export function createDocumentProcessor(
     console.log("Processing Textract notification", { jobId, document, status });
 
     if (status !== "SUCCEEDED") {
+      // TODO: handle failed jobs, e.g., by immediately sending a message to a dead-letter queue
       throw new Error(`Textract job ${jobId} finished with status ${status}`);
     }
 
@@ -62,7 +64,7 @@ export function createDocumentProcessor(
     const blocks = await ports.loadBlocks(jobId);
     const pages = linearizeLayout(blocks);
     const chunks = splitText(pages, options.chunkSize, options.chunkOverlap);
-    const batches = createBatches(chunks, options.tokenBatchSize, countEmbeddingTokens);
+    const batches = createBatches(chunks, options.tokenBatchSize, countEmbeddingTokens, jobId);
 
     console.log("Document chunking complete", {
       jobId,
@@ -76,6 +78,7 @@ export function createDocumentProcessor(
       document,
       jobId,
       totalBatches: batches.length,
+      batches: batches.map((batch) => ({ id: batch.id, status: "pending" })),
       updatedAt: new Date().toISOString(),
     });
   };

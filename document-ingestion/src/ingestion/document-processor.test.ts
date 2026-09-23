@@ -45,8 +45,10 @@ describe("document processor", () => {
       document: "1/document.pdf",
       batches: [
         {
+          id: expect.any(String),
           chunks: [{ text: "Document text", pages: [1] }],
           size: expect.any(Number),
+          pages: [1],
         },
       ],
     });
@@ -55,8 +57,12 @@ describe("document processor", () => {
         document: "1/document.pdf",
         jobId: "job-1",
         totalBatches: 1,
+        batches: [{ id: expect.any(String), status: "pending" }],
       }),
     );
+    const published = vi.mocked(adapters.publishBatches).mock.calls[0][0].batches;
+    const tracked = vi.mocked(adapters.markBatchesEnqueued).mock.calls[0][0].batches;
+    expect(tracked[0].id).toBe(published[0].id);
   });
 
   it("rejects terminal Textract failures before calling adapters", async () => {

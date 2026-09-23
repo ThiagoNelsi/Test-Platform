@@ -1,3 +1,4 @@
+import { createHash, randomUUID } from "node:crypto";
 import { encodingForModel } from "js-tiktoken";
 
 export type DocumentChunk = {
@@ -6,9 +7,17 @@ export type DocumentChunk = {
 };
 
 export type ChunkBatch = {
+  id: string;
   chunks: DocumentChunk[];
   size: number;
+  pages: number[];
 };
+
+export function stableBatchId(jobId: string, index: number, chunks: DocumentChunk[]): string {
+  return createHash("sha256")
+    .update(`${jobId}:${index}:${JSON.stringify(chunks)}`)
+    .digest("hex");
+}
 
 const encoder = encodingForModel("text-embedding-3-small");
 
@@ -91,6 +100,7 @@ export function createBatches(
   chunks: DocumentChunk[],
   batchSize: number,
   countTokens: (text: string) => number = countEmbeddingTokens,
+  jobId?: string,
 ): ChunkBatch[] {
   if (batchSize <= 0) throw new Error("batchSize must be greater than zero");
 
@@ -100,7 +110,14 @@ export function createBatches(
 
   const flush = () => {
     if (currentChunks.length === 0) return;
-    batches.push({ chunks: currentChunks, size: currentSize });
+
+    batches.push({
+      id: jobId ? stableBatchId(jobId, batches.length, currentChunks) : randomUUID(),
+      chunks: currentChunks,
+      size: currentSize,
+      pages: Array.from(new Set(currentChunks.flatMap((chunk) => chunk.pages))).sort((a, b) => a - b),
+    });
+
     currentChunks = [];
     currentSize = 0;
   };

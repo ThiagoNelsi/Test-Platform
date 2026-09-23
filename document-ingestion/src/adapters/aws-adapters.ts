@@ -24,12 +24,17 @@ function requiredEnvironment(name: string): string {
   return value;
 }
 
-function trackingItem(record: BatchTrackingRecord): Record<string, AttributeValue> {
+export function trackingItem(record: BatchTrackingRecord): Record<string, AttributeValue> {
   return {
     document: { S: record.document },
     status: { S: "processing" },
-    total_batches: { N: String(record.totalBatches) },
-    processed_batches: { N: "0" },
+    batches: {
+      M: Object.fromEntries(
+        record.batches.map(({ id, status }) => [id, { M: { status: { S: status } } }]),
+      ),
+    },
+    total_batches: { N: String(record.totalBatches) }, // legacy
+    processed_batches: { N: "0" }, // legacy
     job_id: { S: record.jobId },
     enqueue_completed: { BOOL: true },
     updated_at: { S: record.updatedAt },

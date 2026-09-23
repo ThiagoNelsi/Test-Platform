@@ -1,12 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ChunkBatch } from "../ingestion/chunking";
+import { stableBatchId, type ChunkBatch } from "../ingestion/chunking";
 import { createSqsBatchPublisher } from "./sqs-batch-publisher";
 
 function batches(count: number): ChunkBatch[] {
-  return Array.from({ length: count }, (_, index) => ({
-    chunks: [{ text: `chunk-${index}`, pages: [index + 1] }],
-    size: 10,
-  }));
+  return Array.from({ length: count }, (_, index) => {
+    const chunks = [{ text: `chunk-${index}`, pages: [index + 1] }];
+    return {
+      id: stableBatchId("job-1", index, chunks),
+      chunks,
+      size: 10,
+      pages: [index + 1],
+    };
+  });
 }
 
 describe("SQS chunk batch publisher", () => {
@@ -29,6 +34,7 @@ describe("SQS chunk batch publisher", () => {
       totalBatches: 1,
     });
     expect(firstBody.batchId).toMatch(/^[a-f0-9]{64}$/);
+    expect(firstBody.batchId).toBe(input.batches[0].id);
     expect(secondBody.batchId).toBe(firstBody.batchId);
   });
 
