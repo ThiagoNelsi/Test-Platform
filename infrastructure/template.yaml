@@ -111,6 +111,11 @@ Resources:
               Action:
                 - textract:GetDocumentAnalysis
               Resource: '*'
+            - Sid: ReadTextractOutputObjects
+              Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: !Sub ${TextractOutputBucket.Arn}/*
             - Sid: TrackEmbeddingBatches
               Effect: Allow
               Action:
