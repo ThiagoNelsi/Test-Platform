@@ -14,10 +14,13 @@
   "type": "module",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1136.0",
+    "@aws-sdk/client-secrets-manager": "^3.1137.0",
     "@aws-sdk/client-sqs": "^3.1136.0",
     "@aws-sdk/client-textract": "^3.1123.0",
     "esbuild": "^0.21.5",
-    "js-tiktoken": "^1.0.21"
+    "js-tiktoken": "^1.0.21",
+    "openai": "^4.104.0",
+    "postgres": "^3.4.9"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.163",

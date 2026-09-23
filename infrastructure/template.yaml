@@ -73,6 +73,31 @@ Resources:
     Properties:
       MessageRetentionPeriod: 1209600 # 14 days
 
+  # Secrets
+  OpenAIApiKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: !Sub ${Prefix}/${Environment}/openai-api-key
+      Description: OpenAI API key used by the embedding Lambda
+
+  DatabaseUrlPostgresSecret:
+    Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: !Sub ${Prefix}/${Environment}/application-database-url
+      Description: Application PostgreSQL connection URL used by the embedding Lambda
+
+  EmbeddingsDatabaseUrlSecret:
+    Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: !Sub ${Prefix}/${Environment}/embeddings-database-url
+      Description: Embeddings PostgreSQL connection URL used by the embedding Lambda
+
   # Lambda Functions
   ChunkingFunction:
     Type: AWS::Serverless::Function
@@ -136,6 +161,66 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       LogGroupName: !Sub /aws/lambda/${ChunkingFunction}
+      RetentionInDays: 14
+
+  EmbeddingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: EmbeddingFunction
+      CodeUri: ../document-ingestion/src
+      Handler: generate-chunk-embeddings.handler
+      Runtime: nodejs22.x
+      MemorySize: 1024
+      Timeout: 60
+      Tracing: Active
+      Events:
+        DocumentChunksQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt DocumentChunksQueue.Arn
+            BatchSize: 1
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+      Environment:
+        Variables:
+          ENV: !Ref Environment
+          DATABASE_URL_POSTGRES_SECRET_ARN: !Ref DatabaseUrlPostgresSecret
+          EMBEDDINGS_DATABASE_URL_SECRET_ARN: !Ref EmbeddingsDatabaseUrlSecret
+          OPENAI_API_KEY_SECRET_ARN: !Ref OpenAIApiKeySecret
+          EMBEDDING_BATCHES_TABLE_NAME: !Ref EmbeddingBatchesTable
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Sid: UpdateEmbeddingBatches
+              Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:UpdateItem
+              Resource: !GetAtt EmbeddingBatchesTable.Arn
+            - Sid: ReadEmbeddingFunctionSecrets
+              Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource:
+                - !Ref DatabaseUrlPostgresSecret
+                - !Ref EmbeddingsDatabaseUrlSecret
+                - !Ref OpenAIApiKeySecret
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - handlers/generate-chunk-embeddings.ts
+        Minify: true
+        Target: es2022
+
+  EmbeddingFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${EmbeddingFunction}
       RetentionInDays: 14
 
   # DynamoDB Tables
