@@ -118,14 +118,18 @@ type SubmissionRecord = {
 
 type ResourceRecord = {
   id: number;
+  documentId: string;
   filename: string;
   fileType: string;
+  fileSize: number | null;
+  fileHash: string | null;
   tags: string[];
   objectKey: string;
   jobId: string | null;
   status: ResourceDto['status'];
   ownerId: number;
   createdAt: DateValue;
+  updatedAt: DateValue;
   processedAt: DateValue;
   deletedAt: DateValue;
 };
@@ -290,13 +294,17 @@ export function toResourceDto(resource: ResourceRecord): ResourceDto {
 
   return {
     id: resource.id,
+    documentId: resource.documentId,
     filename: resource.filename,
     fileType: resource.fileType,
+    fileSize: resource.fileSize,
+    fileHash: resource.fileHash,
     tags: resource.tags,
     objectKey: resource.objectKey,
     jobId: resource.jobId,
     status: resource.status,
     ownerId: resource.ownerId,
+    updatedAt: toRequiredIsoDate(resource.updatedAt),
     processedAt: toIsoDate(resource.processedAt),
     deletedAt: toIsoDate(resource.deletedAt),
     ...(createdAt === undefined ? {} : { createdAt }),

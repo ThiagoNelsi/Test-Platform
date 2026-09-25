@@ -130,25 +130,33 @@ model Submission {
 }
 
 enum ResourceStatus {
+  PENDING_UPLOAD
   UPLOADED
   PROCESSING
   PROCESSED
   FAILED
+  EXPIRED
 }
 
 model Resource {
-  id          Int       @id @default(autoincrement())
+  id          Int            @id @default(autoincrement())
+  documentId  String         @unique @default(uuid()) @db.Uuid
   filename    String
   fileType    String
+  fileSize    Int?
+  fileHash    String?
   tags        String[]
-  objectKey   String
+  objectKey   String         @unique
   jobId       String?
-  status      ResourceStatus @default(UPLOADED)
+  status      ResourceStatus @default(PENDING_UPLOAD)
   ownerId     Int
-  owner       User      @relation(fields: [ownerId], references: [id])
-  createdAt   DateTime  @default(now()) @db.Timestamptz(0)
-  processedAt DateTime? @db.Timestamptz(0)
-  deletedAt   DateTime? @db.Timestamptz(0)
+  owner       User           @relation(fields: [ownerId], references: [id])
+  createdAt   DateTime       @default(now()) @db.Timestamptz(0)
+  updatedAt   DateTime       @updatedAt @db.Timestamptz(0)
+  processedAt DateTime?      @db.Timestamptz(0)
+  deletedAt   DateTime?      @db.Timestamptz(0)
+
+  @@index([ownerId, fileHash])
 }
 
 model RepositoryQuestion {

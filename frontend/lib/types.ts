@@ -46,17 +46,21 @@ export type TestData = {
   status: "draft" | "published" | "scheduled";
 };
 
-export type ResourceStatus = "UPLOADED" | "PROCESSING" | "PROCESSED" | "FAILED";
+export type ResourceStatus = "PENDING_UPLOAD" | "UPLOADED" | "PROCESSING" | "PROCESSED" | "FAILED" | "EXPIRED";
 
 export type Resource = {
   id: number;
+  documentId: string;
   createdAt: Date;
+  updatedAt: Date;
   deletedAt: Date | null;
   processedAt: Date | null;
   ownerId: number;
   status: ResourceStatus;
   filename: string;
   fileType: string;
+  fileSize: number | null;
+  fileHash: string | null;
   tags: string[];
   objectKey: string;
   jobId: string | null;

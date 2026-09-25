@@ -7,6 +7,10 @@ Parameters:
   Prefix:
     Type: String
     Default: test-platform
+  PendingUploadExpirationHours:
+    Type: Number
+    Default: 24
+    MinValue: 1
 
 Resources:
   #SNS
@@ -36,6 +40,17 @@ Resources:
         Version: '2012-10-17'
 
   # SQS Queues
+  UploadedResourcesQueue:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      VisibilityTimeout: 360
+      MessageRetentionPeriod: 345600 # 4 days
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt UploadedResourcesDLQ.Arn
+        maxReceiveCount: 5
+
   ProcessedDocumentsQueue:
     Type: AWS::SQS::Queue
     DeletionPolicy: Retain
@@ -58,7 +73,32 @@ Resources:
         deadLetterTargetArn: !GetAtt DocumentChunksDLQ.Arn
         maxReceiveCount: 5
 
+  UploadedResourcesQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref UploadedResourcesQueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowS3UploadNotifications
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt UploadedResourcesQueue.Arn
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+
   # SQS DLQs
+  UploadedResourcesDLQ:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      MessageRetentionPeriod: 1209600 # 14 days
+
   ProcessedDocumentsDLQ:
     Type: AWS::SQS::Queue
     DeletionPolicy: Retain
@@ -99,6 +139,167 @@ Resources:
       Description: Embeddings PostgreSQL connection URL used by the embedding Lambda
 
   # Lambda Functions
+  ConfirmUploadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Confirms S3 uploads in PostgreSQL and starts Textract idempotently
+      CodeUri: ../document-ingestion/src
+      Handler: confirm-upload.handler
+      Runtime: nodejs22.x
+      MemorySize: 512
+      Timeout: 60
+      Tracing: Active
+      Events:
+        UploadedResourcesQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt UploadedResourcesQueue.Arn
+            BatchSize: 10
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+      Environment:
+        Variables:
+          DATABASE_URL_POSTGRES_SECRET_ARN: !Ref DatabaseUrlPostgresSecret
+          UPLOADED_RESOURCES_BUCKET: !Ref UploadedResourcesBucket
+          TEXTRACT_OUTPUT_BUCKET: !Ref TextractOutputBucket
+          TEXTRACT_SNS_TOPIC_ARN: !Ref TextractSNSTopic
+          TEXTRACT_SNS_ROLE_ARN: !GetAtt TextractSNSRole.Arn
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Sid: ReadApplicationDatabaseSecret
+              Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Ref DatabaseUrlPostgresSecret
+            - Sid: ReadUploadedDocument
+              Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: !Sub ${UploadedResourcesBucket.Arn}/*
+            - Sid: WriteTextractOutput
+              Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+                - s3:AbortMultipartUpload
+                - s3:ListMultipartUploadParts
+              Resource: !Sub ${TextractOutputBucket.Arn}/*
+            - Sid: ListTextractOutput
+              Effect: Allow
+              Action:
+                - s3:ListBucket
+                - s3:ListBucketMultipartUploads
+              Resource: !GetAtt TextractOutputBucket.Arn
+            - Sid: StartTextractAnalysis
+              Effect: Allow
+              Action:
+                - textract:StartDocumentAnalysis
+              Resource: '*'
+            - Sid: PassTextractNotificationRole
+              Effect: Allow
+              Action:
+                - iam:PassRole
+              Resource: !GetAtt TextractSNSRole.Arn
+              Condition:
+                StringEquals:
+                  iam:PassedToService: textract.amazonaws.com
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - handlers/confirm-upload.ts
+        Minify: true
+        Target: es2022
+
+  ConfirmUploadFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ConfirmUploadFunction}
+      RetentionInDays: 14
+
+  ExpirePendingUploadsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Reconciles or expires stale pending uploads after checking S3
+      CodeUri: ../document-ingestion/src
+      Handler: expire-pending-uploads.handler
+      Runtime: nodejs22.x
+      MemorySize: 512
+      Timeout: 300
+      Tracing: Active
+      Events:
+        HourlyExpiration:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 hour)
+            Enabled: true
+      Environment:
+        Variables:
+          DATABASE_URL_POSTGRES_SECRET_ARN: !Ref DatabaseUrlPostgresSecret
+          UPLOADED_RESOURCES_BUCKET: !Ref UploadedResourcesBucket
+          TEXTRACT_OUTPUT_BUCKET: !Ref TextractOutputBucket
+          TEXTRACT_SNS_TOPIC_ARN: !Ref TextractSNSTopic
+          TEXTRACT_SNS_ROLE_ARN: !GetAtt TextractSNSRole.Arn
+          PENDING_UPLOAD_EXPIRATION_HOURS: !Ref PendingUploadExpirationHours
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Sid: ReadApplicationDatabaseSecret
+              Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Ref DatabaseUrlPostgresSecret
+            - Sid: ReadUploadedDocument
+              Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: !Sub ${UploadedResourcesBucket.Arn}/*
+            - Sid: WriteTextractOutput
+              Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+                - s3:AbortMultipartUpload
+                - s3:ListMultipartUploadParts
+              Resource: !Sub ${TextractOutputBucket.Arn}/*
+            - Sid: ListTextractOutput
+              Effect: Allow
+              Action:
+                - s3:ListBucket
+                - s3:ListBucketMultipartUploads
+              Resource: !GetAtt TextractOutputBucket.Arn
+            - Sid: StartTextractAnalysis
+              Effect: Allow
+              Action:
+                - textract:StartDocumentAnalysis
+              Resource: '*'
+            - Sid: PassTextractNotificationRole
+              Effect: Allow
+              Action:
+                - iam:PassRole
+              Resource: !GetAtt TextractSNSRole.Arn
+              Condition:
+                StringEquals:
+                  iam:PassedToService: textract.amazonaws.com
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - handlers/expire-pending-uploads.ts
+        Minify: true
+        Target: es2022
+
+  ExpirePendingUploadsFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ExpirePendingUploadsFunction}
+      RetentionInDays: 14
+
   ChunkingFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -240,7 +441,9 @@ Resources:
   # S3 Buckets
   UploadedResourcesBucket:
     Type: AWS::S3::Bucket
-    DependsOn: S3AccessLogsBucketPolicy
+    DependsOn:
+      - S3AccessLogsBucketPolicy
+      - UploadedResourcesQueuePolicy
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
@@ -252,6 +455,10 @@ Resources:
       OwnershipControls:
         Rules:
           - ObjectOwnership: BucketOwnerEnforced
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: s3:ObjectCreated:*
+            Queue: !GetAtt UploadedResourcesQueue.Arn
       CorsConfiguration:
         CorsRules:
           - Id: AllowFrontendUploads

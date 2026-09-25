@@ -12,6 +12,7 @@ function hydrateResource(resource: ResourceDto): Resource {
   return {
     ...resource,
     createdAt: new Date(resource.createdAt),
+    updatedAt: new Date(resource.updatedAt),
     deletedAt: resource.deletedAt ? new Date(resource.deletedAt) : null,
     processedAt: resource.processedAt ? new Date(resource.processedAt) : null,
   };

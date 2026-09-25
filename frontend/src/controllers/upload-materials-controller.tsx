@@ -1,11 +1,10 @@
 import { useEffect, useState, useRef, type DragEvent, type ChangeEvent } from "react"
 import { tryCatch } from "@/lib/try-catch"
-import { errorToast } from "@/lib/toasters"
+import { errorToast, infoToast } from "@/lib/toasters"
 import {
-  useCreateResourceMutation,
   usePresignedUploadMutation,
 } from "@/src/hooks/use-api-queries"
-import { uploadToPresignedPost } from "@/lib/upload-service"
+import { calculateFileSha256, uploadToPresignedPost } from "@/lib/upload-service"
 
 // Tipo para os arquivos selecionados com metadados adicionais
 interface FileWithMetadata {
@@ -41,7 +40,6 @@ export const useUploadMaterialsController = () => {
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null)
   const presignedUploadMutation = usePresignedUploadMutation()
-  const createResourceMutation = useCreateResourceMutation()
 
   // Estados
   const [files, setFiles] = useState<FileWithMetadata[]>([])
@@ -194,44 +192,51 @@ export const useUploadMaterialsController = () => {
   }
 
   const uploadFile = async (file: FileWithMetadata, fileId: string) => {
+    const { data: fileHash, error: hashError } = await tryCatch(
+      calculateFileSha256(file.file),
+    )
+    if (hashError || !fileHash) {
+      uploadErrorToast()
+      return false
+    }
+
     const { data: uploadData, error: fetchError } = await tryCatch(
       presignedUploadMutation.mutateAsync({
+        filename: getResourceFilename(file),
         contentType: file.file.type || "application/octet-stream",
+        fileSize: file.file.size,
+        fileHash,
+        tags: file.tags,
       }),
     )
 
     if (fetchError || !uploadData) {
-      uploadErrorToast();
+      uploadErrorToast()
       return false
     }
 
-    const { fields } = uploadData
+    if (uploadData.status === "ALREADY_EXISTS") {
+      setUploadProgress((prev) => ({ ...prev, [fileId]: 100 }))
+      infoToast("Este arquivo já existe nos seus materiais.", { duration: 4000 })
+      return true
+    }
+
+    if (uploadData.status === "UPLOAD_ALREADY_COMPLETED") {
+      setUploadProgress((prev) => ({ ...prev, [fileId]: 100 }))
+      infoToast("O arquivo já foi enviado e está sendo preparado.", { duration: 4000 })
+      return true
+    }
+
+    if (!("uploadUrl" in uploadData)) return false
 
     const { error: uploadError } = await tryCatch(
       uploadToPresignedPost(uploadData, file.file, (percentage) => {
-        setUploadProgress((prev) => ({
-          ...prev,
-          [fileId]: percentage,
-        }))
+        setUploadProgress((prev) => ({ ...prev, [fileId]: percentage }))
       }),
     )
 
     if (uploadError) {
-      uploadErrorToast();
-      return false
-    }
-
-    const { data: dbRef, error: dbError } = await tryCatch(
-      createResourceMutation.mutateAsync({
-        filename: getResourceFilename(file),
-        fileType: file.file.type || "application/octet-stream",
-        objectKey: fields.key,
-        tags: file.tags,
-      }),
-    );
-
-    if (dbError || !dbRef) {
-      uploadErrorToast();
+      uploadErrorToast()
       return false
     }
 

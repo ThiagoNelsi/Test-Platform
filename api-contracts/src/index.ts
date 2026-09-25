@@ -338,21 +338,27 @@ export type QuestionsPerTagResponse = {
 };
 
 export type ResourceStatus =
+  | 'PENDING_UPLOAD'
   | 'UPLOADED'
   | 'PROCESSING'
   | 'PROCESSED'
-  | 'FAILED';
+  | 'FAILED'
+  | 'EXPIRED';
 
 export type ResourceDto = {
   id: number;
+  documentId: string;
   filename: string;
   fileType: string;
+  fileSize: number | null;
+  fileHash: string | null;
   tags: string[];
   objectKey: string;
   jobId: string | null;
   status: ResourceStatus;
   ownerId: number;
   createdAt: IsoDateString;
+  updatedAt: IsoDateString;
   processedAt: IsoDateString | null;
   deletedAt: IsoDateString | null;
 };
@@ -372,10 +378,27 @@ export type CreateResourceResponse = {
   resource: ResourceDto;
 };
 
+export type UploadRequestStatus =
+  | 'NEW_UPLOAD'
+  | 'RESUME_UPLOAD'
+  | 'ALREADY_EXISTS'
+  | 'UPLOAD_ALREADY_COMPLETED';
+
 export type PresignedPostResponse = {
+  status: 'NEW_UPLOAD' | 'RESUME_UPLOAD';
+  documentId: string;
+  uploadUrl: string;
   url: string;
   fields: Record<string, string>;
+  expiresAt: IsoDateString;
 };
+
+export type ExistingUploadResponse = {
+  status: 'ALREADY_EXISTS' | 'UPLOAD_ALREADY_COMPLETED';
+  document: ResourceDto;
+};
+
+export type CreateUploadResponse = PresignedPostResponse | ExistingUploadResponse;
 
 export type UploadObjectDto = {
   Key?: string;
@@ -384,5 +407,9 @@ export type UploadObjectDto = {
 export type UploadObjectsResponse = UploadObjectDto[];
 
 export type CreateUploadRequest = {
+  filename: string;
   contentType: string;
+  fileSize: number;
+  fileHash: string;
+  tags?: string[];
 };

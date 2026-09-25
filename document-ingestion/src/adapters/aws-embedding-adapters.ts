@@ -172,7 +172,7 @@ export function createAwsEmbeddingProcessor(secrets: RuntimeSecrets) {
     markDocumentProcessed: async (document) => {
       const rows = await applicationDb`
         UPDATE "public"."Resource"
-        SET status = 'PROCESSED', "processedAt" = NOW()
+        SET status = 'PROCESSED', "processedAt" = NOW(), "updatedAt" = NOW()
         WHERE "objectKey" = ${document}
         RETURNING id
       `;

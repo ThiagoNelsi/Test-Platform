@@ -7,6 +7,7 @@ import {
 import type {
   CreateQuestionRequest,
   CreateResourceRequest,
+  CreateUploadRequest,
   ResourceStatus,
 } from "api-contracts";
 import {
@@ -102,7 +103,10 @@ export function useResourcesQuery(status?: ResourceStatus) {
     refetchInterval: (query) => {
       const resources = query.state.data;
       return resources?.some(
-        (resource) => resource.status === "UPLOADED" || resource.status === "PROCESSING",
+        (resource) =>
+          resource.status === "PENDING_UPLOAD" ||
+          resource.status === "UPLOADED" ||
+          resource.status === "PROCESSING",
       )
         ? 5_000
         : false;
@@ -233,9 +237,10 @@ export function useCreateResourceMutation() {
 }
 
 export function usePresignedUploadMutation() {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ contentType }: { contentType: string }) =>
-      requestPresignedUpload(contentType),
+    mutationFn: (request: CreateUploadRequest) => requestPresignedUpload(request),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.resources() }),
   });
 }
 

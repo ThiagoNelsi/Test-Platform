@@ -7,17 +7,21 @@ import Confirm from "@/src/components/ui/confirm";
 import { AppLink as Link } from "@/src/components/router-helpers";
 
 const statuses: Record<ResourceStatus, string> = {
+  PENDING_UPLOAD: "Aguardando upload",
   UPLOADED: "Enviado",
   PROCESSING: "Processando...",
   PROCESSED: "Pronto para usar",
   FAILED: "Erro",
+  EXPIRED: "Expirado",
 };
 
 const badgeStyles: Record<ResourceStatus, string> = {
+  PENDING_UPLOAD: "bg-amber-100 text-amber-800",
   UPLOADED: "bg-blue-100 text-blue-800",
   PROCESSING: "bg-yellow-100 text-yellow-800",
   PROCESSED: "bg-green-100 text-green-800",
   FAILED: "bg-red-100 text-red-800",
+  EXPIRED: "bg-gray-100 text-gray-800",
 };
 
 export default function ResourceCard({ resource }: { resource: Resource }) {

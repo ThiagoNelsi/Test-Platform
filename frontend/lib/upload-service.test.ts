@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { uploadToPresignedPost } from "./upload-service";
+import { calculateFileSha256, uploadToPresignedPost } from "./upload-service";
 
 type EventListener = (event?: unknown) => void;
 
@@ -53,7 +53,12 @@ afterEach(() => {
   FakeXMLHttpRequest.latest = undefined;
 });
 
-describe("uploadToPresignedPost", () => {
+describe("upload service", () => {
+  it("hashes the binary file content with SHA-256", async () => {
+    const hash = await calculateFileSha256(new Blob(["abc"]));
+    expect(hash).toBe("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+  });
+
   it("uploads form fields without forwarding application credentials", async () => {
     vi.stubGlobal("XMLHttpRequest", FakeXMLHttpRequest);
     const progress = vi.fn();
@@ -61,7 +66,11 @@ describe("uploadToPresignedPost", () => {
 
     await uploadToPresignedPost(
       {
+        status: "NEW_UPLOAD",
+        documentId: "550e8400-e29b-41d4-a716-446655440000",
+        uploadUrl: "https://uploads.example.test/material",
         url: "https://uploads.example.test/material",
+        expiresAt: "2026-09-25T12:15:00.000Z",
         fields: {
           key: "object-key",
           policy: "policy",

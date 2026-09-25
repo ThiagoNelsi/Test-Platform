@@ -126,11 +126,6 @@ export function createApp(
       createResourceRouter({
         authService,
         prisma: resourceDeps.prisma,
-        textractClient: resourceDeps.textractClient,
-        bucketName: resourceDeps.bucketName,
-        outputBucketName: resourceDeps.outputBucketName,
-        snsTopicArn: resourceDeps.snsTopicArn,
-        snsRoleArn: resourceDeps.snsRoleArn,
       }),
     );
   }
@@ -141,6 +136,17 @@ export function createApp(
       bucketName: resourceDeps?.bucketName ?? '',
       region: getOptionalEnv('AWS_REGION', ''),
       s3Client: resourceDeps?.s3Client ?? new S3Client(awsClientConfig()),
+      prisma: resourceDeps?.prisma,
+      ...(resourceDeps ? {
+        processing: {
+          textractClient: resourceDeps.textractClient,
+          outputBucketName: resourceDeps.outputBucketName,
+          snsTopicArn: resourceDeps.snsTopicArn,
+          snsRoleArn: resourceDeps.snsRoleArn,
+        },
+      } : {}),
+      expiresSeconds: Number(getOptionalEnv('UPLOAD_URL_EXPIRES_SECONDS', '900')),
+      maxSizeBytes: Number(getOptionalEnv('UPLOAD_MAX_SIZE_BYTES', String(10 * 1024 * 1024))),
     }),
   );
 

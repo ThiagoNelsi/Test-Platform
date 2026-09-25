@@ -178,14 +178,18 @@ describe('API transport serializers', () => {
     expect(
       toResourceDto({
         id: 6,
+        documentId: '550e8400-e29b-41d4-a716-446655440000',
         filename: 'material.pdf',
         fileType: 'application/pdf',
+        fileSize: 100,
+        fileHash: 'a'.repeat(64),
         tags: ['math'],
         objectKey: 'materials/material.pdf',
         jobId: 'job-1',
         status: 'PROCESSED',
         ownerId: 7,
         createdAt,
+        updatedAt: createdAt,
         processedAt: createdAt,
         deletedAt: null,
       }),
