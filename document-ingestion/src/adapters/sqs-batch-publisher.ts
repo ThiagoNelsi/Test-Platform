@@ -21,6 +21,7 @@ function createEntries(input: PublishChunkBatchesInput): SendMessageBatchRequest
     Id: String(index),
     MessageBody: JSON.stringify({
       chunks: batch.chunks,
+      ...(batch.parents ? { parents: batch.parents } : {}),
       document: input.document,
       batchId: batch.id,
       batchIndex: index,

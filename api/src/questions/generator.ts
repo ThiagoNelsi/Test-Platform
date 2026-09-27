@@ -37,24 +37,50 @@ export function createQuestionGenerator(deps: QuestionGeneratorDeps) {
     const promptEmbeddingStr = `[${promptEmbedding.join(',')}]`;
 
     const chunks = await deps.sqlClient`
-      WITH chunks AS (
-        WITH distances AS (
-          SELECT id, pages, content, embedding <=> ${promptEmbeddingStr} AS distance
-          FROM embeddings
-          WHERE document = ANY(${documents})
-        )
-        SELECT id, pages, content, distance
-        FROM distances
-        WHERE distance <= 0.6
-        ORDER BY distance
+      WITH nearest AS (
+        SELECT id, document, pages, content, parent_id,
+               embedding <=> ${promptEmbeddingStr} AS distance
+        FROM embeddings
+        WHERE document = ANY(${documents})
+        ORDER BY embedding <=> ${promptEmbeddingStr}
+        LIMIT 40
       )
-      SELECT id, pages, content, distance
-      FROM chunks
-      ORDER BY pages
-      LIMIT 5
+      SELECT nearest.*, parent.content AS parent_content,
+             parent.pages AS parent_pages, parent.heading AS parent_heading
+      FROM nearest
+      LEFT JOIN embedding_parents AS parent
+        ON parent.id = nearest.parent_id AND parent.document = nearest.document
+      ORDER BY nearest.distance
     `;
 
-    return (chunks as Array<{ content: string }>).map((chunk: { content: string }) => chunk.content);
+    type RetrievedChunk = {
+      content: string;
+      document?: string;
+      pages?: number[];
+      parent_id?: string | null;
+      parent_content?: string | null;
+      parent_pages?: number[] | null;
+      parent_heading?: string | null;
+    };
+    const context: string[] = [];
+    const seenParents = new Set<string>();
+    let size = 0;
+    for (const chunk of chunks as RetrievedChunk[]) {
+      if (chunk.parent_id && seenParents.has(chunk.parent_id)) continue;
+      const content = chunk.parent_content ?? chunk.content;
+      const pages = chunk.parent_pages ?? chunk.pages ?? [];
+      const source = chunk.parent_id
+        ? `[Fonte: ${chunk.document ?? 'material'}, página(s) ${pages.join(', ')}` +
+          (chunk.parent_heading ? `, seção: ${chunk.parent_heading}` : '') + `]\n`
+        : '';
+      const entry = source + content;
+      if (context.length > 0 && size + entry.length > 14_000) break;
+      context.push(entry);
+      size += entry.length;
+      if (chunk.parent_id) seenParents.add(chunk.parent_id);
+      if (context.length >= 5) break;
+    }
+    return context;
   }
 
   async function generateQuestion(

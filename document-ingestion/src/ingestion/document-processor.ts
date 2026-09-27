@@ -1,6 +1,6 @@
 import type { Block } from "@aws-sdk/client-textract";
-import { countEmbeddingTokens, createBatches, splitText, type ChunkBatch } from "./chunking";
-import { linearizeLayout } from "./linearize-layout";
+import { countEmbeddingTokens, createBatches, type ChunkBatch } from "./chunking";
+import { createStructuredChunks } from "./structured-chunking";
 
 export type TextractNotification = {
   JobId: string;
@@ -30,14 +30,10 @@ export type DocumentProcessorPorts = {
 };
 
 type ChunkingOptions = {
-  chunkSize: number;
-  chunkOverlap: number;
   tokenBatchSize: number;
 };
 
 const defaultOptions: ChunkingOptions = {
-  chunkSize: 1_000,
-  chunkOverlap: 400,
   tokenBatchSize: 8_192,
 };
 
@@ -62,9 +58,9 @@ export function createDocumentProcessor(
     }
 
     const blocks = await ports.loadBlocks(jobId);
-    const pages = linearizeLayout(blocks);
-    const chunks = splitText(pages, options.chunkSize, options.chunkOverlap);
-    const batches = createBatches(chunks, options.tokenBatchSize, countEmbeddingTokens, jobId);
+    const { parents, children: chunks } = createStructuredChunks(blocks, document);
+    if (chunks.length === 0) throw new Error(`Textract job ${jobId} produced no indexable text`);
+    const batches = createBatches(chunks, options.tokenBatchSize, countEmbeddingTokens, jobId, parents);
 
     console.log("Document chunking complete", {
       jobId,

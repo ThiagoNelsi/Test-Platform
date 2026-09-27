@@ -4,6 +4,20 @@ import { encodingForModel } from "js-tiktoken";
 export type DocumentChunk = {
   text: string;
   pages: number[];
+  id?: string;
+  parentId?: string;
+  heading?: string;
+  blockIds?: string[];
+  version?: number;
+};
+
+export type ParentChunk = {
+  id: string;
+  text: string;
+  pages: number[];
+  heading: string;
+  blockIds: string[];
+  version: number;
 };
 
 export type ChunkBatch = {
@@ -11,6 +25,7 @@ export type ChunkBatch = {
   chunks: DocumentChunk[];
   size: number;
   pages: number[];
+  parents?: ParentChunk[];
 };
 
 export function stableBatchId(jobId: string, index: number, chunks: DocumentChunk[]): string {
@@ -23,6 +38,10 @@ const encoder = encodingForModel("text-embedding-3-small");
 
 export function countEmbeddingTokens(text: string): number {
   return encoder.encode(text).length;
+}
+
+export function embeddingTokenPrefixLength(text: string, tokenCount: number): number {
+  return encoder.decode(encoder.encode(text).slice(0, tokenCount)).length;
 }
 
 export function getOverlapText(text: string, overlapSize: number): string {
@@ -101,21 +120,34 @@ export function createBatches(
   batchSize: number,
   countTokens: (text: string) => number = countEmbeddingTokens,
   jobId?: string,
+  parents?: ParentChunk[],
 ): ChunkBatch[] {
   if (batchSize <= 0) throw new Error("batchSize must be greater than zero");
 
   const batches: ChunkBatch[] = [];
   let currentChunks: DocumentChunk[] = [];
   let currentSize = 0;
+  const parentsById = new Map(parents?.map((parent) => [parent.id, parent]));
+  const payloadBytes = (items: DocumentChunk[]): number => {
+    const referencedParents = [...new Set(items.flatMap((chunk) => chunk.parentId ? [chunk.parentId] : []))]
+      .map((id) => parentsById.get(id));
+    return Buffer.byteLength(JSON.stringify({ chunks: items, parents: referencedParents }));
+  };
 
   const flush = () => {
     if (currentChunks.length === 0) return;
 
+    const batchParents = [...new Set(currentChunks.flatMap((chunk) => chunk.parentId ? [chunk.parentId] : []))]
+      .map((id) => parentsById.get(id));
+    if (parents && batchParents.some((parent) => !parent)) {
+      throw new Error("Chunk references a missing parent");
+    }
     batches.push({
       id: jobId ? stableBatchId(jobId, batches.length, currentChunks) : randomUUID(),
       chunks: currentChunks,
       size: currentSize,
       pages: Array.from(new Set(currentChunks.flatMap((chunk) => chunk.pages))).sort((a, b) => a - b),
+      ...(parents ? { parents: batchParents as ParentChunk[] } : {}),
     });
 
     currentChunks = [];
@@ -125,8 +157,13 @@ export function createBatches(
   for (const chunk of chunks) {
     const tokenCount = countTokens(chunk.text);
 
-    if (currentChunks.length > 0 && currentSize + tokenCount > batchSize) {
+    if (currentChunks.length > 0 &&
+      (currentSize + tokenCount > batchSize || payloadBytes([...currentChunks, chunk]) > 200_000)) {
       flush();
+    }
+
+    if (payloadBytes([chunk]) > 200_000) {
+      throw new Error("Chunk and parent exceed the batch message budget");
     }
 
     currentChunks.push(chunk);

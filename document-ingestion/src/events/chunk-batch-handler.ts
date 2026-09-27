@@ -16,8 +16,13 @@ export function parseChunkBatch(record: SQSRecord): ChunkBatchMessage {
         chunk === null ||
         typeof chunk.text !== "string" ||
         !Array.isArray(chunk.pages) ||
-        chunk.pages.some((page) => typeof page !== "number"),
-    )
+        chunk.pages.some((page) => typeof page !== "number") ||
+        (chunk.parentId !== undefined && (typeof chunk.parentId !== "string" || typeof chunk.id !== "string")),
+    ) ||
+    (body.parents !== undefined &&
+      (!Array.isArray(body.parents) || body.parents.some((parent) =>
+        typeof parent.id !== "string" || typeof parent.text !== "string" || !Array.isArray(parent.pages),
+      )))
   ) {
     throw new Error("Invalid chunk batch message");
   }

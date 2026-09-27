@@ -97,3 +97,82 @@ export function linearizeLayout(blocks: Block[]): Map<number, string> {
       .map(([page, sections]) => [page, `${sections.join("\n\n")}\n\n`]),
   );
 }
+
+export type LayoutElement = {
+  type: string;
+  text: string;
+  page: number;
+  blockIds: string[];
+  boundingBox?: BoundingBox;
+};
+
+/** Keep Textract's reading order and the references needed for structured chunking. */
+export function extractLayoutElements(blocks: Block[]): LayoutElement[] {
+  const byId = new Map(blocks.filter((block) => block.Id).map((block) => [block.Id!, block]));
+  const nestedLayoutIds = new Set<string>();
+  for (const block of blocks) {
+    if (!block.BlockType?.startsWith("LAYOUT_")) continue;
+    for (const id of childIds(block.Relationships)) {
+      if (byId.get(id)?.BlockType?.startsWith("LAYOUT_")) nestedLayoutIds.add(id);
+    }
+  }
+
+  const usedLines = new Set<string>();
+  const elements: LayoutElement[] = [];
+
+  function read(id: string, seen: Set<string>): { text: string; ids: string[] } {
+    if (seen.has(id)) return { text: "", ids: [] };
+    seen.add(id);
+    const block = byId.get(id);
+    if (!block) return { text: "", ids: [] };
+
+    if (block.BlockType === "LINE") {
+      if (usedLines.has(id) || !block.Text?.trim()) return { text: "", ids: [] };
+      usedLines.add(id);
+      return { text: block.Text.trim(), ids: [id] };
+    }
+    if (block.BlockType === "WORD") {
+      return { text: block.Text?.trim() ?? "", ids: [id] };
+    }
+
+    const children = childIds(block.Relationships).map((childId) => read(childId, seen));
+    const separator = block.BlockType === "LAYOUT_LIST" || block.BlockType === "TABLE" ? "\n" : " ";
+    return {
+      text: children.map((child) => child.text).filter(Boolean).join(separator),
+      ids: children.flatMap((child) => child.ids),
+    };
+  }
+
+  for (const block of blocks) {
+    if (!block.Id || !block.BlockType?.startsWith("LAYOUT_") || nestedLayoutIds.has(block.Id)) continue;
+    if (["LAYOUT_HEADER", "LAYOUT_FOOTER", "LAYOUT_PAGE_NUMBER"].includes(block.BlockType)) continue;
+
+    const seen = new Set<string>();
+    const extracted = read(block.Id, seen);
+    let text = extracted.text;
+    let ids = extracted.ids;
+
+    // Figure text can lack CHILD links. Recover OCR lines inside its geometry.
+    if (block.BlockType === "LAYOUT_FIGURE" && !text && block.Geometry?.BoundingBox) {
+      const contained = blocks.filter((candidate) =>
+        candidate.BlockType === "LINE" && candidate.Id && candidate.Page === block.Page &&
+        candidate.Geometry?.BoundingBox &&
+        isInside(candidate.Geometry.BoundingBox, block.Geometry!.BoundingBox!),
+      );
+      const recovered = contained.map((candidate) => read(candidate.Id!, new Set<string>()));
+      text = recovered.map((item) => item.text).filter(Boolean).join(" ");
+      ids = recovered.flatMap((item) => item.ids);
+    }
+
+    if (!text.trim()) continue;
+    elements.push({
+      type: block.BlockType,
+      text: text.trim(),
+      page: block.Page ?? 1,
+      blockIds: [block.Id, ...ids],
+      boundingBox: block.Geometry?.BoundingBox,
+    });
+  }
+
+  return elements;
+}

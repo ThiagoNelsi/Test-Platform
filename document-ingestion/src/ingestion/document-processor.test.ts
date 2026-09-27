@@ -40,18 +40,15 @@ describe("document processor", () => {
     await processDocument(notification);
 
     expect(adapters.loadBlocks).toHaveBeenCalledWith("job-1");
-    expect(adapters.publishBatches).toHaveBeenCalledWith({
+    expect(adapters.publishBatches).toHaveBeenCalledWith(expect.objectContaining({
       jobId: "job-1",
       document: "1/document.pdf",
-      batches: [
-        {
-          id: expect.any(String),
-          chunks: [{ text: "Document text", pages: [1] }],
-          size: expect.any(Number),
-          pages: [1],
-        },
-      ],
-    });
+      batches: [expect.objectContaining({
+        id: expect.any(String),
+        chunks: [expect.objectContaining({ text: "Document text", pages: [1], parentId: expect.any(String) })],
+        parents: [expect.objectContaining({ text: "Document text", pages: [1] })],
+      })],
+    }));
     expect(adapters.markBatchesEnqueued).toHaveBeenCalledWith(
       expect.objectContaining({
         document: "1/document.pdf",

@@ -50,6 +50,28 @@ AWS_REGION=us-east-1
 SSM_PARAMETER_PATH=/test-platform/dev
 ```
 
+Antes de publicar a versão de ingestão com chunks por seção e recuperação
+parent-child, execute a migração Prisma da base de embeddings. Ela usa
+`EMBEDDINGS_DATABASE_URL` e fica em
+[`api/prisma-embeddings/migrations`](api/prisma-embeddings/migrations):
+
+```bash
+pnpm run baseline:embeddings  # uma vez em cada base existente
+pnpm run migrate:embeddings
+```
+
+A base de embeddings já existia antes de adotarmos Prisma Migrate. O primeiro
+comando registra esse estado anterior como aplicado no histórico do Prisma;
+ele não altera a tabela `embeddings`. Execute-o uma única vez na base
+existente, depois use apenas `migrate:embeddings` nas próximas versões.
+
+O comando `pnpm run migrate:app` usa `DATABASE_URL_POSTGRES` e as migrações da
+aplicação em `api/prisma/migrations`. São bancos e históricos de migração
+separados. A migração da base de embeddings preserva os registros antigos;
+documentos já processados continuam com seus chunks originais até uma nova
+ingestão. Publique a API e as Lambdas depois da migração, pois ambas passam a
+usar as novas colunas e a tabela `embedding_parents`.
+
 A API busca uma vez, ao iniciar, os nomes dos buckets e os ARNs de SNS e IAM
 no SSM Parameter Store. O caminho acima corresponde aos parâmetros do stack
 SAM padrão. Se `Prefix` ou `Environment` forem diferentes no deploy, ajuste

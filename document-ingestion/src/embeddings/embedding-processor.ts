@@ -1,9 +1,10 @@
-import type { DocumentChunk } from "../ingestion/chunking";
+import type { DocumentChunk, ParentChunk } from "../ingestion/chunking";
 
 export type ChunkBatchMessage = {
   chunks: DocumentChunk[];
   document: string;
   batchId: string;
+  parents?: ParentChunk[];
 };
 
 export type BatchClaim = "claimed" | "batch-completed" | "document-completed";
@@ -17,6 +18,7 @@ export type EmbeddingProcessorPorts = {
     chunks: DocumentChunk[],
     embeddings: number[][],
     document: string,
+    parents?: ParentChunk[],
   ) => Promise<void>;
   completeBatch: (document: string, batchId: string) => Promise<BatchCompletion>;
   markDocumentProcessed: (document: string) => Promise<void>;
@@ -24,7 +26,7 @@ export type EmbeddingProcessorPorts = {
 
 export function createEmbeddingProcessor(ports: EmbeddingProcessorPorts) {
   return async (message: ChunkBatchMessage): Promise<void> => {
-    const { chunks, document, batchId } = message;
+    const { chunks, document, batchId, parents } = message;
     const claim = await ports.claimBatch(document, batchId);
 
     if (claim === "batch-completed") return;
@@ -42,7 +44,7 @@ export function createEmbeddingProcessor(ports: EmbeddingProcessorPorts) {
         );
       }
 
-      await ports.saveEmbeddings(chunks, embeddings, document);
+      await ports.saveEmbeddings(chunks, embeddings, document, parents);
       const status = await ports.completeBatch(document, batchId);
       batchCompleted = true;
 

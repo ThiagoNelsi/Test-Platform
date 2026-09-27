@@ -34,6 +34,7 @@ describe("embedding processor", () => {
       message.chunks,
       [[0.1, 0.2]],
       message.document,
+      undefined,
     );
     expect(adapters.completeBatch).toHaveBeenCalledWith(message.document, message.batchId);
     expect(adapters.markDocumentProcessed).not.toHaveBeenCalled();

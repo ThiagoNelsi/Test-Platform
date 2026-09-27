@@ -1,0 +1,7 @@
+// Migrations-only Prisma schema for the existing embeddings database.
+// The legacy embeddings table is managed externally; do not run migrate dev
+// against this schema because it does not model the pre-existing tables.
+datasource db {
+  provider = "postgresql"
+  url      = env("EMBEDDINGS_DATABASE_URL")
+}

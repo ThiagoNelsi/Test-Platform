@@ -118,17 +118,55 @@ export function createAwsEmbeddingProcessor(secrets: RuntimeSecrets) {
       });
       return response.data.map(({ embedding }) => embedding);
     },
-    saveEmbeddings: async (chunks, embeddings, document) => {
-      const rows = chunks.map((chunk, index) => ({
-        content: chunk.text,
-        embedding: JSON.stringify(embeddings[index]),
-        pages: chunk.pages,
-        document,
-      }));
+    saveEmbeddings: async (chunks, embeddings, document, parents) => {
+      if (!chunks.every((chunk) => chunk.id && chunk.parentId)) {
+        // Messages published before the parent-child rollout can still drain.
+        const legacyRows = chunks.map((chunk, index) => ({
+          content: chunk.text,
+          embedding: JSON.stringify(embeddings[index]),
+          pages: chunk.pages,
+          document,
+        }));
+        await embeddingsDb`
+          INSERT INTO embeddings ${embeddingsDb(legacyRows, "content", "embedding", "pages", "document")}
+        `;
+        return;
+      }
 
-      await embeddingsDb`
-        INSERT INTO embeddings ${embeddingsDb(rows, "content", "embedding", "pages", "document")}
-      `;
+      const parentIds = new Set(parents?.map((parent) => parent.id));
+      if (chunks.some((chunk) => !parentIds.has(chunk.parentId!))) {
+        throw new Error("Chunk batch is missing parent content");
+      }
+
+      await embeddingsDb.begin(async (tx) => {
+        for (const parent of parents ?? []) {
+          await tx`
+            INSERT INTO embedding_parents (id, document, content, pages, heading, block_ids, chunking_version)
+            VALUES (${parent.id}, ${document}, ${parent.text}, ${parent.pages}, ${parent.heading}, ${parent.blockIds}, ${parent.version})
+            ON CONFLICT (id) DO UPDATE SET
+              content = EXCLUDED.content,
+              pages = EXCLUDED.pages,
+              heading = EXCLUDED.heading,
+              block_ids = EXCLUDED.block_ids
+          `;
+        }
+
+        for (let index = 0; index < chunks.length; index += 1) {
+          const chunk = chunks[index];
+          await tx`
+            INSERT INTO embeddings
+              (content, embedding, pages, document, chunk_id, parent_id, heading, block_ids, chunking_version)
+            VALUES
+              (${chunk.text}, ${JSON.stringify(embeddings[index])}, ${chunk.pages}, ${document},
+               ${chunk.id!}, ${chunk.parentId!}, ${chunk.heading ?? ""}, ${chunk.blockIds ?? []}, ${chunk.version ?? 2})
+            ON CONFLICT (document, chunk_id) WHERE chunk_id IS NOT NULL DO UPDATE SET
+              pages = EXCLUDED.pages,
+              parent_id = EXCLUDED.parent_id,
+              heading = EXCLUDED.heading,
+              block_ids = EXCLUDED.block_ids
+          `;
+        }
+      });
     },
     completeBatch: async (document, batchId): Promise<BatchCompletion> => {
       const now = new Date().toISOString();

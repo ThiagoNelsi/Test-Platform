@@ -24,6 +24,9 @@
     "typecheck": "pnpm run generate && pnpm run typecheck:contracts && pnpm run typecheck:api && pnpm run typecheck:frontend",
     "lint": "pnpm --filter test-platform-frontend run lint",
     "generate": "pnpm run build:contracts && pnpm run prisma:generate",
-    "prisma:generate": "pnpm --filter api run prisma:generate"
+    "prisma:generate": "pnpm --filter api run prisma:generate",
+    "migrate:app": "pnpm --filter api run migrate:app",
+    "baseline:embeddings": "pnpm --filter api run baseline:embeddings",
+    "migrate:embeddings": "pnpm --filter api run migrate:embeddings"
   }
 }
