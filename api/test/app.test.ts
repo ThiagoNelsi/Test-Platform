@@ -1,8 +1,26 @@
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
-import { createApp, handlePromptRequest } from '../src/app';
+import { assertAvailableDocuments, createApp, handlePromptRequest } from '../src/app';
 
 describe('prompt request handler', () => {
+  it('blocks generation when a selected material is deleted or unavailable', async () => {
+    const generator = { generateQuestion: vi.fn() };
+    const socket = { emit: vi.fn() };
+    const prisma = { resource: { count: vi.fn().mockResolvedValue(0) } };
+    await handlePromptRequest(generator as never, socket, { documents: ['original-key'] },
+      (documents) => assertAvailableDocuments(prisma as never, 1, documents));
+    expect(generator.generateQuestion).not.toHaveBeenCalled();
+    expect(socket.emit).toHaveBeenCalledWith('generation-error', expect.stringContaining('não está mais disponível'));
+    expect(prisma.resource.count).toHaveBeenCalledWith({
+      where: { ownerId: 1, objectKey: { in: ['original-key'] }, deletedAt: null, status: 'PROCESSED' },
+    });
+  });
+
+  it('accepts available documents and handles duplicate selections', async () => {
+    const prisma = { resource: { count: vi.fn().mockResolvedValue(1) } };
+    await expect(assertAvailableDocuments(prisma as never, 1, ['key', 'key'])).resolves.toBeUndefined();
+    expect(prisma.resource.count.mock.calls[0][0].where.objectKey.in).toEqual(['key']);
+  });
   it('swallows generator failures and emits a socket error', async () => {
     const generator = {
       generateQuestion: vi.fn().mockRejectedValue(new Error('quota exceeded')),

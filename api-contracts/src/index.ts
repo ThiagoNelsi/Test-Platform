@@ -374,6 +374,18 @@ export type ResourcesResponse = {
   resources: ResourceDto[];
 };
 
+export type UpdateResourceRequest = {
+  filename: string;
+  tags: string[];
+};
+
+export type ResourceResponse = { resource: ResourceDto };
+
+export type ResourceFileResponse = {
+  url: string;
+  expiresAt: IsoDateString;
+};
+
 export type CreateResourceRequest = {
   filename: string;
   fileType: string;

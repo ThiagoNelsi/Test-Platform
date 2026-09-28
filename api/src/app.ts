@@ -38,16 +38,34 @@ export type PromptPayload = {
 
 type QuestionGenerator = ReturnType<typeof createQuestionGenerator>;
 
+export async function assertAvailableDocuments(
+  prisma: Pick<ReturnType<typeof createPrismaClient>, 'resource'>,
+  ownerId: number,
+  documents: string[],
+): Promise<void> {
+  const keys = [...new Set(documents)];
+  if (!keys.length) return;
+  const count = await prisma.resource.count({
+    where: { ownerId, objectKey: { in: keys }, deletedAt: null, status: 'PROCESSED' },
+  });
+  if (count !== keys.length) throw new Error('Um dos materiais selecionados não está mais disponível. Atualize a seleção.');
+}
+
 export async function handlePromptRequest(
   generator: QuestionGenerator,
   socket: Pick<Socket, 'emit'>,
   payload?: PromptPayload,
+  authorizeDocuments?: (documents: string[]) => Promise<void>,
 ): Promise<void> {
   const prompt = payload?.prompt ?? '';
   const model = payload?.model ?? '';
   const documents = payload?.documents ?? [];
 
   try {
+    if (!Array.isArray(documents) || !documents.every((document) => typeof document === 'string')) {
+      throw new Error('Seleção de materiais inválida.');
+    }
+    await authorizeDocuments?.(documents);
     console.log('Prompt received: ' + prompt, model, documents);
     await generator.generateQuestion(prompt, model, documents, socket);
   } catch (error) {
@@ -129,6 +147,8 @@ export function createApp(
       createResourceRouter({
         authService,
         prisma: resourceDeps.prisma,
+        bucketName: resourceDeps.bucketName,
+        s3Client: resourceDeps.s3Client,
       }),
     );
   }
@@ -237,6 +257,7 @@ async function startServer(): Promise<void> {
   });
 
   const generator = createDefaultQuestionGenerator(retrievalConfig);
+  io.engine.use(cookieParser());
 
   io.on('connection', (socket) => {
     console.log('A user connected');
@@ -250,7 +271,12 @@ async function startServer(): Promise<void> {
     });
 
     socket.on('prompt', (payload) => {
-      void handlePromptRequest(generator, socket, payload);
+      void handlePromptRequest(generator, socket, payload, async (documents) => {
+        const cookies = (socket.request as express.Request).cookies;
+        const user = await authService.getCurrentUser(cookies?.session);
+        if (!user) throw new Error('Sua sessão expirou. Entre novamente.');
+        await assertAvailableDocuments(prisma, user.id, documents);
+      });
     });
   });
 

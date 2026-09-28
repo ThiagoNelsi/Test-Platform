@@ -1,8 +1,8 @@
 
 import { useResourcesQuery } from "@/src/hooks/use-api-queries";
 
-export const useMaterialsController = () => {
-  const query = useResourcesQuery();
+export const useMaterialsController = (deleted = false) => {
+  const query = useResourcesQuery(undefined, deleted);
 
   return {
     resources: query.data ?? [],

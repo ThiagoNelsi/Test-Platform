@@ -9,6 +9,7 @@ import type {
   CreateResourceRequest,
   CreateUploadRequest,
   ResourceStatus,
+  UpdateResourceRequest,
 } from "api-contracts";
 import {
   createClassroom,
@@ -30,6 +31,9 @@ import {
 import {
   createResource,
   getResources,
+  updateResource,
+  deleteResource,
+  restoreResource,
 } from "@/lib/resource-service";
 import {
   createSubmission,
@@ -94,10 +98,10 @@ export function useQuestionsPerTagQuery() {
   });
 }
 
-export function useResourcesQuery(status?: ResourceStatus) {
+export function useResourcesQuery(status?: ResourceStatus, deleted = false) {
   return useQuery({
-    queryKey: queryKeys.resources(status),
-    queryFn: () => getResources(status),
+    queryKey: queryKeys.resources(status, deleted),
+    queryFn: () => getResources(status, deleted),
     // Textract updates resources asynchronously. Keep the library current
     // while there is work in flight, then stop polling once it settles.
     refetchInterval: (query) => {
@@ -111,6 +115,30 @@ export function useResourcesQuery(status?: ResourceStatus) {
         ? 5_000
         : false;
     },
+  });
+}
+
+export function useUpdateResourceMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateResourceRequest }) => updateResource(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.resources() }),
+  });
+}
+
+export function useDeleteResourceMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteResource,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.resources() }),
+  });
+}
+
+export function useRestoreResourceMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restoreResource,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.resources() }),
   });
 }
 

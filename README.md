@@ -240,6 +240,41 @@ pnpm run dev:frontend
 A API fica disponível em `http://localhost:8000` e o frontend em
 `http://localhost:5173`.
 
+### Gerenciamento de materiais
+
+Em **Meus Materiais**, é possível editar o nome e as tags, abrir ou baixar o
+arquivo original e mover materiais para a **Lixeira**. A lixeira permite
+restaurá-los, preservando o status de processamento. A exclusão utiliza
+`deletedAt`, sem remover o arquivo ou as questões já criadas, e não exige
+migração do banco. Renomear altera apenas o nome exibido; `objectKey` e
+`documentId` permanecem estáveis.
+
+Todas as operações exigem sessão e são restritas ao dono do material:
+
+| Rota | Operação |
+| --- | --- |
+| `GET /api/resource` | Listar materiais ativos |
+| `GET /api/resource?deleted=true` | Listar a lixeira |
+| `PATCH /api/resource/:id` | Atualizar `filename` e `tags` |
+| `DELETE /api/resource/:id` | Mover para a lixeira |
+| `POST /api/resource/:id/restore` | Restaurar |
+| `GET /api/resource/:id/file` | Obter link temporário para o original |
+| `GET /api/resource/:id/file?download=true` | Obter link para download |
+
+Links do S3 expiram em cinco minutos; links já emitidos permanecem válidos
+até essa expiração. Materiais com upload pendente ou expirado não oferecem
+acesso ao original. A geração via Socket.IO valida a sessão e exige que todos
+os materiais selecionados pertençam ao usuário, estejam processados e fora
+da lixeira.
+
+Os cards exibem uma miniatura da primeira página de PDFs ou da imagem original,
+carregada apenas quando entram na tela e mantida em cache na sessão. Arquivos
+indisponíveis, formatos sem preview e falhas de renderização mantêm o ícone do
+tipo de arquivo. O PDF.js e seu worker são carregados sob demanda, sem serviço
+externo de preview. O CORS do bucket expõe os cabeçalhos de leitura parcial
+(`Accept-Ranges`, `Content-Length`, `Content-Range`) e aceita `Range` para evitar
+baixar páginas desnecessárias quando o PDF permitir.
+
 ## Qualidade
 
 Os comandos abaixo executam as validações do monorepo:

@@ -503,6 +503,11 @@ Resources:
             AllowedHeaders:
               - Content-Type
               - x-amz-*
+              - Range
+            ExposedHeaders:
+              - Accept-Ranges
+              - Content-Length
+              - Content-Range
             MaxAge: 300
       VersioningConfiguration:
         Status: Enabled
