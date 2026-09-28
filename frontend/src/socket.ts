@@ -1,4 +1,5 @@
 import { io, type Socket } from "socket.io-client";
+import type { QuestionGenerationReference } from "api-contracts";
 
 export type QuestionGenerationPrompt = {
   prompt: string;
@@ -7,6 +8,7 @@ export type QuestionGenerationPrompt = {
 };
 
 export type QuestionGenerationServerEvents = {
+  "generation-context": (references: QuestionGenerationReference[]) => void;
   chunk: (chunk: string) => void;
   "reasoning-chunk": (chunk: string) => void;
   "reasoning-started": () => void;

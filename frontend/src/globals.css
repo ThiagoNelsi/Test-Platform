@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+#main-content > main > .container:has(#create-question-page) {
+  max-width: 2000px !important;
+}
+
 /* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

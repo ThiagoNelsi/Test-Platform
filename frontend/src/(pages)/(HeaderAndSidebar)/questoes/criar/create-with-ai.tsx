@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import GeneratedQuestions from "./generated-questions"
+import GenerationReferences from "./generation-references"
+import type { QuestionGenerationReference } from "api-contracts"
 import { TabsContent } from "@/src/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Label } from "@/src/components/ui/label";
@@ -50,7 +52,7 @@ function getSocketErrorMessage(error: unknown, fallback: string) {
 export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps) {
   const materialsQuery = useResourcesQuery("PROCESSED")
   const materials = materialsQuery.data ?? []
-  const modelOptions = ["gpt-5.4-mini", "o4-mini", "o3-mini", "gpt-4o-mini", "gpt-3.5-turbo"]
+  const modelOptions = ["gpt-5.6-luna", "gpt-5.4-mini", "o4-mini", "o3-mini", "gpt-4o-mini", "gpt-3.5-turbo"]
 
   const [selectedMaterials, setSelectedMaterials] = useState<number[]>([
     ...(preSelectedResource ? [parseInt(preSelectedResource)] : []),
@@ -60,7 +62,9 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isReasoning, setIsReasoning] = useState(false)
   const [streamedQuestions, setStreamedQuestions] = useState<StreamedQuestion[]>([])
-  const [model, setModel] = useState("gpt-5.4-mini")
+  const [generationReferences, setGenerationReferences] = useState<QuestionGenerationReference[] | null>(null)
+  const [showGenerationReferences, setShowGenerationReferences] = useState(false)
+  const [model, setModel] = useState("gpt-5.6-luna")
 
   // socket
   const [isConnected, setIsConnected] = useState(false);
@@ -130,6 +134,8 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
 
     resetParsingState();
     setStreamedQuestions([]);
+    setGenerationReferences(null);
+    setShowGenerationReferences(documents.length > 0);
     setGenerationError(null);
     setSocketError(null);
     setIsReasoning(false);
@@ -391,6 +397,10 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
       parseChunkedQuestions(chunk);
     }
 
+    function onGenerationContext(references: QuestionGenerationReference[]) {
+      if (isGeneratingRef.current) setGenerationReferences(references);
+    }
+
     function onReasoningStarted() {
       setIsReasoning(true);
     }
@@ -419,6 +429,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
     socket.on("disconnect", onDisconnect);
     socket.on("connect_error", onConnectError);
     socket.on("chunk", onChunk);
+    socket.on("generation-context", onGenerationContext);
     socket.on("reasoning-chunk", onReasoningChunk);
     socket.on("reasoning-started", onReasoningStarted);
     socket.on("reasoning-finished", onReasoningFinished);
@@ -436,6 +447,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
       socket.off("disconnect", onDisconnect);
       socket.off("connect_error", onConnectError);
       socket.off("chunk", onChunk);
+      socket.off("generation-context", onGenerationContext);
       socket.off("reasoning-chunk", onReasoningChunk);
       socket.off("reasoning-started", onReasoningStarted);
       socket.off("reasoning-finished", onReasoningFinished);
@@ -448,9 +460,9 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
 
   return (
     <TabsContent value="ai">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
         {/* Painel de configuração da IA */}
-        <Card className="lg:col-span-1 h-fit">
+        <Card className="lg:col-span-2 h-fit">
           <CardHeader>
             <CardTitle>Configurar Geração</CardTitle>
           </CardHeader>
@@ -597,12 +609,23 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
             </p>
           </CardContent>
         </Card>
-        <GeneratedQuestions
-          generatedQuestions={streamedQuestions}
-          setGeneratedQuestions={setStreamedQuestions}
-          isGenerating={isGenerating}
-          isReasoning={isReasoning}
-        />
+        <div className="lg:col-span-3 min-w-0 space-y-6">
+          <GeneratedQuestions
+            generatedQuestions={streamedQuestions}
+            setGeneratedQuestions={setStreamedQuestions}
+            isGenerating={isGenerating}
+            isReasoning={isReasoning}
+          />
+        </div>
+        <div className="lg:col-span-2 min-w-0 space-y-6">
+          {showGenerationReferences && (
+            <GenerationReferences
+              references={generationReferences}
+              materials={materials}
+              isGenerating={isGenerating}
+            />
+          )}
+        </div>
       </div>
       <MaterialSelectorDialog
         materials={materials}

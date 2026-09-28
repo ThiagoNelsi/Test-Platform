@@ -1,4 +1,5 @@
 import type OpenAI from 'openai';
+import type { QuestionGenerationReference } from 'api-contracts';
 import type { Socket } from 'socket.io';
 import { enemPrompt } from './prompt';
 import {
@@ -26,7 +27,7 @@ export type QuestionGeneratorDeps = {
 };
 
 export function createQuestionGenerator(deps: QuestionGeneratorDeps) {
-  async function getChunks(documents: string[], prompt: string): Promise<string[]> {
+  async function retrieveContext(documents: string[], prompt: string) {
     const embeddingResponse = (await deps.openaiClient.embeddings.create({
       model: 'text-embedding-3-small',
       input: prompt,
@@ -63,6 +64,7 @@ export function createQuestionGenerator(deps: QuestionGeneratorDeps) {
       parent_heading?: string | null;
     };
     const context: string[] = [];
+    const references: QuestionGenerationReference[] = [];
     const seenParents = new Set<string>();
     let size = 0;
     for (const chunk of chunks as RetrievedChunk[]) {
@@ -76,11 +78,21 @@ export function createQuestionGenerator(deps: QuestionGeneratorDeps) {
       const entry = source + content;
       if (context.length > 0 && size + entry.length > 14_000) break;
       context.push(entry);
+      references.push({
+        document: chunk.document ?? 'material',
+        title: chunk.parent_heading ?? null,
+        pages,
+        content,
+      });
       size += entry.length;
       if (chunk.parent_id) seenParents.add(chunk.parent_id);
       if (context.length >= 5) break;
     }
-    return context;
+    return { context, references };
+  }
+
+  async function getChunks(documents: string[], prompt: string): Promise<string[]> {
+    return (await retrieveContext(documents, prompt)).context;
   }
 
   async function generateQuestion(
@@ -96,9 +108,10 @@ export function createQuestionGenerator(deps: QuestionGeneratorDeps) {
     let chunkContext = '';
 
     if (documents.length > 0) {
-      const chunkList = await getChunks(documents, prompt);
+      const { context, references } = await retrieveContext(documents, prompt);
 
-      chunkContext = formatChunkContext(chunkList);
+      chunkContext = formatChunkContext(context);
+      socket?.emit('generation-context', references);
     }
 
     const stream = (await deps.openaiClient.responses.create({

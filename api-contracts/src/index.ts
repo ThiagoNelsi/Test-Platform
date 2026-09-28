@@ -7,6 +7,13 @@ export type JsonValue =
 
 export type IsoDateString = string;
 
+export type QuestionGenerationReference = {
+  document: string;
+  title: string | null;
+  pages: number[];
+  content: string;
+};
+
 export type ApiErrorResponse = {
   error: string;
 };
