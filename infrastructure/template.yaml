@@ -41,8 +41,87 @@ Parameters:
     Type: String
     Default: '14000'
     AllowedPattern: ^[1-9][0-9]*$
+  InputGuardrailEnabled:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+  InputGuardrailTimeoutMs:
+    Type: String
+    Default: '10000'
+    AllowedPattern: ^[1-9][0-9]*$
+  PromptAttackStrength:
+    Type: String
+    Default: MEDIUM
+    AllowedValues: [LOW, MEDIUM, HIGH]
+  GuardrailProfileId:
+    Type: String
+    Default: us.guardrail.v1:0
+    Description: Standard tier cross-region profile; must match the stack region geography
 
 Resources:
+  PromptAttackGuardrail:
+    Type: AWS::Bedrock::Guardrail
+    Properties:
+      Name: !Sub ${Prefix}-${Environment}-input
+      Description: Detect prompt attacks in teacher requests and retrieved material
+      BlockedInputMessaging: O pedido ou os materiais contêm instruções potencialmente maliciosas.
+      BlockedOutputsMessaging: Conteúdo bloqueado.
+      CrossRegionConfig:
+        GuardrailProfileArn: !Sub arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:guardrail-profile/${GuardrailProfileId}
+      ContentPolicyConfig:
+        ContentFiltersTierConfig:
+          TierName: STANDARD
+        FiltersConfig:
+          - Type: PROMPT_ATTACK
+            InputStrength: !Ref PromptAttackStrength
+            OutputStrength: NONE
+            InputAction: BLOCK
+            InputEnabled: true
+            InputModalities: [TEXT]
+            OutputEnabled: false
+
+  PromptAttackGuardrailVersion:
+    Type: AWS::Bedrock::GuardrailVersion
+    Properties:
+      GuardrailIdentifier: !GetAtt PromptAttackGuardrail.GuardrailArn
+      # Description changes replace the snapshot when the policy changes.
+      Description: !Sub Input prompt attacks STANDARD ${PromptAttackStrength} ${GuardrailProfileId} revision 1
+
+  InputGuardrailEnabledParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Prefix}/${Environment}/guardrail/enabled
+      Type: String
+      Value: !Ref InputGuardrailEnabled
+
+  InputGuardrailRegionParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Prefix}/${Environment}/guardrail/region
+      Type: String
+      Value: !Ref AWS::Region
+
+  InputGuardrailIdentifierParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Prefix}/${Environment}/guardrail/identifier
+      Type: String
+      Value: !GetAtt PromptAttackGuardrail.GuardrailArn
+
+  InputGuardrailVersionParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Prefix}/${Environment}/guardrail/version
+      Type: String
+      Value: !GetAtt PromptAttackGuardrailVersion.Version
+
+  InputGuardrailTimeoutParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Prefix}/${Environment}/guardrail/timeout-ms
+      Type: String
+      Value: !Ref InputGuardrailTimeoutMs
+
   #SNS
   TextractSNSTopic:
     Type: AWS::SNS::Topic
@@ -696,35 +775,47 @@ Resources:
                   - sns:Publish
                 Resource: !Ref TextractSNSTopic
 
+  BackendBedrockPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub ${Prefix}-${Environment}-bedrock-rerank
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: RerankDocuments
+            Effect: Allow
+            Action: bedrock:Rerank
+            Resource: '*'
+          - Sid: CheckGenerationInput
+            Effect: Allow
+            Action: bedrock:ApplyGuardrail
+            Resource:
+              - !GetAtt PromptAttackGuardrail.GuardrailArn
+              - !Sub arn:${AWS::Partition}:bedrock:*:${AWS::AccountId}:guardrail-profile/${GuardrailProfileId}
+          - Sid: InvokeRerankModel
+            Effect: Allow
+            Action: bedrock:InvokeModel
+            Resource: !Sub arn:${AWS::Partition}:bedrock:${RerankRegion}::foundation-model/${RerankModelId}
+          # Bedrock automatically enables third-party models on first use.
+          # Match AWS's managed policy: allow Marketplace operations only via Bedrock.
+          - Sid: ManageModelSubscriptionViaBedrock
+            Effect: Allow
+            Action:
+              - aws-marketplace:Subscribe
+              - aws-marketplace:Unsubscribe
+              - aws-marketplace:ViewSubscriptions
+            Resource: '*'
+            Condition:
+              StringEquals:
+                aws:CalledViaLast: bedrock.amazonaws.com
+
   BackendIamUser:
     Type: AWS::IAM::User
     Properties:
       UserName: !Sub ${Prefix}-${Environment}-backend
+      ManagedPolicyArns:
+        - !Ref BackendBedrockPolicy
       Policies:
-        - PolicyName: !Sub ${Prefix}-${Environment}-bedrock-rerank
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Sid: RerankDocuments
-                Effect: Allow
-                Action: bedrock:Rerank
-                Resource: '*'
-              - Sid: InvokeRerankModel
-                Effect: Allow
-                Action: bedrock:InvokeModel
-                Resource: !Sub arn:${AWS::Partition}:bedrock:${RerankRegion}::foundation-model/${RerankModelId}
-              # Bedrock automatically enables third-party models on first use.
-              # Match AWS's managed policy: allow Marketplace operations only via Bedrock.
-              - Sid: ManageModelSubscriptionViaBedrock
-                Effect: Allow
-                Action:
-                  - aws-marketplace:Subscribe
-                  - aws-marketplace:Unsubscribe
-                  - aws-marketplace:ViewSubscriptions
-                Resource: '*'
-                Condition:
-                  StringEquals:
-                    aws:CalledViaLast: bedrock.amazonaws.com
         - PolicyName: !Sub ${Prefix}-${Environment}-s3-upload
           PolicyDocument:
             Version: '2012-10-17'

@@ -20,6 +20,7 @@
   "description": "",
   "dependencies": {
     "@aws-sdk/client-bedrock-agent-runtime": "^3.1141.0",
+    "@aws-sdk/client-bedrock-runtime": "3.1141.0",
     "@aws-sdk/client-s3": "^3.744.0",
     "@aws-sdk/client-ssm": "^3.1137.0",
     "@aws-sdk/client-textract": "^3.744.0",

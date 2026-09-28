@@ -1,8 +1,9 @@
 import type OpenAI from 'openai';
 import type { Socket } from 'socket.io';
 import { enemPrompt } from './prompt';
-import { createContextRetriever, type RetrievalOptions } from './retrieval';
+import { createContextRetriever, type RetrievalOptions, type RetrievalResult } from './retrieval';
 import type { Reranker } from './reranker';
+import type { InputGuardrail } from './input-guardrail';
 import {
   buildQuestionMessages,
   emitGenerationChunk,
@@ -24,6 +25,7 @@ export type QuestionGeneratorDeps = {
   reranker?: Reranker;
   retrievalOptions?: Partial<RetrievalOptions>;
   onRerankFallback?: (error: unknown) => void;
+  inputGuardrail?: InputGuardrail;
 };
 
 export function createQuestionGenerator(deps: QuestionGeneratorDeps) {
@@ -47,17 +49,21 @@ export function createQuestionGenerator(deps: QuestionGeneratorDeps) {
     }
 
     let chunkContext = '';
+    let references: RetrievalResult['references'] | undefined;
 
     if (documents.length > 0) {
-      const { context, references } = await retrieveContext(documents, prompt, options);
-
-      chunkContext = formatChunkContext(context);
-      socket?.emit('generation-context', references);
+      const retrieved = await retrieveContext(documents, prompt, options);
+      chunkContext = formatChunkContext(retrieved.context);
+      references = retrieved.references;
     }
+
+    const input = buildQuestionMessages(prompt, chunkContext, deps.promptTemplate || enemPrompt);
+    await deps.inputGuardrail?.assertSafe(input[1].content);
+    if (references) socket?.emit('generation-context', references);
 
     const stream = (await deps.openaiClient.responses.create({
       model,
-      input: buildQuestionMessages(prompt, chunkContext, deps.promptTemplate || enemPrompt),
+      input,
       stream: true,
       reasoning: {
         summary: 'auto',

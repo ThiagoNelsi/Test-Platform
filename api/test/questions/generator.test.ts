@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createQuestionGenerator } from '../../src/questions/generator';
+import { InputGuardrailUnavailableError, PromptAttackError } from '../../src/questions/input-guardrail';
 
 function createStream(chunks: Array<Record<string, unknown>>) {
   return (async function* () {
@@ -10,6 +11,66 @@ function createStream(chunks: Array<Record<string, unknown>>) {
 }
 
 describe('question generator', () => {
+  it('waits for approval of the exact prompt and expanded RAG context before publishing or generating', async () => {
+    const parent = 'Full PDF section with potentially disguised instructions';
+    const sqlClient = vi.fn().mockResolvedValue([{
+      content: 'matching child', parent_id: 'p', parent_content: parent,
+      document: 'book.pdf', parent_heading: 'Chapter', parent_pages: [1, 2],
+    }]);
+    const openaiClient = {
+      embeddings: { create: vi.fn().mockResolvedValue({ data: [{ embedding: [1] }] }) },
+      responses: { create: vi.fn().mockResolvedValue(createStream([])) },
+    };
+    let approve!: () => void;
+    const assertSafe = vi.fn().mockImplementation(() => new Promise<void>((resolve) => { approve = resolve; }));
+    const socket = { emit: vi.fn() };
+    const generator = createQuestionGenerator({
+      openaiClient: openaiClient as never, sqlClient, inputGuardrail: { assertSafe }, promptTemplate: 'PRIVATE DEVELOPER RULES',
+    });
+    const pending = generator.generateQuestion('Teacher request', 'gpt-4.1', ['book.pdf'], socket);
+    await vi.waitFor(() => expect(assertSafe).toHaveBeenCalledOnce());
+    expect(assertSafe.mock.calls[0][0]).toContain(parent);
+    expect(assertSafe.mock.calls[0][0]).toContain('Teacher request');
+    expect(assertSafe.mock.calls[0][0]).not.toContain('PRIVATE DEVELOPER RULES');
+    expect(socket.emit).not.toHaveBeenCalled();
+    expect(openaiClient.responses.create).not.toHaveBeenCalled();
+    approve();
+    await pending;
+    expect(assertSafe.mock.calls[0][0]).toBe(openaiClient.responses.create.mock.calls[0][0].input[1].content);
+    expect(socket.emit).toHaveBeenCalledWith('generation-context', expect.any(Array));
+  });
+
+  it.each([new PromptAttackError(), new InputGuardrailUnavailableError()])('stops before exposing retrieved content when guarding rejects: %s', async (error) => {
+    const openaiClient = {
+      embeddings: { create: vi.fn().mockResolvedValue({ data: [{ embedding: [1] }] }) },
+      responses: { create: vi.fn() },
+    };
+    const socket = { emit: vi.fn() };
+    const generator = createQuestionGenerator({
+      openaiClient: openaiClient as never, sqlClient: vi.fn().mockResolvedValue([{ content: 'malicious PDF section' }]),
+      inputGuardrail: { assertSafe: vi.fn().mockRejectedValue(error) },
+    });
+    await expect(generator.generateQuestion('prompt', 'gpt-4.1', ['book.pdf'], socket)).rejects.toBe(error);
+    expect(openaiClient.responses.create).not.toHaveBeenCalled();
+    expect(socket.emit).not.toHaveBeenCalled();
+  });
+
+  it('guards requests without documents or retrieved matches', async () => {
+    const openaiClient = {
+      embeddings: { create: vi.fn().mockResolvedValue({ data: [{ embedding: [1] }] }) },
+      responses: { create: vi.fn().mockResolvedValue(createStream([])) },
+    };
+    const assertSafe = vi.fn().mockResolvedValue(undefined);
+    const generator = createQuestionGenerator({
+      openaiClient: openaiClient as never, sqlClient: vi.fn().mockResolvedValue([]), inputGuardrail: { assertSafe },
+    });
+    await generator.generateQuestion('prompt without docs', 'gpt-4.1');
+    await generator.generateQuestion('prompt without matches', 'gpt-4.1', ['book.pdf']);
+    expect(assertSafe).toHaveBeenCalledTimes(2);
+    expect(assertSafe.mock.calls[0][0]).toContain('prompt without docs');
+    expect(assertSafe.mock.calls[1][0]).toContain('prompt without matches');
+  });
+
   it('uses reranked parents for both generation and references with per-call limits', async () => {
     const sqlClient = vi.fn().mockResolvedValue([
       { content: 'child A', parent_id: 'a', parent_content: 'Parent A', document: 'book.pdf', parent_heading: 'A', parent_pages: [1] },

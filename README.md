@@ -218,6 +218,88 @@ pnpm run test:api
 pnpm run typecheck:api
 ```
 
+### Guardrail de entrada: ataques de prompt
+
+A geração mantém a OpenAI e o streaming atual. Antes de gerar, a API recupera,
+reranqueia e expande os trechos do RAG, monta a mensagem do professor com todo
+o contexto final e chama `ApplyGuardrail` com `source: INPUT`. A avaliação
+recebe exatamente a mensagem que será enviada ao modelo, incluindo cabeçalhos
+de fontes e seções; as instruções internas do desenvolvedor ficam separadas.
+Também há avaliação quando nenhum material é selecionado ou recuperado.
+
+O stack cria um guardrail com **somente `PROMPT_ATTACK`**, intensidade inicial
+`MEDIUM`, tier `STANDARD` e uma versão publicada. Standard é necessário para
+o suporte documentado a português e utiliza processamento entre regiões da
+mesma geografia. O perfil padrão é `us.guardrail.v1:0`; ajuste
+`GuardrailProfileId` à geografia da região do stack. A política IAM permite
+`bedrock:ApplyGuardrail` apenas no guardrail criado e nesse perfil.
+
+Configuração via SSM em `/${Prefix}/${Environment}/guardrail/`, com variáveis
+de ambiente tendo precedência:
+
+| Variável | Parâmetro SSM | Padrão |
+| --- | --- | --- |
+| `INPUT_GUARDRAIL_ENABLED` | `enabled` | `true` |
+| `INPUT_GUARDRAIL_REGION` | `region` | Região do stack |
+| `INPUT_GUARDRAIL_IDENTIFIER` | `identifier` | ARN criado pelo stack |
+| `INPUT_GUARDRAIL_VERSION` | `version` | Versão numérica publicada |
+| `INPUT_GUARDRAIL_TIMEOUT_MS` | `timeout-ms` | `10000` |
+
+Atualize a infraestrutura antes de iniciar esta versão da API. Um stack antigo
+sem identificador/versão causa erro de inicialização, em vez de desativar a
+proteção silenciosamente. Para desenvolvimento sem AWS, a desativação precisa
+ser explícita com `INPUT_GUARDRAIL_ENABLED=false`. Os parâmetros do stack são
+`InputGuardrailEnabled`, `InputGuardrailTimeoutMs`, `PromptAttackStrength` e
+`GuardrailProfileId`. Ao mudar a política, atualize também a revisão na descrição
+de `PromptAttackGuardrailVersion` para publicar um novo snapshot; a intensidade
+e o perfil já fazem parte dessa descrição.
+
+Ataques detectados interrompem o pedido inteiro. Timeout, indisponibilidade,
+resposta incompleta, ausência do filtro de ataques ou cobertura parcial também
+interrompem a geração. Nenhum trecho de referência é publicado ao frontend
+antes da aprovação. O erro usa o tratamento visual existente. Não há remoção
+automática de trechos, regeneração ou checagem do output nesta iteração.
+
+Há uma chamada de guardrail por geração, sem truncamento adicional nem chamadas
+por questão. O limite atual do RAG é 14.000 caracteres de contexto, além do
+pedido e dos marcadores. Se o serviço rejeitar um texto por limite, a geração
+falha; não passa texto não verificado ao modelo. Os logs de avaliação registram
+caracteres, unidades cobradas de conteúdo, ação e latência retornada pela AWS,
+sem registrar o texto avaliado. O prompt ainda é usado para embeddings e os
+candidatos para reranking antes dessa checagem.
+
+Os testes locais verificam envio integral, ordem de aprovação e interrupção em
+falhas com o serviço simulado. Antes de ativar em produção, valide ataques
+diretos e disfarçados nos PDFs, além de pedidos escolares legítimos em
+português, para medir falsos positivos, custo e latência. A detecção reduz
+injeção de instruções; não verifica a veracidade dos fatos nos materiais e
+não garante eliminar todo poisoning.
+
+Referências: [ApplyGuardrail](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-independent-api.html),
+[ataques de prompt](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-prompt-attack.html),
+[idiomas](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-supported-languages.html)
+e [permissões entre regiões](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrail-profiles-permissions.html).
+
+As permissões de reranking e guardrail ficam em `BackendBedrockPolicy`, uma
+política gerenciada própria anexada ao usuário existente. Isso evita o limite
+agregado de 2.048 caracteres das políticas inline de um usuário IAM; dividir
+essas permissões em mais políticas inline não resolve o limite. As permissões
+de armazenamento e ingestão continuam na política inline existente. A mudança
+preserva ações, recursos e condições e não substitui o usuário nem suas chaves.
+
+Além de `sam validate --lint --template-file infrastructure/template.yaml`,
+execute o teste de cotas IAM antes do deploy (Python com PyYAML; dependência em
+`infrastructure/test/requirements.txt`):
+
+```bash
+python3 -m unittest discover -s infrastructure/test -v
+```
+
+O teste resolve ARNs representativos, incluindo nomes de buckets com tamanho
+máximo, e verifica o agregado inline, o tamanho das políticas gerenciadas e o
+número de anexos definidos pelo template. Ele não consulta políticas adicionais
+que tenham sido anexadas ao usuário fora do CloudFormation.
+
 ### Iniciar as aplicações
 
 Inicie a stack completa de desenvolvimento a partir da raiz:
