@@ -63,6 +63,7 @@ export function createResourceRouter(options: ResourceRouterOptions): Router {
   router.patch('/:id', async (req, res) => {
     const { filename, tags } = req.body ?? {};
     if (typeof filename !== 'string' || !filename.trim() || filename.trim().length > 255 ||
+      // eslint-disable-next-line no-control-regex -- Reject control characters in filenames.
       /[\\/\u0000-\u001f\u007f]/.test(filename) || !Array.isArray(tags) || tags.length > 30 ||
       !tags.every((tag) => typeof tag === 'string' && tag.trim().length > 0 && tag.trim().length <= 50)) {
       badRequest(res, 'Informe um nome válido e até 30 tags de no máximo 50 caracteres.');
@@ -126,6 +127,7 @@ export function createResourceRouter(options: ResourceRouterOptions): Router {
       const download = req.query.download === 'true';
       // Only render passive document/image formats inline; other files are attachments.
       const inline = !download && ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'text/plain'].includes(resource.fileType);
+      // eslint-disable-next-line no-control-regex -- Remove control characters from Content-Disposition filenames.
       const filename = resource.filename.replace(/[\u0000-\u001f\u007f"\\]/g, '_');
       const asciiName = filename.replace(/[^\x20-\x7e]/g, '_');
       const encodedName = encodeURIComponent(filename).replace(/['()*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);

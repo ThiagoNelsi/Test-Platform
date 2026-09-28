@@ -371,6 +371,30 @@ pnpm run build
 O build do pacote `api-contracts` acontece antes dos consumidores para que os
 tipos gerados estejam disponíveis tanto para a API quanto para o frontend.
 
+O workflow [CI](.github/workflows/ci.yml) roda em pull requests e pushes na
+`main`, com dois jobs independentes em paralelo:
+
+- **Code:** testes de API, frontend e ingestão; verificação de tipos dos quatro
+  pacotes; lint de API, contratos, ingestão e frontend; build de contratos,
+  API e frontend.
+- **Infrastructure:** validação do template SAM com `cfn-lint` e build dos
+  pacotes das Lambdas com esbuild. Essas etapas não publicam recursos nem
+  precisam de credenciais AWS.
+
+Os jobs usam cache do pnpm, têm timeout de 15 minutos e cancelam execuções
+anteriores da mesma branch quando chega uma nova alteração.
+
+Para reproduzir as verificações de infraestrutura localmente, instale o AWS
+SAM CLI e execute a partir da raiz, depois de `pnpm install`:
+
+```bash
+sam validate --lint --template-file infrastructure/template.yaml --region us-east-1
+PATH="$PWD/document-ingestion/node_modules/.bin:$PATH" sam build --template-file infrastructure/template.yaml
+```
+
+O segundo comando disponibiliza o esbuild instalado no pacote de ingestão
+para o SAM. O build das Lambdas não substitui a verificação de tipos.
+
 ## Arquitetura
 
 ```mermaid

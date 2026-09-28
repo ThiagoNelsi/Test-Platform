@@ -18,16 +18,27 @@
     "test:api": "pnpm --filter api run test",
     "benchmark:retrieval": "pnpm --filter api run benchmark:retrieval",
     "test:frontend": "pnpm --filter test-platform-frontend run test",
-    "test": "pnpm run generate && pnpm run test:api && pnpm run test:frontend",
+    "test:ingestion": "pnpm --filter document-ingestion run test",
+    "test": "pnpm run generate && pnpm run test:api && pnpm run test:frontend && pnpm run test:ingestion",
     "typecheck:contracts": "pnpm --filter api-contracts run typecheck",
     "typecheck:api": "pnpm --filter api run typecheck",
     "typecheck:frontend": "pnpm --filter test-platform-frontend run type-check",
-    "typecheck": "pnpm run generate && pnpm run typecheck:contracts && pnpm run typecheck:api && pnpm run typecheck:frontend",
-    "lint": "pnpm --filter test-platform-frontend run lint",
+    "typecheck:ingestion": "pnpm --filter document-ingestion run typecheck",
+    "typecheck": "pnpm run generate && pnpm run typecheck:contracts && pnpm run typecheck:api && pnpm run typecheck:frontend && pnpm run typecheck:ingestion",
+    "lint:backend": "eslint api api-contracts document-ingestion",
+    "lint:frontend": "pnpm --filter test-platform-frontend run lint",
+    "lint": "pnpm run lint:backend && pnpm run lint:frontend",
     "generate": "pnpm run build:contracts && pnpm run prisma:generate",
     "prisma:generate": "pnpm --filter api run prisma:generate",
     "migrate:app": "pnpm --filter api run migrate:app",
     "baseline:embeddings": "pnpm --filter api run baseline:embeddings",
     "migrate:embeddings": "pnpm --filter api run migrate:embeddings"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@typescript-eslint/eslint-plugin": "^8.69.0",
+    "@typescript-eslint/parser": "^8.69.0",
+    "eslint": "^9.39.5",
+    "globals": "^14.0.0"
   }
 }

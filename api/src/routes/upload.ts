@@ -45,6 +45,7 @@ const ACTIVE_STATUSES = ['PENDING_UPLOAD', 'UPLOADED', 'PROCESSING', 'PROCESSED'
 
 function safeFilename(filename: string): string {
   const basename = filename.split(/[\\/]/).pop()?.trim() ?? '';
+  // eslint-disable-next-line no-control-regex -- Remove control characters from uploaded filenames.
   return basename.replace(/[\u0000-\u001f\u007f]/g, '_').slice(0, 255);
 }
 
