@@ -1,0 +1,412 @@
+{
+  "name": "As filosofias políticas — retrieval/reranking pilot",
+  "version": 2,
+  "language": "pt-BR",
+  "source": {
+    "filename": "as filosofias politicas.pdf",
+    "sha256": "42f1bab72b0987978fc6a00eca52e36f2ef928b1b2b1ab23408253514be01cad",
+    "document_key": "1/eb54b025-517c-4c7e-8127-6feca408a8d8/as filosofias politicas.pdf",
+    "pages": 13
+  },
+  "expected_chunk_key": "Match an indexed parent by document_key + heading + pages. Section titles and page numbers refer to the PDF pages indexed by Textract; heading/page pairs avoid depending on generated database UUIDs.",
+  "relevance_scale": {
+    "3": "Primary: directly contains the evidence needed to fulfill the requested topic.",
+    "2": "Supporting: provides context or a closely related concept useful for questions on the topic."
+  },
+  "items": [
+    {
+      "id": "FP-01",
+      "query": "Crie 5 questões contextualizadas sobre o ideal republicano do Renascimento e sua oposição ao poder de papas e imperadores. Inclua como a vida política era compreendida e por que Atenas, Esparta e Roma eram referências.",
+      "expected_chunks": [
+        {
+          "heading": "0 ideal republicano",
+          "pages": [
+            2
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "Antes de O príncipe",
+          "pages": [
+            3
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Crie 5 questões sobre o pensamento republicano no Renascimento."
+    },
+    {
+      "id": "FP-02",
+      "query": "Elabore 4 questões interpretativas sobre a ruptura de Maquiavel com as teorias políticas medievais: compare os fundamentos divino, natural ou racional da política com a análise dos conflitos reais entre grupos sociais.",
+      "expected_chunks": [
+        {
+          "heading": "Antes de O príncipe",
+          "pages": [
+            3
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "A revolução de Maquiavel",
+          "pages": [
+            4,
+            5
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "Indivíduos e conflitos",
+          "pages": [
+            8,
+            9
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Elabore 4 questões sobre o que mudou na filosofia política com Maquiavel."
+    },
+    {
+      "id": "FP-03",
+      "query": "Crie 5 questões sobre a ideia de Maquiavel de que a política envolve conflito entre os grandes e o povo. Foque na tomada e manutenção do poder e no papel do príncipe em relação a esses grupos.",
+      "expected_chunks": [
+        {
+          "heading": "A revolução de Maquiavel",
+          "pages": [
+            4,
+            5
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "O príncipe e o povo",
+          "pages": [
+            7
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "Uma nova teoria para uma nova ordem",
+          "pages": [
+            7,
+            8
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Crie 5 questões sobre as relações de poder em Maquiavel."
+    },
+    {
+      "id": "FP-04",
+      "query": "Elabore questões curtas sobre virtù e fortuna em Maquiavel, destacando as qualidades políticas do governante e como ele age diante de circunstâncias adversas e imprevisíveis.",
+      "expected_chunks": [
+        {
+          "heading": "0 príncipe virtuoso",
+          "pages": [
+            5,
+            6
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "A revolução de Maquiavel",
+          "pages": [
+            4,
+            5
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Faça algumas questões sobre o que é ser um bom governante para Maquiavel."
+    },
+    {
+      "id": "FP-05",
+      "query": "Crie 5 questões contextualizadas sobre legitimidade política em Maquiavel. Compare uma república voltada ao interesse público com regimes em que os interesses particulares dos governantes prevalecem sobre o povo.",
+      "expected_chunks": [
+        {
+          "heading": "A revolução de Maquiavel",
+          "pages": [
+            4,
+            5
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "O príncipe e o povo",
+          "pages": [
+            7
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "A ideia de soberania",
+          "pages": [
+            6
+          ],
+          "relevance": 2
+        },
+        {
+          "heading": "Uma nova teoria para uma nova ordem",
+          "pages": [
+            7,
+            8
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Crie 5 questões sobre o que torna um governo legítimo para Maquiavel."
+    },
+    {
+      "id": "FP-06",
+      "query": "Gere 5 questões sobre o estado de natureza em Thomas Hobbes, com foco no medo da morte violenta, na insegurança e nos motivos que levam os indivíduos a buscar proteção.",
+      "expected_chunks": [
+        {
+          "heading": "0 estado de natureza",
+          "pages": [
+            9
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "Indivíduos e conflitos",
+          "pages": [
+            8,
+            9
+          ],
+          "relevance": 2
+        },
+        {
+          "heading": "0 pacto ou contrato social",
+          "pages": [
+            9
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Gere 5 questões sobre o estado de natureza em Hobbes."
+    },
+    {
+      "id": "FP-07",
+      "query": "Crie 5 questões contextualizadas sobre o pacto ou contrato social. Explique quais liberdades e poderes os indivíduos transferem ao soberano e como esse acordo permite instituir a sociedade civil.",
+      "expected_chunks": [
+        {
+          "heading": "0 pacto ou contrato social",
+          "pages": [
+            9
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "0 Estado",
+          "pages": [
+            10,
+            11
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "0 jusnaturalismo",
+          "pages": [
+            9,
+            10
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Crie 5 questões sobre como o contrato social dá origem ao Estado."
+    },
+    {
+      "id": "FP-08",
+      "query": "Elabore 4 questões comparativas sobre as concepções de estado de natureza de Hobbes e Rousseau e sobre a passagem para a sociedade civil.",
+      "expected_chunks": [
+        {
+          "heading": "0 estado de natureza",
+          "pages": [
+            9
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "0 pacto ou contrato social",
+          "pages": [
+            9
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "0 Estado",
+          "pages": [
+            10,
+            11
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Faça 4 questões comparando o estado de natureza em Hobbes e Rousseau."
+    },
+    {
+      "id": "FP-09",
+      "query": "Crie 5 questões sobre como a propriedade privada é tratada de modo diferente por Hobbes e por Locke, incluindo o papel das leis civis e a ideia lockeana de direito natural.",
+      "expected_chunks": [
+        {
+          "heading": "Ateoria liberal",
+          "pages": [
+            11
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "A burguesia e a propriedade privada",
+          "pages": [
+            11,
+            12
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "0 Estado",
+          "pages": [
+            10,
+            11
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Crie 5 questões comparando a propriedade em Hobbes e Locke."
+    },
+    {
+      "id": "FP-10",
+      "query": "Crie questões contextualizadas sobre a justificativa de John Locke para a propriedade privada. Foque no trabalho, nos bens necessários à conservação da vida e na relação entre propriedade e desigualdade social.",
+      "expected_chunks": [
+        {
+          "heading": "A burguesia e a propriedade privada",
+          "pages": [
+            11,
+            12
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "Trabalho, herança e poder",
+          "pages": [
+            12
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "Ateoria liberal",
+          "pages": [
+            11
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Faça algumas questões sobre a visão de Locke a respeito da propriedade."
+    },
+    {
+      "id": "FP-11",
+      "query": "Elabore 5 questões sobre a ascensão do liberalismo e as críticas ao monopólio régio. Destaque a liberdade de mercado e o papel esperado do Estado na proteção da propriedade privada.",
+      "expected_chunks": [
+        {
+          "heading": "Ascensão do liberalismo",
+          "pages": [
+            13
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "O Estado liberal",
+          "pages": [
+            12
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "A burguesia e a propriedade privada",
+          "pages": [
+            11,
+            12
+          ],
+          "relevance": 2
+        },
+        {
+          "heading": "Trabalho, herança e poder",
+          "pages": [
+            12
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Elabore 5 questões sobre o surgimento do liberalismo."
+    },
+    {
+      "id": "FP-12",
+      "query": "Crie questões interpretativas sobre a organização do Estado liberal, incluindo a separação dos poderes, a função dos poderes Legislativo, Executivo e Judiciário e a proteção da propriedade.",
+      "expected_chunks": [
+        {
+          "heading": "Ascensão do liberalismo",
+          "pages": [
+            13
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "O Estado liberal",
+          "pages": [
+            12
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "0 Estado",
+          "pages": [
+            10,
+            11
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Crie questões sobre como funciona o Estado liberal."
+    },
+    {
+      "id": "FP-13",
+      "query": "Crie 5 questões comparativas sobre direito natural e poder político: contraste a propriedade privada em Locke com a soberania instituída pelo contrato social em Hobbes.",
+      "expected_chunks": [
+        {
+          "heading": "Ateoria liberal",
+          "pages": [
+            11
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "A burguesia e a propriedade privada",
+          "pages": [
+            11,
+            12
+          ],
+          "relevance": 3
+        },
+        {
+          "heading": "0 pacto ou contrato social",
+          "pages": [
+            9
+          ],
+          "relevance": 2
+        },
+        {
+          "heading": "0 jusnaturalismo",
+          "pages": [
+            9,
+            10
+          ],
+          "relevance": 2
+        }
+      ],
+      "natural_query": "Crie 5 questões comparando os direitos dos indivíduos e o poder do Estado em Hobbes e Locke."
+    }
+  ],
+  "query_styles": {
+    "detailed": "Original prompts with explicit subtopics, preserved for comparison.",
+    "natural": "Short teacher-style prompts preserving the topic but omitting expected evidence details. These are authored approximations, not observed teacher requests. Gold labels are reused as provisional expectations and may omit valid passages for broader requests."
+  }
+}

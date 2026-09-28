@@ -11,6 +11,36 @@ Parameters:
     Type: Number
     Default: 24
     MinValue: 1
+  RerankEnabled:
+    Type: String
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+  RerankRegion:
+    Type: String
+    Default: us-east-1
+    Description: Bedrock region used by the API reranker
+  RerankModelId:
+    Type: String
+    Default: cohere.rerank-v3-5:0
+    Description: Bedrock foundation model ID used for reranking and IAM scoping
+  RerankTimeoutMs:
+    Type: String
+    Default: '3000'
+    AllowedPattern: ^[1-9][0-9]*$
+  RetrievalCandidateLimit:
+    Type: String
+    Default: '40'
+    AllowedPattern: ^[1-9][0-9]*$
+  RetrievalMaxParents:
+    Type: String
+    Default: '5'
+    AllowedPattern: ^[1-9][0-9]*$
+  RetrievalMaxContextCharacters:
+    Type: String
+    Default: '14000'
+    AllowedPattern: ^[1-9][0-9]*$
 
 Resources:
   #SNS
@@ -583,6 +613,55 @@ Resources:
       Type: String
       Value: !GetAtt TextractSNSRole.Arn
 
+  RerankEnabledParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Prefix}/${Environment}/rerank/enabled
+      Type: String
+      Value: !Ref RerankEnabled
+
+  RerankRegionParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Prefix}/${Environment}/rerank/region
+      Type: String
+      Value: !Ref RerankRegion
+
+  RerankModelArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Prefix}/${Environment}/rerank/model-arn
+      Type: String
+      Value: !Sub arn:${AWS::Partition}:bedrock:${RerankRegion}::foundation-model/${RerankModelId}
+
+  RerankTimeoutParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Prefix}/${Environment}/rerank/timeout-ms
+      Type: String
+      Value: !Ref RerankTimeoutMs
+
+  RetrievalCandidateLimitParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Prefix}/${Environment}/retrieval/candidate-limit
+      Type: String
+      Value: !Ref RetrievalCandidateLimit
+
+  RetrievalMaxParentsParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Prefix}/${Environment}/retrieval/max-parents
+      Type: String
+      Value: !Ref RetrievalMaxParents
+
+  RetrievalMaxContextCharactersParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Prefix}/${Environment}/retrieval/max-context-characters
+      Type: String
+      Value: !Ref RetrievalMaxContextCharacters
+
   # IAM
   TextractSNSRole:
     Type: AWS::IAM::Role
@@ -617,6 +696,30 @@ Resources:
     Properties:
       UserName: !Sub ${Prefix}-${Environment}-backend
       Policies:
+        - PolicyName: !Sub ${Prefix}-${Environment}-bedrock-rerank
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: RerankDocuments
+                Effect: Allow
+                Action: bedrock:Rerank
+                Resource: '*'
+              - Sid: InvokeRerankModel
+                Effect: Allow
+                Action: bedrock:InvokeModel
+                Resource: !Sub arn:${AWS::Partition}:bedrock:${RerankRegion}::foundation-model/${RerankModelId}
+              # Bedrock automatically enables third-party models on first use.
+              # Match AWS's managed policy: allow Marketplace operations only via Bedrock.
+              - Sid: ManageModelSubscriptionViaBedrock
+                Effect: Allow
+                Action:
+                  - aws-marketplace:Subscribe
+                  - aws-marketplace:Unsubscribe
+                  - aws-marketplace:ViewSubscriptions
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    aws:CalledViaLast: bedrock.amazonaws.com
         - PolicyName: !Sub ${Prefix}-${Environment}-s3-upload
           PolicyDocument:
             Version: '2012-10-17'

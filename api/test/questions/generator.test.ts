@@ -10,6 +10,49 @@ function createStream(chunks: Array<Record<string, unknown>>) {
 }
 
 describe('question generator', () => {
+  it('uses reranked parents for both generation and references with per-call limits', async () => {
+    const sqlClient = vi.fn().mockResolvedValue([
+      { content: 'child A', parent_id: 'a', parent_content: 'Parent A', document: 'book.pdf', parent_heading: 'A', parent_pages: [1] },
+      { content: 'child B', parent_id: 'b', parent_content: 'Parent B', document: 'book.pdf', parent_heading: 'B', parent_pages: [2] },
+    ]);
+    const openaiClient = {
+      embeddings: { create: vi.fn().mockResolvedValue({ data: [{ embedding: [1] }] }) },
+      responses: { create: vi.fn().mockResolvedValue(createStream([])) },
+    };
+    const rerank = vi.fn().mockResolvedValue([{ index: 1, score: 0.9 }, { index: 0, score: 0.1 }]);
+    const socket = { emit: vi.fn() };
+    const generator = createQuestionGenerator({ openaiClient: openaiClient as never, sqlClient, reranker: { rerank } });
+
+    await generator.generateQuestion('prompt', 'gpt-4.1', ['book.pdf'], socket, { maxParents: 1 });
+
+    expect(socket.emit).toHaveBeenCalledWith('generation-context', [
+      { document: 'book.pdf', title: 'B', pages: [2], content: 'Parent B' },
+    ]);
+    const context = openaiClient.responses.create.mock.calls[0][0].input[1].content;
+    expect(context).toContain('Parent B');
+    expect(context).not.toContain('Parent A');
+    expect(context).not.toContain('child B');
+  });
+
+  it('continues generating with vector context when reranking fails', async () => {
+    const openaiClient = {
+      embeddings: { create: vi.fn().mockResolvedValue({ data: [{ embedding: [1] }] }) },
+      responses: { create: vi.fn().mockResolvedValue(createStream([{ type: 'response.completed' }])) },
+    };
+    const socket = { emit: vi.fn() };
+    const generator = createQuestionGenerator({
+      openaiClient: openaiClient as never,
+      sqlClient: vi.fn().mockResolvedValue([{ content: 'vector first' }, { content: 'vector second' }]),
+      reranker: { rerank: vi.fn().mockRejectedValue(new Error('unavailable')) },
+      onRerankFallback: vi.fn(),
+    });
+
+    await generator.generateQuestion('prompt', 'gpt-4.1', ['book.pdf'], socket);
+
+    expect(openaiClient.responses.create.mock.calls[0][0].input[1].content).toContain('[Chunk 1] vector first');
+    expect(socket.emit).toHaveBeenCalledWith('generation-finished');
+  });
+
   it('retrieves chunks from embeddings and SQL', async () => {
     const sqlClient = vi.fn().mockResolvedValue([
       { content: 'chunk-a' },

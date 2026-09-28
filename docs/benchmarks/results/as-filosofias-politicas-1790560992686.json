@@ -1,0 +1,515 @@
+{
+  "startedAt": "2026-09-28T02:03:12.686Z",
+  "document": "1/eb54b025-517c-4c7e-8127-6feca408a8d8/as filosofias politicas.pdf",
+  "modelArn": "arn:aws:bedrock:us-east-1::foundation-model/cohere.rerank-v3-5:0",
+  "options": {
+    "candidateLimit": 40,
+    "maxParents": 5,
+    "maxContextCharacters": 14000,
+    "rerankTimeoutMs": 3000
+  },
+  "rerankEnabledInApplication": true,
+  "note": "Reranking is explicitly exercised for comparison, even if disabled in the application. Metrics use delivered parents after deduplication and context budget.",
+  "headingAliases": [
+    {
+      "expected": "O príncipe e o povo",
+      "actual": "0 príncipe e o povo",
+      "pages": [
+        7
+      ]
+    },
+    {
+      "expected": "O Estado liberal",
+      "actual": "0 Estado liberal",
+      "pages": [
+        12
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "FP-01",
+      "query": "Crie 5 questões contextualizadas sobre o ideal republicano do Renascimento e sua oposição ao poder de papas e imperadores. Inclua como a vida política era compreendida e por que Atenas, Esparta e Roma eram referências.",
+      "candidateCount": 40,
+      "candidateRecall": 1,
+      "retrievalLatencyMs": 1096.5225810000002,
+      "rerankLatencyMs": 1043.729788,
+      "fallback": "Model access is denied due to IAM user or service role is not authorized to perform the required AWS Marketplace actions (aws-marketplace:ViewSubscriptions, aws-marketplace:Subscribe) to enable access to this model. Refer to the Amazon Bedrock documentation for further details. Your AWS Marketplace subscription for this model cannot be completed at this time. If you recently fixed this issue, try again after 5 minutes. (Service: BedrockRuntime, Status Code: 403, Request ID: 663ad2b2-e65d-46f7-a6cc-b45b2b7f66ea) (SDK Attempt Count: 1)",
+      "vector": {
+        "retrieved": [
+          {
+            "heading": "0 ideal republicano",
+            "pages": [
+              2
+            ],
+            "relevance": 3
+          },
+          {
+            "heading": "Uma nova teoria para uma nova ordem",
+            "pages": [
+              7,
+              8
+            ],
+            "relevance": 0
+          },
+          {
+            "heading": "Antes de O príncipe",
+            "pages": [
+              3
+            ],
+            "relevance": 2
+          },
+          {
+            "heading": "Indivíduos e conflitos",
+            "pages": [
+              8,
+              9
+            ],
+            "relevance": 0
+          },
+          {
+            "heading": "SOBERANO E CORPO POLÍTICO",
+            "pages": [
+              1
+            ],
+            "relevance": 0
+          }
+        ],
+        "metrics": {
+          "recallAt5": 1,
+          "mrr": 1,
+          "ndcgAt5": 0.95583058934618
+        }
+      },
+      "reranked": {
+        "retrieved": [
+          {
+            "heading": "0 ideal republicano",
+            "pages": [
+              2
+            ],
+            "relevance": 3
+          },
+          {
+            "heading": "Uma nova teoria para uma nova ordem",
+            "pages": [
+              7,
+              8
+            ],
+            "relevance": 0
+          },
+          {
+            "heading": "Antes de O príncipe",
+            "pages": [
+              3
+            ],
+            "relevance": 2
+          },
+          {
+            "heading": "Indivíduos e conflitos",
+            "pages": [
+              8,
+              9
+            ],
+            "relevance": 0
+          },
+          {
+            "heading": "SOBERANO E CORPO POLÍTICO",
+            "pages": [
+              1
+            ],
+            "relevance": 0
+          }
+        ],
+        "metrics": {
+          "recallAt5": 1,
+          "mrr": 1,
+          "ndcgAt5": 0.95583058934618
+        }
+      },
+      "candidates": [
+        {
+          "index": 0,
+          "heading": "0 ideal republicano",
+          "pages": [
+            2
+          ],
+          "distance": 0.30454223585134577,
+          "content": "0 ideal republicano\n\nque viria a ser conhecido como capitalismo comercial mercantil, as cidades não podiam continuar submetidas ou aos padrões, às regras e aos tributos da economia feudal agrária. Por isso, a burguesia, classe social que se forma- va no interior dos burgos, iniciou uma luta contra a no. breza feudal, reivindicando a criação de franquias eco. nômicas e o fim da submissão das cidades em relaçãoa barões, reis, papas e imperadores.\n\nNa Itália, a redescoberta das obras de pensadores artistas e técnicos da cultura greco-romana, particular- mente as de teoria política, suscitou um ideal politico novo: 0 da liberdade republicana contra o poder teoló- gico-político de papas e imperadores. Nesse período, conhecido como Renascimento, esperava-se fazer re- nascer o pensamento, a ciência, as artes, a ética, as técnicas e a política que haviam sido desenvolvidos antes que a Igreja de Roma e seus teólogos tivessem atribuído para si o privilégio do saber e a autoridade para decidir o que poderia e o que não poderia ser pen- sado, dito e feito."
+        },
+        {
+          "index": 1,
+          "heading": "0 ideal republicano",
+          "pages": [
+            2
+          ],
+          "distance": 0.33878774949245405,
+          "content": "0 ideal republicano\n\nDurante o Renascimento, Esparta, Atenas e Roma eram tomadas como exemplos da liberdade republica- na. Imitá-las era voltar a valorizar a política como ex- pressão mais alta da capacidade humana. Falava-se, então, na liberdade republicana e na vida política como as formas mais altas da dignidade humana. Nesse am- biente, entre 1513 e 1514, em Florença, é escrita a obra que inaugurou o pensamento político moderno: 0 prin- cipe, de Maquiavel (1469-1527).\n\nIluminura do século XV representando 0 mercador viajante Marco Polo (1254-1324) em sua partida de Veneza (na atual Itália) em direção ao Oriente. Com 0 incremento das atividades urbanas e comerciais em cidades como essa, desenvolveu-se, no decorrer dos séculos, 0 capitalismo mercantil.\n\nimms graune $ en unite Enter GRUN monte Conta"
+        },
+        {
+          "index": 2,
+          "heading": "Uma nova teoria para uma nova ordem",
+          "pages": [
+            7,
+            8
+          ],
+          "distance": 0.43862475747338847,
+          "content": "Uma nova teoria para uma nova ordem\n\nA obra de Maquiavel, criticada em toda parte na época, tornou-se, porém, referência obrigatória do pen- samento político ocidental moderno. A ideia de que a finalidade da política é a tomada e conservação do po- der e que este não provém nem de Deus, nem da Razão, nem de uma ordem natural fixa exigiu que os gover- nantes justificassem a ocupação do poder.\n\nEm alguns casos, como na França e na Prússia, surgiu a teoria do direito divino dos reis, uma reformulação juri- dica da antiga teologia política do \"rei pela graça divina\" e dos \"dois corpos do rei\". Na maioria dos países, porém, a concepção teocrática deu lugar a novas teorias políticas.\n\nPara compreendermos os conceitos que fundaram essas novas teorias, precisamos considerar alguns acon- tecimentos históricos que mudaram a face econômica e social da Europa entre os séculos XV e XVII.\n\nJá mencionamos O novo papel das cidades e da nova classe social a burguesia no plano econômico, social e político. Além do crescimento das corporações de ofício e do comércio, outros fatores fortaleceram essa nova classe: aris-"
+        },
+        {
+          "index": 3,
+          "heading": "Antes de O príncipe",
+          "pages": [
+            3
+          ],
+          "distance": 0.44054459075516894,
+          "content": "Antes de O príncipe\n\nAs teorias politicas medievais e renascentistas eram, muitas vezes, contrárias entre si. As teorias dievais eram diretamente teocráticas (o poder perten- me- ce apenas a Deus, que O concede a alguém) ou indire- tamente teocráticas (a origem do poder está natureza social do homem, mas seu fundamento últi- na mo encontra-se na lei divina revelada). Já as renascen- tistas procuravam evitar a ideia de que o poder era uma graça ou um favor divino determinado pela lei divina,\n\nAs duas teorias, contudo, foram elaboradas em um contexto em que a Igreja católica detinha grande poder. Portanto, não podiam deixar de abordar a re- lação entre política e religião. Mesmo recusando a teocracia, as novas teorias políticas não podiam recu- sar a ideia cristã de que o poder político só é legitimo se for justo e só será justo se estiver de acordo com a vontade de Deus e a Providência divina. Assim, ele- mentos de teologia continuavam presentes nas for- mulações teóricas da política.\n\nPor isso, podemos perceber traços comuns entre teorias medievais e renascentistas, provenientes dos elementos de teologia. Aquelas teorias:"
+        },
+        {
+          "index": 4,
+          "heading": "0 ideal republicano",
+          "pages": [
+            2
+          ],
+          "distance": 0.44746571931123513,
+          "content": "0 ideal republicano\n\nNa sociedade medieval, prevaleciam relações hie- rárquicas que dividiam os indivíduos em estamentos definidos por linhagem e herança e que os separavam em superiores e inferiores. Essa divisão determinava entre eles dois tipos precisos de relação:\n\nvassalagem: por meio dela, um vassalo prestava juramento de fidelidade e concedia bens, tributos ou serviços a um suserano, que em troca lhe pro- metia proteção e lhe concedia a posse de terras. 0 suserano em uma relação podia ser vassalo em outra, assim como o vassalo em uma relação po- dia ser suserano em outra. O papa era suserano do imperador, que era suserano dos reis. Os reis, por sua vez, eram suseranos de barões;\nservidão: por meio dela, uma família camponesa (serva) jurava fidelidade, pagava tributos e pres- tava serviços ao senhor do feudo em troca de um lugar para viver e proteção."
+        },
+        {
+          "index": 5,
+          "heading": "0 ideal republicano",
+          "pages": [
+            2
+          ],
+          "distance": 0.45667810194927116,
+          "content": "0 ideal republicano\n\nAo redor dos castelos feudais formaram-se aldeias ou burgos, onde a divisão social do trabalho fez aparecer outra organização social: a corporação de ofício dos tra- balhadores livres. Tecelões, pedreiros, ferreiros, médicos, arquitetos, comerciantes e outros profissionais se asso- ciavam em confrarias por meio de um juramento de confiança recíproca. Internamente, as corporações de ofícios também eram hierárquicas, mas as regras con- vencionadas entre seus membros permitiam subir na hierarquia. Externamente, nas relações com outras cor- porações, todos eram considerados livres e iguais. Esses profissionais, contudo, continuavam submeti- dos ao domínio de um senhor feudal, pois as terras em que os burgos se formaram estavam sob domínio dele.\n\nDesde o início do século XV, em certas re- giões da Europa, as antigas cidades do Império Romano e as novas cidades originadas dos bur- gos medievais entraram em desenvolvimento econômico e social. Grandes rotas comerciais tornaram poderosas as corporações e as famílias de comerciantes, enquanto 0 poderio agrário dos barões feudais começou a diminuir. Para que houvesse continuidade desse desenvolvimento,"
+        },
+        {
+          "index": 6,
+          "heading": "A revolução de Maquiavel",
+          "pages": [
+            4,
+            5
+          ],
+          "distance": 0.47181226524256004,
+          "content": "A revolução de Maquiavel\n\nDiferentemente dos teólogos, que formulavam teorias políticas com base na Bíblia e no Direito Ro- mano, e diferentemente dos contemporâneos re- nascentistas, que se baseavam nos filósofos greco -romanos, Maquiavel partia da experiência real de seu tempo.\n\nComo diplomata e conselheiro dos governantes de Florença, presenciou as lutas europeias de centra- lização monárquica, O ressurgimento da vida urbana na Europa e, com ela, a ascensão da burguesia co- mercial das grandes cidades. Ao mesmo tempo, viu uma Itália fragmentada, dividida em reinos, ducados, repúblicas e cidades dirigidas pela Igreja.\n\nA compreensão e a interpretação do sentido des- sas experiências históricas convenceram Maquiavel de que as concepções políticas antigas e medievais não eram capazes de abarcar verdadeiramente o que é O poder. Tornara-se necessária, sobretudo para a Itália e para Florença, uma nova concepção da socie- dade e da política, que levasse em conta a observa- ção direta dos acontecimentos. Foi com isso em men- te que escreveu 0 principe."
+        },
+        {
+          "index": 7,
+          "heading": "0 príncipe virtuoso",
+          "pages": [
+            5,
+            6
+          ],
+          "distance": 0.4752547984000717,
+          "content": "0 príncipe virtuoso\n\nDissemos que, de acordo com a tradição grega, éti- ca e política eram inseparáveis. Já a tradição romana colocou essa identidade da ética e da política na pessoa virtuosa do governante. Por fim, a tradição cristã trans- formou a pessoa política do rei num corpo místico sa- cralizado que encarnava a vontade de Deus.\n\nHereditariedade, personalidade e virtude forma- vam 0 centro da política, orientada pela ideia de justiça e bem comum. Um dos aspectos da concepção maquia- veliana que desfazem esse conjunto de ideias e imagens encontra-se na figura do principe virtuoso.\n\nimages\n\nQuando estudamos a ética, vimos que a questão central posta pelos filósofos sempre foi \"o que está e 0 que não está em nosso poder?\". Vimos também que \"estar em nosso poder\" significava a ação voluntária racional livre, própria da virtude, e \"não estar em nos- so poder\" significava o conjunto de circunstâncias\n\nNapoleão cruzando 05 Alpes (1801), pintura de Jacques-Louis David (1748-1825). General do Exército francês, Napoleão Bonaparte ascendeu à chefia de Estado e encarnou como poucos líderes na História a figura do príncipe com virtù.\n\n365"
+        },
+        {
+          "index": 8,
+          "heading": "A revolução de Maquiavel",
+          "pages": [
+            4,
+            5
+          ],
+          "distance": 0.5015071788401709,
+          "content": "A revolução de Maquiavel\n\nSe compararmos 0 pensamento político de Ma- quiavel com os quatro pontos nos quais resumimos a tradição política anterior, vamos notar quais aspec- tos definem sua obra como uma ruptura.\n\n1. Maquiavel não admitia um fundamento ante- rior e exterior à política (Deus, Natureza ou Razão).\n\nToda cidade (isto é, toda sociedade), dizia ele, está originariamente dividida entre o desejo dos grandes de oprimir e comandar e o desejo do povo de não ser oprimido nem comandado. Essa divisão evidencia que a cidade não é uma comunidade homogênea nascida da vontade divina, da ordem natural ou da razão hu- mana. Na realidade, a sociedade é constituida de lutas internas que a obrigam a instituir um polo su- perior 0 poder político que possa unificá-la e dar- -lhe identidade. Assim, a política nasce das lutas so- ciais e é obra da própria sociedade para dar a si mesma unidade e identidade."
+        },
+        {
+          "index": 9,
+          "heading": "Antes de O príncipe",
+          "pages": [
+            3
+          ],
+          "distance": 0.5041189505554436,
+          "content": "Antes de O príncipe\n\nem conformidade com o direito natural objetivo ou a ordem jurídica imposta por Deus ao mun- do, segundo a qual 0 homem é um ser natural- mente político. Para outros, ainda, encontrava- -se na Razão, isto é, na ideia de que existe uma racionalidade que governa o mundo e os seres humanos, torna-os racionais e os faz instituir a vida política;\nafirmavam que a política é instituição de uma comunidade una e indivisa, cuja finalidade é rea- lizar o bem comum ou a justiça. A boa política seria feita pela boa comunidade, harmoniosa, pacífica e ordeira. Lutas, conflitos e divisões eram vistos como perigos, ações de homens perversos e sediciosos que deviam ser afastados da comu- nidade e do poder;\nassentavam a boa comunidade e a boa política na figura do Bom Governo, isto é, no príncipe virtuoso e racional, portador da justiça, da har- monia e da indivisão da comunidade;\nclassificavam os regimes políticos em justos-le- gítimos e injustos-ilegitimos. A monarquia e a aristocracia hereditárias eram colocadas entre os primeiros, enquanto os segundos, denomina- dos tirânicos, eram"
+        },
+        {
+          "index": 10,
+          "heading": "Indivíduos e conflitos",
+          "pages": [
+            8,
+            9
+          ],
+          "distance": 0.5058063666739114,
+          "content": "Indivíduos e conflitos\n\nA nova situação histórica fazia aparecer dois fatos que não podiam ser negados:\n\n1. a existência de indivíduos: um burguês e um trabalhador não podiam invocar sangue, família, linhagem e dinastia para explicar por que existiam e por que haviam mudado de posição social, mas podiam invocar a si mesmos como individuos que produziram, por conta própria, a mudança de sua situação e de sua posição econômico-social. A for- mação de duas novas classes sociais (a burguesia e os trabalhadores livres) evidenciava o equívoco da ideia de que cada um se define pela família e pelo grupo a que pertence e pelo lugar natural dessa familia ou desse grupo na ordem hierárquica e fixa do Universo;\n\n2. a existência de conflitos: as disputas entre indi- viduos e grupos pela posse de riquezas, cargos, postos e poderes anulavam tanto a prática medieval da sub- missão natural do inferior ao superior como a imagem cristã da comunidade politica una, indivisa e fraterna.\n\nOs teóricos precisavam, portanto, não apenas ex- plicar o que eram os individuos e por que lutavam mor- talmente uns contra os outros, mas também oferecer teorias capazes de solucionar os conflitos e as guerras"
+        },
+        {
+          "index": 11,
+          "heading": "Indivíduos e conflitos",
+          "pages": [
+            8,
+            9
+          ],
+          "distance": 0.5138732308201899,
+          "content": "Indivíduos e conflitos\n\nsociais. Em outras palavras, foram forçados a indagar qual é a origem da sociedade e da política.\n\ng\n\nGravura do século XIX retratando Martinho Lutero diante do imperador Carlos V.A Reforma vinha ao encontro dos anseios burgueses, pois medidas como a tradução da Bíblia para as línguas nacionais e ideias como a de que há pessoas predestinadas à bem-aventurança religavam 0 indivíduo comum a Deus.\n\n368\n\nd\n\ntwo"
+        },
+        {
+          "index": 12,
+          "heading": "A ideia de soberania",
+          "pages": [
+            6
+          ],
+          "distance": 0.5185656780493255,
+          "content": "A ideia de soberania\n\nMaquiavel desligou O poder político de funda- mentos não políticos (Deus, Natureza, Razão) e 0 articulou à divisão social entre os grandes e o povo. Com isso, abriu caminho para uma discussão essen- cial para O pensamento político moderno: a ideia de soberania ou poder supremo. A quem caberia 0 poder soberano: aos grandes ou ao povo?\n\nNa tradição política anterior a Maquiavel, \"sobe- rano\" designava a pessoa física do governante e se referia ao rei ou ao imperador. Maquiavel, no entan- to, indicou, por meio da ideia de Principado, que so- berania é o que coloca O governante como superior a dois poderosos rivais: a Igreja (ou 0 papa) e 05 gran- des (ou a nobreza e a burguesia urbana).\n\nindependente do poder religioso e do poder econô- mico. Com isso, anunciava a obra do pensador fran- cês Jean Bodin (1530-1596), O primeiro a formular modernamente o conceito de soberania.\n\nDessa maneira, a obra de Maquiavel indicava que 0 soberano não é uma pessoa, e sim 0 poder político"
+        },
+        {
+          "index": 13,
+          "heading": "A revolução de Maquiavel",
+          "pages": [
+            5
+          ],
+          "distance": 0.5192363524986082,
+          "content": "A revolução de Maquiavel\n\n4. Maquiavel não aceitava a divisão clássica dos três regimes políticos (monarquia, aristocracia, de- mocracia) e suas formas corrompidas ou ilegítimas (tirania, oligarquia, demagogia/anarquia). Também não aceitava que o regime legítimo fosse 0 heredi- tário, enquanto 0 ilegítimo fosse o usurpado por con- quista. Qualquer regime político poderia ser legitimo ou ilegítimo. Para Maquiavel, todo regime político em que 0 poderio de opressão e comando dos gran- des supera o poder do príncipe e esmaga O povo é ilegítimo. Caso contrário, é legítimo. Assim, Maquia- vel condicionou a legitimidade ou ilegitimidade ao único princípio que deveria reger a política: 0 poder do príncipe deve ser superior ao dos grandes e estar a serviço do povo. O príncipe pode ser monarca hereditário ou por conquista. Também pode ser todo um povo que, pela força, conquista o poder e o exerce democraticamente. Qualquer desses regimes políticos será legitimo se for uma república, e não despotismo ou tirania, isto é, só é legítimo o regime no qual o poder não está a serviço de desejos e interesses particulares."
+        },
+        {
+          "index": 14,
+          "heading": "A revolução de Maquiavel",
+          "pages": [
+            4,
+            5
+          ],
+          "distance": 0.5260063688550698,
+          "content": "A revolução de Maquiavel\n\npara si. Por isso, ele deve aliar-se ao povo, que espera do governante a imposição de limites ao desejo de opressão e mando dos grandes. A política não é a lógi- ca racional da justiça e da ética, mas a lógica da força transformada em lógica do poder e da lei.\n\nadversas aquilo que Maquiavel chamou de fortuna (a boa ou a má sorte).\n\n3. Maquiavel recusava a figura do Bom Governo encarnada no príncipe virtuoso, portador das virtu- des cristãs, das virtudes morais e das virtudes prin- cipescas. Em vez disso, introduziu a ideia da virtù como conjunto das qualidades políticas do dirigente para tomar e manter o poder, mesmo que para isso precisasse usar a violência, a mentira, a astúcia e a força. A tradição afirmava que 0 governante devia ser amado e respeitado pelos governados. Maquiavel declarava que o príncipe não precisa ser amado; o que ele realmente precisa é não ser odiado."
+        },
+        {
+          "index": 15,
+          "heading": "Ascensão do liberalismo",
+          "pages": [
+            13
+          ],
+          "distance": 0.5301771249170097,
+          "content": "Ascensão do liberalismo\n\nAfirmam que 0 indivíduo é a origem e o destina- tário do poder político, e este nasce de um con- trato social voluntário, no qual os contratantes cedem poderes, mas não cedem sua individuali- dade. 0 indivíduo é 0 cidadão.\nAfirmam também a existência de uma esfera de relações sociais separadas da vida privada (a familia) e da vida política (o Estado). Essa esfera é a socie- dade civil organizada. Nela, proprietários privados e trabalhadores criam suas organizações de classe, realizam contratos, disputam interesses e posições sem que o Estado possa aí intervir, a não ser que uma das partes lhe peça para arbitrar os conflitos ou que uma das partes aja de modo que pareça perigoso para a manutenção da própria sociedade.\nAfirmam O caráter republicano do poder, consti- tuido por três poderes: o Legislativo, 0 Judiciário eo Executivo. O Estado é 0 poder público e nele"
+        },
+        {
+          "index": 16,
+          "heading": "SOBERANO E CORPO POLÍTICO",
+          "pages": [
+            1
+          ],
+          "distance": 0.531563368729118,
+          "content": "SOBERANO E CORPO POLÍTICO\n\nUm gigante uma espada e um cetro, cujo corpo é composto por uma multidão mais de individuos. coroado brandindo frontispício da primeira edição de Leviatã (1651) é uma das célebres imagens A ilustração da filosofia criada política para O e da busca por explicações sobre sintonizados O Estado e a com vida o em espírito sociedade. de 0 autor do livro, foi um dos muitos pensadores que, sem as amarras das teorias seu do tempo, estudaram Thomas as origens Hobbes, da política e seu posterior desenvolvimento direito divino, buscando compreender os fundamentos da soberania.\n\n361"
+        },
+        {
+          "index": 17,
+          "heading": "A revolução de Maquiavel",
+          "pages": [
+            4,
+            5
+          ],
+          "distance": 0.5323024515482957,
+          "content": "A revolução de Maquiavel\n\n2. Maquiavel não aceitava a ideia da boa comu- nidade política constituída para o bem comum e a justiça. Como vimos, ele considerava a divisão social entre os grandes e 0 povo o ponto de partida da po- lítica. Essa imagem de comunidade una, indivisa, homogênea e voltada para o bem comum, dizia Ma- quiavel, é uma máscara com que os grandes reco- brem a realidade social para enganar, oprimir e co- mandar o povo, como se todos tivessem os mesmos interesses e fossem irmãos e iguais numa bela co- munidade.\n\nA finalidade da política não é a justiça e o bem co- mum, e sim, como sempre souberam os políticos, a tomada e manutenção do poder. o verdadeiro príncipe sabe tomar e conservar 0 poder e, para isso, jamais se alia aos grandes, pois estes também querem 0 poder\n\nCena de Os Bórgias (2011), seriado estadunidense que se baseia na história da família do papa Alexandre VI (Jeremy Irons, à esquerda), em sua luta por poder na Itália do século XVI. Filho, conselheiro e chefe militar do papa, César Bórgia (François Arnaud) teve atos e posturas analisados em diversas passagens de 0 príncipe.\n\nShowtime Networks"
+        },
+        {
+          "index": 18,
+          "heading": "Uma nova teoria para uma nova ordem",
+          "pages": [
+            7,
+            8
+          ],
+          "distance": 0.5392409430798966,
+          "content": "Uma nova teoria para uma nova ordem\n\nas revoltas populares e a Reforma Protestante: nas cidades, primeiro, e no campo, depois, a miséria e as péssimas condições de trabalho e de vida leva- ram OS trabalhadores a revoltar-se contra os ricos. No campo, tais revoltas foram um dos efeitos da Reforma Protestante, que acusara a Igreja e a no- breza agrária de cometerem 0 pecado da ambição, explorando e oprimindo OS pobres. Nas cidades, as revoltas populares eram também um efeito da Reforma Protestante, que havia declarado a igual- dade espiritual dos seres humanos e afirmado como principal virtude o trabalho e principal vício a preguiça. As classes populares urbanas afirma- ram que a igualdade não deveria ser apenas espi- ritual, mas também social, material.\n\nTodos esses fatos evidenciavam que a ideia de um mundo constituído naturalmente por hierarquias fixas não correspondia à realidade."
+        },
+        {
+          "index": 19,
+          "heading": "Antes de O príncipe",
+          "pages": [
+            3
+          ],
+          "distance": 0.5398126567764301,
+          "content": "Antes de O príncipe\n\naqueles em que o poder ha- via sido obtido por conquista e usurpação. Esse regime era considerado antinatural, irracional, contrário à vontade de Deus e à justiça, obra de um governante vicioso e perverso.\n\nComparada a essa tradição política, a obra de Maquiavel é demolidora e revolucionária. Com ela, nasceu 0 pensamento po- lítico moderno.\n\nCarlos V. último imperador do Sacro Império Romano-Germânico a ser ungido pelo papa, em 1520, retratado na pintura A coroação de Carlos V, de Cornelis Schut (1597-1655).\n\n363"
+        },
+        {
+          "index": 20,
+          "heading": "Uma nova teoria para uma nova ordem",
+          "pages": [
+            7,
+            8
+          ],
+          "distance": 0.5459078529993391,
+          "content": "Uma nova teoria para uma nova ordem\n\na decadência e ruína de inúmeras famílias tocráticas: as riquezas dessas famílias foram os consumidas nas guerras das Cruzadas contra\n\nmuçulmanos, e suas terras ficaram abandona- das porque seus nobres senhores morreram na guerra sem deixar herdeiros. Outras contrairam dívidas com a Coroa para comprar armamentos e pagar exércitos para as Cruzadas, e acabaram tendo suas terras confiscadas pelo rei para co- brir as dívidas. Os servos que trabalhavam nes- sas propriedades, bem como os camponeses pobres e livres que as arrendavam em troca de serviços, migravam para as cidades. Lá, torna- vam-se membros das corporações de oficios ou servos urbanos de nobres que passaram a se dedicar ao comércio;\na peste negra: uma grande epidemia de peste bubônica dizimou milhares de pessoas e cabeças de gado, e as colheitas foram arruinadas em toda a Europa no final da Idade Média. Isso contribuiu para a ruína da nobreza fundiária e causou mi- grações para as cidades;\nO desenvolvimento comercial: a vida urbana pro- vocou o crescimento de atividades artesanais, o que levou ao aumento das trocas comerciais em toda a Europa e criou especialidades regionais;"
+        },
+        {
+          "index": 21,
+          "heading": "A revolução de Maquiavel",
+          "pages": [
+            4,
+            5
+          ],
+          "distance": 0.555741106888974,
+          "content": "A revolução de Maquiavel\n\nIsso significa, em primeiro lugar, que o príncipe deve ser respeitado e temido, o que só é possível se não for odiado. Em segundo lugar, que não precisa ser amado, pois isso o faria um pai para a sociedade e um pai conhece apenas um tipo de poder, O despótico. A virtude política do príncipe, sua virtù, aparecerá na qualidade das instituições que souber criar e manter e na capacidade que tiver para enfrentar as ocasiões"
+        },
+        {
+          "index": 22,
+          "heading": "A burguesia e a propriedade privada",
+          "pages": [
+            11,
+            12
+          ],
+          "distance": 0.5664458509285453,
+          "content": "A burguesia e a propriedade privada\n\nNo pensamento político de Hobbes e de Rousseau, a propriedade privada não é um direito natural, mas civil. Mesmo que no estado de natureza (em Hobbes) e no estado de sociedade (em Rousseau) os indivíduos se apossem de terras, de outros indivíduos e de bens, essa posse é o mesmo que nada, pois não existem leis para garanti-las. O direito civil, ao contrário, assegura a posse por meio das leis e a legitima na forma de pro- priedade privada.\n\nA teoria da legitimidade civil da propriedade priva- da, porém, não era suficiente para a burguesia em as- censão, cujo poder e prestígio estavam fundados na propriedade privada da riqueza. De fato, embora 0 ca- pitalismo se consolidasse e o poderio econômico da burguesia só fizesse crescer, em toda a Europa 0 regime político permanecia monárquico. Com isso, o poderio político da realeza e 0 prestígio social da nobreza tam- bém persistiam."
+        },
+        {
+          "index": 23,
+          "heading": "CAPÍTULO 31",
+          "pages": [
+            1
+          ],
+          "distance": 0.5695722388323434,
+          "content": "CAPÍTULO 31\n\nAs filosofias políticas\n\nwt potestas Super Terram Comparetur lob. B"
+        },
+        {
+          "index": 24,
+          "heading": "Ascensão do liberalismo",
+          "pages": [
+            13
+          ],
+          "distance": 0.5698276518504791,
+          "content": "Ascensão do liberalismo\n\nos interesses dos proprietários devem estar re- presentados por meio do Poder Judiciário e de parlamentos. com membros eleitos por seus pa- res. Quanto ao Poder Executivo, em caso de mo- narquia, pode ser hereditário, mas 0 rei deve se submeter às leis como os demais súditos. Em caso de democracia, será eleito por voto censitá- rio, isto é, são eleitores apenas os cidadãos que possuirem certa renda ou riqueza.\nAfirmam também que 0 Estado, por meio da lei e da força, tem 0 poder para dominar e para re- primir. Seu papel é a garantia da ordem pública, tal como definida pelos proprietários privados e seus representantes."
+        },
+        {
+          "index": 25,
+          "heading": "0 príncipe virtuoso",
+          "pages": [
+            5,
+            6
+          ],
+          "distance": 0.574179969584846,
+          "content": "0 príncipe virtuoso\n\nOu seja, em certas circunstâncias, deverá ser cruel, em outras, generoso; em certas ocasiões de- verá mentir, em outras, ser honesto; em certos mo- mentos, deverá ceder à vontade dos outros, em outros, ser inflexível. O caráter do príncipe deve variar com as circunstâncias para que sempre seja senhor delas. 0 príncipe virtuoso é aquele que sabe dobrar a fortuna conforme as circunstâncias.\n\nA lógica política nada tem a ver com as virtudes éticas dos indivíduos em sua vida privada. 0 que poderia ser moralmente correto na vida privada po- de ser fraqueza na vida pública, assim como 0 que poderia ser imoral do ponto de vista da ética priva- da pode ser virtù política. Em outras palavras, Ma- quiavel estabeleceu valores propriamente políticos, medidos pela eficácia prática, pela utilidade social e pelos benefícios de sua ação para a república."
+        },
+        {
+          "index": 26,
+          "heading": "0 príncipe e o povo",
+          "pages": [
+            7
+          ],
+          "distance": 0.574485774076986,
+          "content": "0 príncipe e o povo\n\nQuem [...] se tornor principe com o favor do povo deve conservá-lo seu amigo; e isto não the será difícil, já que o povo só desejo estor livre do opres- são. Mas quem chegar a essa olturo com 0 bafejo dos poderosos. e contra 0 vontade do povo, busque, ontes de mais nada, captor as simpatias deste. 0 que the será fácil quando 0 puser sob suo proteção. Os homens. quando recebem 0 bem de quem julgavam receber 0 mal mais agradecidos se mos- trom 00 benfeitor. Por isso, o príncipe que protege 0 seu povo torna-o mois afeiçoodo a si do que se tivesse chegado 00 poder com 0 favor dele Muitos modos existem de granjear tol afeto. Contudo, variam tanto de povo para povo que não é possivel estabelecer-lhes regra segura, e sobre eles guar- dorei silêncio. Limitar-me-ei a dizer que a um príncipe é forçoso ter a ami- zode do seu povo. Sem ela, não encontrará salvação no hora desdita.\n\nSanta Florença. Name\n\nMaquiavel, em pintura de Santi di Tito do século XVI."
+        },
+        {
+          "index": 27,
+          "heading": "Antes de O príncipe",
+          "pages": [
+            3
+          ],
+          "distance": 0.5761876193929156,
+          "content": "Antes de O príncipe\n\nencontravam para a política um fundamento anterior e exterior à própria politica. Para alguns, 0 fundamento da política encontrava-se em Deus (seja na vontade divina, que doa o poder aos seres humanos, seja na Providência divina, que favorece o poder de alguns deles). Para ou- tros, encontrava-se na Natureza, criada por Deus"
+        },
+        {
+          "index": 28,
+          "heading": "0 estado de natureza",
+          "pages": [
+            9
+          ],
+          "distance": 0.5764062844897726,
+          "content": "0 estado de natureza\n\nOs medievais haviam elaborado o conceito de di- natural subjetivo, segundo O qual haveria um reito \"sentimento inato de justiça\" em todos os humanos. modernos, porém, repensaram essa ideia ao intro- duzir OS 0 conceito de estado de natureza ou de condição natural de um ser humano, elaborado com a função de explicar a situação pré-social, na qual os indivíduos existiam isoladamente. Duas foram as principais con- cepções do estado de natureza:\n\nO estado de natureza de Hobbes e 0 estado de so- ciedade de Rousseau evidenciam uma percepção do social como luta entre fracos e fortes, vigorando o po- der da força ou a vontade do mais forte. Em toda parte reinam a inseguranca. a luta, o medo e a morte. Para fazer cessar esse estado de vida ameaçador, os huma- nos decidem passar à civitas ou à sociedade civil, isto é, ao estado civil, criando o poder político e as leis."
+        },
+        {
+          "index": 29,
+          "heading": "A ideia de soberania",
+          "pages": [
+            6
+          ],
+          "distance": 0.5800578543141339,
+          "content": "A ideia de soberania\n\nEm sua obra Os seis livros da república (1520), Bodin introduziu a ideia de soberania como poder indivisível e único de legislar e comandar, pertencente não ao governante, e sim ao Estado. A soberania é perpétua, enquanto 0 ocupante do governo é passageiro. 0 Es- tado como soberano é entendido como um sistema articulado que unifica uma ordem jurídica (o direito e a legislação) e uma autoridade independente (o co- mando militar e 0 uso da força). Com isso, Bodin dis- tingue 0 poder soberano de outros poderes (religiosos, econômicos, sociais) que só podem ser exercidos sob as ordens e sob o controle do Estado."
+        },
+        {
+          "index": 30,
+          "heading": "0 Estado",
+          "pages": [
+            10,
+            11
+          ],
+          "distance": 0.5817352631711452,
+          "content": "0 Estado\n\nOs indivíduos aceitam perder a liberdade natural para ganhar a liberdade civil; aceitam perder 0 direito à posse natural de bens para ganhar a cidadania e, com ela, 0 direito civil à propriedade privada de bens. Como criam a soberania e nela se fazem representar, são ci- dadãos. Como se submetem às leis e à autoridade do governante que os representa, chamam-se súditos.\n\n$ pelo ou Estado pacto tural e do importância nunidade mas persament ssupõe um grupohuma partilhando os mester mesmos n,ou deia de sociedade dividuais, n-se sócios para reciprocos. tária, históricaehuma\n\nComo Hobbes atribui a soberania àquele a quem o direito natural foi transferido para que assegure paz e segurança, 0 regime político que lhe parece mais capaz de realizar essa finalidade é a monarquia. Ao contrário, para Rousseau, sendo a soberania sempre popular ou do povo, O regime que melhor realizaria as finalidades do contrato social é a democracia direta ou participativa."
+        },
+        {
+          "index": 31,
+          "heading": "Uma nova teoria para uma nova ordem",
+          "pages": [
+            7,
+            8
+          ],
+          "distance": 0.5834966699030035,
+          "content": "Uma nova teoria para uma nova ordem\n\nBefore Artis Boaton, Massmhusetts, EUA.\n\n0 cobrador de impostos, obra pintada por volta de 1616 por Pieter Brueghel, 0 Jovem.\n\nas rotas do comércio com o Oriente: inicialmente dominadas pelas cidades italianas e depois pelos impérios ultramarinos de Portugal, Espanha, In- glaterra e França, essas rotas foram articuladas àquelas existentes no interior da própria Europa e à urbanização, gerando um novo tipo de rique- za: o capital. o capital se baseava no lucro advin- do da exploração do trabalho das pessoas pobres\n\ne livres que haviam migrado para as cidades eu- ropeias e na exploração do trabalho escravo de indígenas e africanos nas Américas;"
+        },
+        {
+          "index": 32,
+          "heading": "0 príncipe virtuoso",
+          "pages": [
+            5,
+            6
+          ],
+          "distance": 0.5839556439476591,
+          "content": "0 príncipe virtuoso\n\nAo estabelecer a independência da lógica do poder em relação à religião, à ética e à ordem da natureza, Maquiavel só poderia ter sido visto como \"maquiavé- lico\". As palavras maquiavélico e maquiavelismo, cria- das no século XVI e conservadas até hoje, exprimem o medo que se tinha e se tem da política quando esta é simplesmente política, isto é, sem as máscaras da religião, da moral, da razão e da natureza. Como se vê, são vocábulos que não exprimem um conhecimento real da obra de Maquiavel."
+        },
+        {
+          "index": 33,
+          "heading": "0 pacto ou contrato social",
+          "pages": [
+            9
+          ],
+          "distance": 0.5865006311647085,
+          "content": "0 pacto ou contrato social\n\no contrato social funda a soberania e institui a au- toridade política ou 0 estado civil, que deve pôr um fim às lutas mortais do estado de natureza (hobbesiano) ou do estado de sociedade (rousseauísta). Mas como é possível 0 contrato ou o pacto social? Para legitimar a teoria do contrato ou do pacto social, os teóricos invo- caram uma cláusula do Direito Romano \"Ninguém pode dar 0 que não tem e ninguém pode tirar 0 que não deu\" e a Lei Régia romana \"O poder pertence ao povo e é por ele conferido ao soberano\". Essas duas cláusulas serão a base das teorias modernas do direito natural, do qual dependerá o contrato social."
+        },
+        {
+          "index": 34,
+          "heading": "0 pacto ou contrato social",
+          "pages": [
+            9
+          ],
+          "distance": 0.5876801889059434,
+          "content": "0 pacto ou contrato social\n\nDe acordo com os teóricos dos séculos XVII e XVIII, a passagem do estado de natureza ao estado civil ou à sociedade civil se dá por meio de um pacto social ou contrato social. Por meio dele, os indivíduos concordam em renunciar à liberdade natural e à pos- se natural de bens e armas e em transferir a um ter- ceiro o soberano algumas formas de poder. Os poderes transferidos mais importantes são: 0 poder para criar e aplicar as leis (definindo 0 legal e o ilegal, 0 justo e o injusto, o permitido e o proibido), o direi- to exclusivo do uso da força (encarregando-se, em nome de todos, de vingar os crimes) e 0 poder para declarar a guerra e a paz."
+        },
+        {
+          "index": 35,
+          "heading": "0 Estado liberal",
+          "pages": [
+            12
+          ],
+          "distance": 0.588535391693075,
+          "content": "0 Estado liberal\n\nde legislar, permitir e proibir tudo 0 que pertença à fera da vida pública, mas não tem 0 direito de intervir sobre a esfera privada. o Estado deve garantir a liber dade de consciência e de pensamento de todos OS que go vernados e só poderá exercer censura nos casos em as opiniões ponham em risco 0 próprio Estado\n\nCom base nas ideias de Locke, dos realizadores da Independência dos Estados Unidos e da Revolu- ção Francesa (século XVIII) e de pensadores como o escocês Adam Smith (1723-1790) e o alemão Max Weber (1864-1920), podemos dizer que, para a teoria liberal, a função do Estado é garantir três liberdades ou direitos:\n\n372"
+        },
+        {
+          "index": 36,
+          "heading": "Trabalho, herança e poder",
+          "pages": [
+            12
+          ],
+          "distance": 0.5900167916947557,
+          "content": "Trabalho, herança e poder\n\n0 argumento de que um indivíduo é pobre porque não trabalhou 0 suficiente ou não sou- be usar bem seus recursos é muito utilizado na atualidade. Como vimos, ele foi construído con- forme a burguesia conseguiu legitimar seu po- der econômico. No entanto, embora tenha der- rubado a ideia de que 0 poder e o prestígio são, por nascimento, direitos dos nobres e da reale- za, a burguesia não fez objeção à manutenção da hereditariedade da propriedade privada. Ao contrário, incentivou a instituição da herança de bens, regulamentando-a.\n\nComo vimos no Capítulo 16, a ideologia incentiva a procriação porque ela garante a transmissão do capital aos herdeiros. No en- tanto, nos termos da teoria liberal, isso cria uma contradição, na medida em que 0 herdeiro usufrui propriedades que não são fruto de seu próprio trabalho. No próximo capítulo, veremos em mais detalhes como opera a ideologia da competência técnico-cientifica, outro aspecto que perpetua a situação de classe."
+        },
+        {
+          "index": 37,
+          "heading": "0 Estado liberal",
+          "pages": [
+            12
+          ],
+          "distance": 0.5944841276518431,
+          "content": "0 Estado liberal\n\n1. 0 direito natural de propriedade e a liberdade eco. nômica: como O Estado não instituiu a propriedade. ele não tem poder para nela interferir. No entanto, tem 0 dever de assegurá-la, por meio de leis e do direito exclu- sivo para 0 uso legal da violência (exército e polícia).\nPara entendermos O alcance dessa ideia, precisamos lembrar que, na forma inicial do capitalismo, o comércio era a atividade econômica mais importante para a acu- mulação do capital. Conhecida como mercantilismo, essa forma do capitalismo levou às grandes navegações e à formação dos grandes impérios ultramarinos, Para sustentar seu poder político, os reis ou as coroas euro- peias passaram a controlar, pelo chamado monopólio régio, todo esse comércio. Deles dependiam as conces- sões para viagens e a exploração de novas terras, preços dos produtos, tarifas, impostos e exclusividades.\nO monopólio régio era um obstáculo ao desenvolvi- mento econômico da burguesia. Contra ele, a burguesia exigia a liberdade de mercado para o desenvolvimento do capitalismo, tanto no comércio quanto na produção. Eis por que essa teoria é chamada liberal"
+        },
+        {
+          "index": 38,
+          "heading": "0 príncipe e o povo",
+          "pages": [
+            7
+          ],
+          "distance": 0.5950824738882461,
+          "content": "0 príncipe e o povo\n\nMAQUIAVEL Nicolau. o principe. In: WEFFORT, Francisco (Org.), Os clássicos do politica. 8. ed. São Paulo: Ática, 1997 23-24\n\n1. Por que Maquiavel se mostra indiferente em relação ao modo como 0 príncipe chega ao poder?\n2. Embora seja indiferente ao modo pelo qual o príncipe ascende ao poder, Maquiavel não é indiferente à relação que este deve estabelecer com o povo. Explique por quê."
+        },
+        {
+          "index": 39,
+          "heading": "A burguesia e a propriedade privada",
+          "pages": [
+            11,
+            12
+          ],
+          "distance": 0.5960900754062782,
+          "content": "A burguesia e a propriedade privada\n\nComo o trabalho pode legitimar a propriedade pri- vada como direito natural? Deus, escreve Locke, é um artífice, um obreiro, arquiteto e engenheiro que fez uma obra: o mundo. O mundo é domínio e proprieda- de de seu criador. Ora, Deus criou o homem à sua ima- gem e semelhança, deu-lhe 0 mundo para que nele reinasse e, ao expulsá-lo do Paraíso, não lhe retirou 0 domínio do mundo, mas lhe disse que 0 teria com 0 suor de seu rosto. Se 0 Universo, fruto do trabalho di- vino, é propriedade privada de Deus, as coisas do mun- do, frutos do trabalho humano, são propriedade priva- da do ser humano. Por isso, de origem divina, ela é um direito natural.\n\no Estado existe a partir do contrato social e sua principal finalidade é garantir o direito natural de pro- priedade. Dessa maneira, a burguesia se vê inteiramen- te legitimada perante a realeza e a nobreza. Mais do que isso: se considera superior a elas, uma vez que o burguês acredita que é proprietário graças ao seu pró- prio trabalho, enquanto reis e nobres são parasitas da sociedade ou do trabalho alheio.\n\nde dos"
+        }
+      ],
+      "ranking": []
+    }
+  ],
+  "status": "incomplete",
+  "error": "FP-01: reranking fell back; comparison is incomplete",
+  "finishedAt": "2026-09-28T02:03:15.115Z"
+}

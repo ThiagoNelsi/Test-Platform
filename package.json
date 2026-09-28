@@ -16,6 +16,7 @@
     "build:frontend": "pnpm --filter test-platform-frontend run build",
     "build": "pnpm run generate && pnpm run build:api && pnpm run build:frontend",
     "test:api": "pnpm --filter api run test",
+    "benchmark:retrieval": "pnpm --filter api run benchmark:retrieval",
     "test:frontend": "pnpm --filter test-platform-frontend run test",
     "test": "pnpm run generate && pnpm run test:api && pnpm run test:frontend",
     "typecheck:contracts": "pnpm --filter api-contracts run typecheck",

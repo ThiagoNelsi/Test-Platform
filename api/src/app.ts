@@ -1,6 +1,7 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import { SSMClient } from '@aws-sdk/client-ssm';
 import { TextractClient } from '@aws-sdk/client-textract';
+import { BedrockAgentRuntimeClient } from '@aws-sdk/client-bedrock-agent-runtime';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import express, { type Express } from 'express';
@@ -10,9 +11,11 @@ import { Server, type Socket } from 'socket.io';
 import { createAuthService } from './auth/service';
 import { loadAwsResources, type AwsResources } from './config/aws-resources';
 import { getOptionalEnv, getRequiredEnv } from './config/env';
+import { loadDeployedRetrievalConfig, type loadRetrievalConfig } from './config/retrieval';
 import { createEmbeddingsClient } from './database/embeddings';
 import { createPrismaClient } from './database/prisma';
 import { createQuestionGenerator } from './questions/generator';
+import { createBedrockReranker } from './questions/adapters/bedrock-reranker';
 import { enemPrompt } from './questions/prompt';
 import { createAuthRouter } from './routes/auth';
 import { createClassroomsRouter } from './routes/classrooms';
@@ -201,19 +204,26 @@ function createDefaultResourceDeps(
   };
 }
 
-function createDefaultQuestionGenerator() {
+function createDefaultQuestionGenerator(config: ReturnType<typeof loadRetrievalConfig>) {
   return createQuestionGenerator({
     openaiClient: new OpenAI({ apiKey: getRequiredEnv('OPENAI_API_KEY') }),
     sqlClient: createEmbeddingsClient(getRequiredEnv('EMBEDDINGS_DATABASE_URL')),
     promptTemplate: enemPrompt,
+    retrievalOptions: config.options,
+    reranker: config.enabled ? createBedrockReranker(new BedrockAgentRuntimeClient({
+      ...awsClientConfig(), region: config.region, maxAttempts: 1,
+    }), config.modelArn) : undefined,
   });
 }
 
 async function startServer(): Promise<void> {
+  const ssm = new SSMClient(awsClientConfig());
+  const parameterPath = getOptionalEnv('SSM_PARAMETER_PATH', '/test-platform/dev');
   const resources = await loadAwsResources(
-    new SSMClient(awsClientConfig()),
-    getOptionalEnv('SSM_PARAMETER_PATH', '/test-platform/dev'),
+    ssm,
+    parameterPath,
   );
+  const retrievalConfig = await loadDeployedRetrievalConfig(ssm, parameterPath);
   const prisma = createPrismaClient();
   const authService = createDefaultAuthService(prisma);
   const resourceDeps = createDefaultResourceDeps(prisma, resources);
@@ -226,7 +236,7 @@ async function startServer(): Promise<void> {
     },
   });
 
-  const generator = createDefaultQuestionGenerator();
+  const generator = createDefaultQuestionGenerator(retrievalConfig);
 
   io.on('connection', (socket) => {
     console.log('A user connected');
