@@ -1,21 +1,176 @@
 # Test Platform
 
-Plataforma web para criar, organizar, publicar e responder avaliações. O
-monorepo reúne a aplicação React, a API Express e os contratos compartilhados
-entre as duas camadas.
+Plataforma web para criar, organizar, publicar e responder avaliações, com
+geração de questões por IA a partir dos materiais do professor. O projeto
+implementa a orquestração de um RAG: upload, extração, chunking hierárquico,
+indexação vetorial, retrieval, reranking e proteção da entrada antes da geração.
+
+A ingestão usa eventos, filas e Lambdas na AWS; a geração combina recuperação
+no PostgreSQL, Cohere Rerank e guardrail pelo Bedrock, e OpenAI com streaming.
+As etapas são controladas pela aplicação, apoiadas em serviços gerenciados de
+infraestrutura e modelos.
 
 ## Estrutura
 
 ```text
 .
-├── api/             # API Express, Prisma, Socket.IO e integrações externas
-├── frontend/        # SPA Vite, React Router e componentes da interface
-└── api-contracts/   # Tipos de transporte consumidos por API e frontend
+├── api/                 # API Express, Prisma, Socket.IO e pipeline de geração
+├── frontend/            # SPA Vite, React Router, upload e revisão das questões
+├── api-contracts/       # Tipos de transporte consumidos por API e frontend
+├── document-ingestion/  # Processors, adaptadores e handlers das Lambdas
+├── infrastructure/      # Template AWS SAM, configuração e testes de IAM
+└── docs/                # Análises de arquitetura e benchmarks de recuperação
 ```
 
 O frontend não acessa o banco diretamente. A API concentra autenticação,
 regras de negócio e persistência; `api-contracts` mantém os formatos de
 requisição e resposta alinhados entre os dois aplicativos.
+
+## Arquitetura
+
+O fluxo tem duas partes: a ingestão transforma arquivos em trechos
+recuperáveis de forma assíncrona; a geração seleciona e verifica o contexto
+antes de enviar o pedido ao modelo.
+
+```mermaid
+flowchart TD
+    F["Frontend — React / Vite"]
+    A["API — Express / Prisma"]
+    APP[(PostgreSQL da aplicação)]
+    VDB[(PostgreSQL de embeddings e pais)]
+
+    F -->|HTTP + cookie de sessão| A
+    A -->|Intenção de upload e dados da aplicação| APP
+    A -->|Presigned POST| F
+
+    subgraph ING["Ingestão assíncrona"]
+        S3["S3 — arquivos originais"]
+        Q0["SQS — uploads recebidos"]
+        L0["Lambda — confirmar upload"]
+        TX["Textract — análise LAYOUT"]
+        OUT["S3 — saída do Textract"]
+        SNS["SNS — conclusão da análise"]
+        Q1["SQS — documentos analisados"]
+        L1["Lambda — layout, pais, filhos e lotes"]
+        Q2["SQS — lotes de chunks"]
+        L2["Lambda — gerar e persistir embeddings"]
+        DDB[(DynamoDB — estado dos lotes)]
+        EMB["OpenAI — embeddings dos filhos"]
+        EXP["Lambda horária — reconciliar ou expirar uploads pendentes"]
+        D0["DLQ — uploads"]
+        D1["DLQ — documentos"]
+        D2["DLQ — chunks"]
+
+        S3 -->|ObjectCreated| Q0
+        Q0 --> L0
+        L0 --> TX
+        TX --> OUT
+        TX --> SNS
+        SNS --> Q1
+        Q1 --> L1
+        TX -->|Resultados paginados| L1
+        L1 -->|Publicar lotes| Q2
+        L1 -->|Registrar lotes publicados| DDB
+        Q2 --> L2
+        L2 <--> DDB
+        L2 --> EMB
+        EMB -->|Vetores| L2
+        EXP -->|Verificar existência| S3
+        EXP -->|Reconciliar arquivo encontrado| L0
+        Q0 -.->|Tentativas esgotadas| D0
+        Q1 -.->|Tentativas esgotadas| D1
+        Q2 -.->|Tentativas esgotadas| D2
+    end
+
+    F -->|Upload direto| S3
+    L0 -->|UPLOADED / PROCESSING| APP
+    EXP -->|Consultar pendências / marcar EXPIRED| APP
+    L2 -->|Transação de pais e filhos novos| VDB
+    L2 -->|Todos os lotes concluídos: PROCESSED| APP
+
+    subgraph GEN["Geração de questões — executada pela API"]
+        AUTH["Validar sessão e acesso aos materiais"]
+        QE["OpenAI — embedding da consulta"]
+        RET["Busca vetorial — até 40 filhos"]
+        RR["Bedrock / Cohere — reranking dos filhos"]
+        CTX["Expandir e deduplicar pais — até 5 / 14 mil caracteres"]
+        GR["Bedrock — guardrail da mensagem final"]
+        O["OpenAI Responses — geração em streaming"]
+        ERR["Interromper pedido e informar erro"]
+
+        AUTH --> QE
+        QE --> RET
+        RET --> RR
+        RR --> CTX
+        RET -.->|Reranking desativado ou falha: ordem vetorial| CTX
+        CTX --> GR
+        GR -->|Entrada aprovada| O
+        GR -->|Ataque ou falha na avaliação| ERR
+    end
+
+    A -->|Pedido via Socket.IO| AUTH
+    AUTH -->|Dono, status e lixeira| APP
+    RET -->|Consulta nos documentos autorizados| VDB
+    O -->|Socket.IO: texto e conclusão| F
+    GR -->|Após aprovação: referências do contexto| F
+    ERR -->|Socket.IO: erro de geração| F
+```
+
+O diagrama mostra o caminho com materiais selecionados. Sem materiais, a
+geração pula a recuperação e avalia o pedido no guardrail antes de chamar a
+OpenAI. A API também pode reconciliar um upload já presente no S3 ao receber
+uma nova tentativa de preparação de upload.
+
+A autenticação usa Google OAuth e sessão em cookie `httpOnly`. Os contratos
+HTTP estão em `api-contracts/src/index.ts`; os testes de serializers cobrem a
+conversão dos modelos Prisma para os DTOs expostos pela API.
+
+### Destaques de engenharia
+
+- **Upload com identidade e retomada:** intenção persistida antes do envio,
+  SHA-256 informado pelo cliente para deduplicação por dono, chave estável e
+  índice único para requisições concorrentes. A confirmação por evento S3
+  permite continuar o processamento mesmo se o navegador fechar.
+- **Processamento por etapas:** três filas com DLQs, respostas parciais de
+  falha e Lambdas separadas para confirmação, chunking e embeddings. O
+  DynamoDB acompanha o estado dos lotes e faz o claim condicional do trabalho.
+- **Chunking parent-child:** extração orientada ao layout, filhos pequenos
+  para busca e pais maiores para contexto, com páginas, títulos, blocos de
+  origem, versão de chunking e IDs determinísticos.
+- **Persistência idempotente dos chunks novos:** transação de pais e filhos
+  no PostgreSQL, unicidade por documento/chunk e upsert. O caminho legado
+  continua aceitando mensagens anteriores à adoção de parent-child.
+- **Recuperação com orçamento:** busca limitada aos materiais autorizados,
+  reranking dos filhos antes da expansão dos pais, deduplicação e limites
+  configuráveis de candidatos, entradas e caracteres.
+- **Políticas de falha distintas:** falha de reranking mantém a ordem
+  vetorial; ataque ou falha de avaliação do guardrail interrompe a geração.
+  As referências só são enviadas ao frontend depois da aprovação.
+- **Interfaces e avaliação:** processors e serviços dependem de interfaces
+  testáveis; o benchmark compara variantes usando os mesmos candidatos e o
+  contexto efetivamente entregue à geração.
+- **Infraestrutura reproduzível:** AWS SAM, parâmetros SSM, Secrets Manager,
+  guardrail versionado, tracing das Lambdas e CI para código e infraestrutura.
+
+### Garantias e limites atuais
+
+O fluxo tolera repetições em várias etapas, mas não oferece processamento
+exatamente uma vez nem recuperação automática de toda falha. A publicação
+dos lotes e o registro no DynamoDB são operações separadas. O claim de lote
+não tem prazo de expiração: uma Lambda encerrada abruptamente pode deixar
+trabalho marcado como `processing`. O upsert dos chunks novos evita linhas
+duplicadas, mas não impede chamadas repetidas ao provedor de embeddings.
+
+As DLQs preservam mensagens que esgotaram as tentativas; o template não
+implementa um consumidor de recuperação, alarmes ou atualização automática
+do documento para falha terminal. A rotina horária cobre uploads pendentes,
+não todos os documentos presos no restante da ingestão. Também não há limite
+explícito de concorrência dos consumidores para proteger os fornecedores.
+
+O guardrail atual cobre ataques de prompt na entrada final. Ele não valida
+factualidade nem a saída gerada. As referências mostram o contexto selecionado,
+sem comprovar suporte para cada afirmação produzida. O retrieval faz uma busca
+por geração; recuperação iterativa está registrada como melhoria futura.
 
 ## Pré-requisitos
 
@@ -87,6 +242,39 @@ VITE_BACKEND_URL=http://localhost:8000
 ```
 
 ## Desenvolvimento
+
+### Upload e ingestão dos materiais
+
+`POST /api/upload` recebe nome, tipo, tamanho, SHA-256 e tags. A API cria ou
+reutiliza uma intenção em `PENDING_UPLOAD` e retorna `NEW_UPLOAD`,
+`RESUME_UPLOAD`, `ALREADY_EXISTS` ou `UPLOAD_ALREADY_COMPLETED`. O upload vai
+diretamente ao S3 por presigned POST, com limite padrão de 10 MiB e validade
+de 15 minutos. Retomada significa reutilizar a intenção e reenviar o arquivo;
+não há retomada por intervalo de bytes.
+
+O caminho de sucesso é `PENDING_UPLOAD → UPLOADED → PROCESSING → PROCESSED`.
+A Lambda de confirmação inicia o Textract com token determinístico derivado
+da chave S3. A Lambda horária verifica até 100 pendências antigas por execução:
+se o objeto existe, reconcilia a confirmação; se não existe, tenta marcar
+`EXPIRED`. O parâmetro SAM `PendingUploadExpirationHours` tem padrão de 24 horas.
+
+Após a extração, o chunking versão 2 agrupa elementos por títulos, páginas e
+tamanho, com objetivos de 1.500 tokens por pai e 350 por filho. Os lotes de
+embeddings têm orçamento de 8.192 tokens e de aproximadamente 200 KB para
+chunks e pais serializados. O modelo `text-embedding-3-small` usa 1.024
+dimensões na indexação e na consulta. Metadados e chunks pais são persistidos
+para expansão e rastreabilidade na recuperação.
+
+| Consumidor | Timeout da Lambda | Visibility timeout | Mensagens por invocação |
+| --- | ---: | ---: | ---: |
+| Confirmação de upload | 60 s | 360 s | 10 |
+| Chunking | 30 s | 120 s | 1 |
+| Embeddings | 60 s | 120 s | 1 |
+
+Cada fila principal retém mensagens por quatro dias e usa
+`maxReceiveCount: 5`; suas DLQs retêm por 14 dias. Os três consumidores usam
+`ReportBatchItemFailures`. Uma mensagem de embeddings pode conter vários
+textos, enviados juntos ao provedor.
 
 ### Reranking do contexto
 
@@ -395,18 +583,27 @@ PATH="$PWD/document-ingestion/node_modules/.bin:$PATH" sam build --template-file
 O segundo comando disponibiliza o esbuild instalado no pacote de ingestão
 para o SAM. O build das Lambdas não substitui a verificação de tipos.
 
-## Arquitetura
+### Avaliação de retrieval e reranking
 
-```mermaid
-flowchart LR
-    U[Usuário] --> F[Frontend\nVite + React]
-    F -->|HTTP + cookie| A[API\nExpress]
-    F <-->|Socket.IO| A
-    A --> D[PostgreSQL / Neon\nPrisma]
-    A --> O[OpenAI]
-    A --> S[Amazon S3 / Textract]
+O piloto usa 13 consultas sobre um capítulo de filosofia política em
+português, com rótulos manuais de relevância. Compara busca vetorial e
+reranking com o mesmo embedding, candidatos, expansão de pais e orçamento
+de contexto. Mede Recall@5, MRR, nDCG@5, recall dos candidatos e latência;
+falhas de reranking deixam o relatório incompleto, sem contar o fallback
+como uma comparação válida.
+
+```bash
+pnpm run benchmark:retrieval
+pnpm run benchmark:retrieval --query-style natural
 ```
 
-A autenticação usa Google OAuth e sessão em cookie `httpOnly`. Os contratos
-HTTP estão em `api-contracts/src/index.ts`; os testes de serializers cobrem a
-conversão dos modelos Prisma para os DTOs expostos pela API.
+Esses comandos fazem chamadas pagas a OpenAI e Bedrock e consultas somente
+de leitura na base de embeddings. Consulte a
+[metodologia e os relatórios](docs/benchmarks/README.md) antes de executá-los.
+
+Nos relatórios completos de 28/09/2026, o reranking ficou abaixo da ordem
+vetorial nas três métricas das consultas detalhadas. Nas consultas curtas,
+o Recall@5 passou de 0,750 para 0,769, enquanto MRR e nDCG@5 caíram. A latência
+média adicional do reranking foi de aproximadamente 1,2 segundo. O piloto
+mostra resultados mistos; não é uma avaliação representativa de todos os
+materiais nem mede a qualidade final das questões.
