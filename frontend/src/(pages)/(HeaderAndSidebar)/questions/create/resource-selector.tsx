@@ -14,28 +14,28 @@ import {
 import { Button } from "@/src/components/ui/button"
 import { Search } from "lucide-react"
 import { JSX } from "react"
-import { Material } from "./create-with-ai"
+import type { Resource } from "@/lib/types"
 
-type MaterialSelectorDialogProps = {
-  showMaterialSelector: boolean
-  setShowMaterialSelector: (show: boolean) => void
-  selectedMaterials: number[]
-  setSelectedMaterials: (materials: number[]) => void
-  toggleMaterialSelection: (id: number) => void
-  getMaterialIcon: (fileType: string) => JSX.Element
-  materials: Material[] | null
+type ResourceSelectorDialogProps = {
+  showResourceSelector: boolean
+  setShowResourceSelector: (show: boolean) => void
+  selectedResources: number[]
+  setSelectedResources: (resources: number[]) => void
+  toggleResourceSelection: (id: number) => void
+  getResourceIcon: (fileType: string) => JSX.Element
+  resources: Resource[] | null
 }
 
-export default function MaterialSelectorDialog({
-  showMaterialSelector,
-  setShowMaterialSelector,
-  selectedMaterials,
-  toggleMaterialSelection,
-  getMaterialIcon,
-  materials
-}: MaterialSelectorDialogProps) {
+export default function ResourceSelectorDialog({
+  showResourceSelector,
+  setShowResourceSelector,
+  selectedResources,
+  toggleResourceSelection,
+  getResourceIcon,
+  resources
+}: ResourceSelectorDialogProps) {
   return (
-    <Dialog open={showMaterialSelector} onOpenChange={setShowMaterialSelector}>
+    <Dialog open={showResourceSelector} onOpenChange={setShowResourceSelector}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Selecionar Materiais</DialogTitle>
@@ -52,30 +52,30 @@ export default function MaterialSelectorDialog({
 
           <ScrollArea className="h-[300px] pr-4">
             <div className="space-y-2">
-              {materials?.map((material) => (
+              {resources?.map((resource) => (
                 <div
-                  key={material.id}
+                  key={resource.id}
                   className={`flex items-start gap-3 p-3 border rounded-md cursor-pointer transition-colors ${
-                    selectedMaterials.includes(material.id)
+                    selectedResources.includes(resource.id)
                       ? "border-primary bg-primary/5"
                       : "hover:bg-gray-50 dark:hover:bg-gray-800"
                   }`}
-                  onClick={() => toggleMaterialSelection(material.id)}
+                  onClick={() => toggleResourceSelection(resource.id)}
                 >
-                  <Checkbox checked={selectedMaterials.includes(material.id)} className="mt-1" />
+                  <Checkbox checked={selectedResources.includes(resource.id)} className="mt-1" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start gap-2">
-                      {getMaterialIcon(material.fileType)}
+                      {getResourceIcon(resource.fileType)}
                       <div>
-                        <p className="font-medium text-sm">{material.filename}</p>
+                        <p className="font-medium text-sm">{resource.filename}</p>
                         <p className="text-xs text-muted-foreground">
-                          {new Date(material.createdAt).toLocaleDateString("pt-BR")}
+                          {new Date(resource.createdAt).toLocaleDateString("pt-BR")}
                         </p>
                       </div>
                     </div>
-                    {material.tags.length > 0 && (
+                    {resource.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {material.tags.map((tag) => (
+                        {resource.tags.map((tag) => (
                           <Badge key={tag} variant="outline" className="text-xs">
                             {tag}
                           </Badge>
@@ -90,10 +90,10 @@ export default function MaterialSelectorDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setShowMaterialSelector(false)}>
+          <Button variant="outline" onClick={() => setShowResourceSelector(false)}>
             Cancelar
           </Button>
-          <Button onClick={() => setShowMaterialSelector(false)}>Confirmar Seleção</Button>
+          <Button onClick={() => setShowResourceSelector(false)}>Confirmar Seleção</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

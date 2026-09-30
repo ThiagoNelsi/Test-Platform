@@ -178,7 +178,7 @@ Por isso, retry sozinho não fecha todas as janelas: em algumas ele duplica dado
 
 ## Arquivos que sustentam o desenho
 
-- `frontend/src/controllers/upload-materials-controller.tsx` e `frontend/lib/upload-service.ts`: sequência presign → upload → registro.
+- `frontend/src/controllers/upload-resources-controller.tsx` e `frontend/lib/upload-service.ts`: sequência presign → upload → registro.
 - `api/src/routes/upload.ts`: presigned POST e chave por usuário.
 - `api/src/routes/resource.ts`: criação do `Resource`, início do Textract e transição para `PROCESSING`.
 - `infrastructure/template.yaml`: SNS, filas/DLQs, Lambdas, timeouts, DynamoDB, S3, IAM e Secrets Manager.

@@ -9,7 +9,7 @@ import { getResourceFile } from "@/lib/resource-service";
 import { getApiErrorMessage } from "@/lib/backend-api";
 import { errorToast, successToast } from "@/lib/toasters";
 import EditResourceDialog from "./edit-resource-dialog";
-import MaterialPreview from "./material-preview";
+import ResourcePreview from "./resource-preview";
 
 const statuses: Record<ResourceStatus, string> = {
   PENDING_UPLOAD: "Aguardando upload", UPLOADED: "Enviado", PROCESSING: "Processando...",
@@ -67,7 +67,7 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
 
   return (
     <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-md">
-      <MaterialPreview resource={resource} />
+      <ResourcePreview resource={resource} />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="min-w-0 truncate text-sm font-semibold" title={resource.filename}>{resource.filename}</h2>

@@ -62,14 +62,14 @@ describe("upload service", () => {
   it("uploads form fields without forwarding application credentials", async () => {
     vi.stubGlobal("XMLHttpRequest", FakeXMLHttpRequest);
     const progress = vi.fn();
-    const file = new Blob(["material"], { type: "application/pdf" }) as File;
+    const file = new Blob(["resource"], { type: "application/pdf" }) as File;
 
     await uploadToPresignedPost(
       {
         status: "NEW_UPLOAD",
         documentId: "550e8400-e29b-41d4-a716-446655440000",
-        uploadUrl: "https://uploads.example.test/material",
-        url: "https://uploads.example.test/material",
+        uploadUrl: "https://uploads.example.test/resource",
+        url: "https://uploads.example.test/resource",
         expiresAt: "2026-09-25T12:15:00.000Z",
         fields: {
           key: "object-key",
@@ -83,7 +83,7 @@ describe("upload service", () => {
     const request = FakeXMLHttpRequest.latest;
     expect(request).toBeDefined();
     expect(request?.method).toBe("POST");
-    expect(request?.url).toBe("https://uploads.example.test/material");
+    expect(request?.url).toBe("https://uploads.example.test/resource");
     expect(request?.withCredentials).toBe(false);
     expect(request?.body?.get("key")).toBe("object-key");
     expect(request?.body?.get("policy")).toBe("policy");

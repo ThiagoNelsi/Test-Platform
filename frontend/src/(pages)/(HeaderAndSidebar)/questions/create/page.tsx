@@ -22,7 +22,7 @@ function CreateQuestionContent() {
     <div id="create-question-page" className="flex h-screen bg-gray-50 dark:bg-gray-900">
         <div className="flex flex-col flex-1 transition-all duration-300 ease-in-out">
           <main className="flex-1">
-            {/* Abas para alternar entre criação manual e IA */}
+            {/* Tabs for switching between manual and AI creation */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="manual" className="gap-2">

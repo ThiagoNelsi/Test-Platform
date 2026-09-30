@@ -25,7 +25,7 @@ export async function renderPdfPreview(url: string, signal: AbortSignal, width: 
     canvas.width = Math.max(1, Math.round(viewport.width));
     canvas.height = Math.max(1, Math.round(viewport.height));
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("Canvas indisponível");
+    if (!context) throw new Error("Canvas unavailable");
     await page.render({ canvas, canvasContext: context, viewport }).promise;
     signal.throwIfAborted();
     return canvas.toDataURL("image/png");

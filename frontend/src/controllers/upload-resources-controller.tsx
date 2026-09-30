@@ -6,7 +6,7 @@ import {
 } from "@/src/hooks/use-api-queries"
 import { calculateFileSha256, uploadToPresignedPost } from "@/lib/upload-service"
 
-// Tipo para os arquivos selecionados com metadados adicionais
+// Type for selected files with additional metadata.
 interface FileWithMetadata {
   id: string
   file: File
@@ -36,12 +36,12 @@ function revokePreview(file: FileWithMetadata) {
   }
 }
 
-export const useUploadMaterialsController = () => {
+export const useUploadResourcesController = () => {
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null)
   const presignedUploadMutation = usePresignedUploadMutation()
 
-  // Estados
+  // State
   const [files, setFiles] = useState<FileWithMetadata[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const [currentTag, setCurrentTag] = useState("")
@@ -63,7 +63,7 @@ export const useUploadMaterialsController = () => {
     }
   }, [])
 
-  // Manipuladores de eventos para drag and drop
+  // Drag-and-drop event handlers.
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     e.stopPropagation()
@@ -92,24 +92,24 @@ export const useUploadMaterialsController = () => {
     }
   }
 
-  // Manipulador para seleção de arquivos via input
+  // Handle file selection through the input.
   const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       handleFiles(e.target.files)
     }
-    // Permite selecionar o mesmo arquivo novamente depois de uma tentativa.
+    // Allow selecting the same file again after an attempt.
     e.target.value = ""
   }
 
-  // Função para processar os arquivos selecionados
+  // Process the selected files.
   const handleFiles = (fileList: FileList) => {
     const newFiles: FileWithMetadata[] = []
 
     Array.from(fileList).forEach((file) => {
-      // Criar um ID único para o arquivo
+      // Create a unique ID for the file.
       const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
 
-      // Criar objeto de metadados do arquivo
+      // Create the file metadata object.
       const fileWithMetadata: FileWithMetadata = {
         id: fileId,
         file: file,
@@ -118,7 +118,7 @@ export const useUploadMaterialsController = () => {
         previewUrl: undefined,
       }
 
-      // Gerar preview para imagens
+      // Generate a preview for image files.
       if (file.type.startsWith("image/")) {
         fileWithMetadata.previewUrl = URL.createObjectURL(file)
       }
@@ -129,12 +129,12 @@ export const useUploadMaterialsController = () => {
     setFiles((prev) => [...prev, ...newFiles])
   }
 
-  // Função para remover um arquivo
+  // Remove a file.
   const removeFile = (fileId: string) => {
     setFiles((prev) => {
       const updatedFiles = prev.filter((f) => f.id !== fileId)
 
-      // Liberar URLs de preview para evitar vazamentos de memória
+      // Revoke preview URLs to prevent memory leaks.
       const fileToRemove = prev.find((f) => f.id === fileId)
       if (fileToRemove?.previewUrl) {
         URL.revokeObjectURL(fileToRemove.previewUrl)
@@ -149,12 +149,12 @@ export const useUploadMaterialsController = () => {
     })
   }
 
-  // Função para abrir o diálogo de edição
+  // Open the edit dialog.
   const openEditDialog = (file: FileWithMetadata) => {
     setEditingFile({ ...file })
   }
 
-  // Função para salvar as alterações do arquivo
+  // Save the file changes.
   const saveFileChanges = () => {
     if (!editingFile) return
 
@@ -163,7 +163,7 @@ export const useUploadMaterialsController = () => {
     setEditingFile(null)
   }
 
-  // Função para adicionar uma tag ao arquivo em edição
+  // Add a tag to the file being edited.
   const addTagToEditingFile = () => {
     if (!editingFile || !currentTag.trim()) return
 
@@ -177,7 +177,7 @@ export const useUploadMaterialsController = () => {
     setCurrentTag("")
   }
 
-  // Função para remover uma tag do arquivo em edição
+  // Remove a tag from the file being edited.
   const removeTagFromEditingFile = (tag: string) => {
     if (!editingFile) return
 
@@ -291,7 +291,7 @@ export const useUploadMaterialsController = () => {
     setUploadProgress({})
   }
 
-  // Função para limpar tudo após o upload
+  // Clear everything after the upload.
   const resetAfterUpload = () => {
     clearFiles()
   }

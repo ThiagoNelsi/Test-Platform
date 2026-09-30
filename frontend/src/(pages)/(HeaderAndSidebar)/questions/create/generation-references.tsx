@@ -7,11 +7,11 @@ import type { Resource } from "@/lib/types"
 
 type GenerationReferencesProps = {
   references: QuestionGenerationReference[] | null
-  materials: Resource[]
+  resources: Resource[]
   isGenerating: boolean
 }
 
-export default function GenerationReferences({ references, materials, isGenerating }: GenerationReferencesProps) {
+export default function GenerationReferences({ references, resources, isGenerating }: GenerationReferencesProps) {
   return (
     <Card>
       <CardHeader>
@@ -51,7 +51,7 @@ export default function GenerationReferences({ references, materials, isGenerati
                     </CollapsibleTrigger>
                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                       <span className="break-all">
-                        {materials.find((material) => material.objectKey === reference.document)?.filename ?? reference.document}
+                        {resources.find((resource) => resource.objectKey === reference.document)?.filename ?? reference.document}
                       </span>
                       <Badge variant="outline">
                         {reference.pages.length > 0

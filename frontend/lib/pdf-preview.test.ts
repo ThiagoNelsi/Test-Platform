@@ -33,7 +33,7 @@ function twoPagePdf() {
 }
 
 beforeAll(async () => {
-  directory = await mkdtemp(join(tmpdir(), "material-preview-"));
+  directory = await mkdtemp(join(tmpdir(), "resource-preview-"));
   vi.stubGlobal("DOMMatrix", DOMMatrix);
   vi.stubGlobal("ImageData", ImageData);
   vi.stubGlobal("Path2D", Path2D);
@@ -48,7 +48,7 @@ afterAll(async () => {
   await rm(directory, { recursive: true, force: true });
 });
 
-describe("PDF material preview", () => {
+describe("PDF resource preview", () => {
   it("renders the first page as a compact PNG with its original proportions", async () => {
     const path = join(directory, "two-pages.pdf");
     await writeFile(path, twoPagePdf());

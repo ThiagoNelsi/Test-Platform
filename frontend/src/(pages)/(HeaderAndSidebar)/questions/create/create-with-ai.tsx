@@ -8,7 +8,7 @@ import { Label } from "@/src/components/ui/label";
 import { Button } from "@/src/components/ui/button";
 import { FileText, ImageIcon, Loader2, Plus, Sparkles, X } from "lucide-react";
 import { Textarea } from "@/src/components/ui/textarea";
-import MaterialSelectorDialog from "./material-selector";
+import ResourceSelectorDialog from "./resource-selector";
 import { socket } from "@/src/socket";
 import HelpTooltip from "@/src/components/ui/help-tooltip";
 import PromptExamples from "./prompt-examples";
@@ -17,8 +17,6 @@ import { useResourcesQuery } from "@/src/hooks/use-api-queries"
 import { QueryError } from "@/src/components/query-state"
 import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert"
 import { errorToast } from "@/lib/toasters"
-
-export type Material = Resource
 
 export type StreamedQuestion = {
   statement?: string
@@ -50,14 +48,14 @@ function getSocketErrorMessage(error: unknown, fallback: string) {
 }
 
 export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps) {
-  const materialsQuery = useResourcesQuery("PROCESSED")
-  const materials = materialsQuery.data ?? []
+  const resourcesQuery = useResourcesQuery("PROCESSED")
+  const resources = resourcesQuery.data ?? []
   const modelOptions = ["gpt-5.6-luna", "gpt-5.4-mini", "o4-mini", "o3-mini", "gpt-4o-mini", "gpt-3.5-turbo"]
 
-  const [selectedMaterials, setSelectedMaterials] = useState<number[]>([
+  const [selectedResources, setSelectedResources] = useState<number[]>([
     ...(preSelectedResource ? [parseInt(preSelectedResource)] : []),
   ])
-  const [showMaterialSelector, setShowMaterialSelector] = useState(preSelectedResource === undefined ? true : false);
+  const [showResourceSelector, setShowResourceSelector] = useState(preSelectedResource === undefined ? true : false);
   const [aiPrompt, setAiPrompt] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [isReasoning, setIsReasoning] = useState(false)
@@ -66,18 +64,18 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
   const [showGenerationReferences, setShowGenerationReferences] = useState(false)
   const [model, setModel] = useState("gpt-5.6-luna")
 
-  // socket
+  // Socket connection state.
   const [isConnected, setIsConnected] = useState(false);
   const [transport, setTransport] = useState("N/A");
   const [socketError, setSocketError] = useState<string | null>(null);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const isGeneratingRef = useRef(false);
 
-  const toggleMaterialSelection = (id: number) => {
-    setSelectedMaterials((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]))
+  const toggleResourceSelection = (id: number) => {
+    setSelectedResources((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]))
   }
 
-  const getMaterialIcon = (type: string) => {
+  const getResourceIcon = (type: string) => {
     type = type.split("/")[1]
     switch (type) {
       case "pdf":
@@ -93,7 +91,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
     }
   }
 
-  // Estado para armazenar o texto parcial recebido e o buffer de parsing
+  // Store the partial response and parser buffer.
   const parsingState = useRef({
     currentTag: null as null | string,
     currentContent: "",
@@ -128,8 +126,8 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
       return;
     }
 
-    const documents = selectedMaterials
-      .map((id) => materials.find((material) => material.id === id)?.objectKey)
+    const documents = selectedResources
+      .map((id) => resources.find((resource) => resource.id === id)?.objectKey)
       .filter((objectKey): objectKey is string => Boolean(objectKey));
 
     resetParsingState();
@@ -153,7 +151,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
     }
   };
 
-  // Função de parsing incremental
+  // Parse streamed question chunks incrementally.
   const parseChunkedQuestions = useCallback((chunk: string) => {
     const state = parsingState.current;
     const text = state.currentContent + chunk;
@@ -165,7 +163,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
       const tag = match[1];
       const tagStart = match.index;
       if (state.currentTag) {
-        // Salva o conteúdo da tag anterior (apenas o trecho novo)
+        // Save only the new content for the previous tag.
         const content = text.substring(lastIndex, tagStart);
         switch (state.currentTag) {
           case "STATEMENT":
@@ -186,7 +184,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
             break;
         }
       }
-      // Quando encontrar [QUESTION], inicia nova questão
+      // Start a new question when [QUESTION] is encountered.
       if (tag === "QUESTION") {
         if (Object.keys(state.currentQuestion).length > 0) {
           state.currentQuestion.options = state.options.slice();
@@ -198,24 +196,24 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
       state.currentTag = tag;
       lastIndex = tagRegex.lastIndex;
     }
-    // Acumula o conteúdo restante
+    // Keep the remaining content in the buffer.
     state.currentContent = text.substring(lastIndex);
 
-    // Atualiza o statement ou topic em tempo real se a tag atual for adequada
+    // Update statement or topic content as it arrives when applicable.
     if (state.currentTag === "STATEMENT") {
       state.currentQuestion.statement = state.currentContent;
     } else if (state.currentTag === "TOPIC") {
       state.currentQuestion.topic = state.currentContent.trim();
     }
 
-    // Se terminar com [TOPIC], fecha a questão
+    // Close the question when the chunk ends with [TOPIC].
     if (state.currentTag === "TOPIC") {
-      // Se recebeu conteúdo de tópico e esse é o último chunk ou o padrão terminal foi encontrado
+      // Continue when topic content arrived and this is the final chunk or a terminal pattern was found.
       if (state.currentContent.trim() || chunk.endsWith("\n")) {
-        // Atribuir o tópico à questão atual
+        // Assign the topic to the current question.
         state.currentQuestion.topic = state.currentContent.trim();
 
-        // Verificar se é o final de uma questão
+        // Check whether this is the end of a question.
         if (/\[TOPIC\][^[]*$/g.test(text) || chunk.endsWith("\n")) {
           state.currentQuestion.options = state.options.slice();
           state.questions.push(state.currentQuestion);
@@ -226,7 +224,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
         }
       }
     } else if (state.currentTag && state.currentContent && chunk.endsWith("\n")) {
-      // Se não há mais tags, mas há conteúdo, salva o conteúdo da última tag
+      // Save the last tag's content when no more tags remain.
       const content = state.currentContent.trim();
       switch (state.currentTag) {
         case "STATEMENT":
@@ -245,7 +243,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
         case "TOPIC":
           state.currentQuestion.topic = content;
 
-          // Apenas finaliza a questão se houver um padrão claro de término
+          // Finalize the question only when a clear terminal pattern is present.
           if (chunk.endsWith("\n\n") || chunk.endsWith("\n[")) {
             state.currentQuestion.options = state.options.slice();
             state.questions.push(state.currentQuestion);
@@ -258,10 +256,10 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
       }
     }
 
-    // Atualiza o estado de questões geradas, incluindo a questão parcial
+    // Update the generated questions, including the partial question.
     const questionsToShow = [...state.questions];
     if (Object.keys(state.currentQuestion).length > 0 || state.options.length > 0 || state.currentContent.trim()) {
-      // Monta uma cópia da questão parcial
+      // Build a copy of the partial question.
       const partial = { ...state.currentQuestion, options: state.options.slice() };
       questionsToShow.push(partial);
     }
@@ -345,8 +343,8 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
     errorToast(message);
   }, []);
 
-  // Mantém uma única conexão enquanto a tela de geração estiver montada e
-  // garante que todos os eventos sejam removidos ao sair da rota.
+  // Keep one connection while the generation screen is mounted and
+  // remove all event handlers when leaving the route.
   useEffect(() => {
     let engine: typeof socket.io.engine | undefined;
 
@@ -461,13 +459,13 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
   return (
     <TabsContent value="ai">
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
-        {/* Painel de configuração da IA */}
+        {/* AI configuration panel */}
         <Card className="lg:col-span-2 h-fit">
           <CardHeader>
             <CardTitle>Configurar Geração</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Materiais de referência */}
+            {/* Reference resources */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label>Materiais de referência (opcional)</Label>
@@ -477,28 +475,28 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
                 />
               </div>
 
-              {selectedMaterials.length > 0 && (
+              {selectedResources.length > 0 && (
                 <div className="mt-3 space-y-2">
-                  {selectedMaterials.map((id) => {
-                    const material = materials?.find((m) => m.id === id)
-                    if (!material) return null
+                  {selectedResources.map((id) => {
+                    const resource = resources?.find((m) => m.id === id)
+                    if (!resource) return null
 
                     return (
                       <div
                         key={id}
                         className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 border-2 rounded-md border-red-500"
                       >
-                        {getMaterialIcon(material.fileType)}
+                        {getResourceIcon(resource.fileType)}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate" title={material.filename}>
-                            {material.filename}
+                          <p className="text-sm font-medium truncate" title={resource.filename}>
+                            {resource.filename}
                           </p>
                         </div>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7"
-                          onClick={() => toggleMaterialSelection(id)}
+                          onClick={() => toggleResourceSelection(id)}
                         >
                           <X className="h-4 w-4" />
                           <span className="sr-only">Remover</span>
@@ -508,17 +506,17 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
                   })}
                 </div>
               )}
-              {materialsQuery.error && (
+              {resourcesQuery.error && (
                 <QueryError
                   message="Não foi possível carregar os materiais processados."
-                  onRetry={materialsQuery.refetch}
-                  isRetrying={materialsQuery.isFetching}
+                  onRetry={resourcesQuery.refetch}
+                  isRetrying={resourcesQuery.isFetching}
                 />
               )}
               <Button
                 variant="outline"
                 className="w-full justify-start gap-2"
-                onClick={() => setShowMaterialSelector(true)}
+                onClick={() => setShowResourceSelector(true)}
               >
                 <Plus className="h-4 w-4" />
                 <span>Adicionar materiais</span>
@@ -557,7 +555,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
                 ))}
               </select>
             </div>
-            {/* Prompt para a IA */}
+            {/* AI prompt */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label>Prompt para a IA</Label>
@@ -568,7 +566,7 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
                   <p>Clique em <strong>Ver exemplos de prompt</strong> para ver exemplos de prompts bons e ruins.</p>
                 </HelpTooltip>
               </div>
-              {/* Exemplos de prompts */}
+              {/* Prompt examples */}
               <PromptExamples setPrompt={setAiPrompt} />
               <Textarea
                 id="ai-prompt"
@@ -578,13 +576,13 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
                 className="min-h-[150px]"
               />
               <p className="text-xs text-muted-foreground">
-                {selectedMaterials.length > 0
+                {selectedResources.length > 0
                   ? "Descreva o que você deseja extrair dos materiais selecionados."
                   : "Sem materiais selecionados, a IA irá gerar questões apenas com base no seu prompt."}
               </p>
             </div>
 
-            {/* Botão de geração */}
+            {/* Generate button */}
             <Button
               className="w-full gap-2"
               onClick={generateQuestions}
@@ -621,20 +619,20 @@ export default function CreateWithAI({ preSelectedResource }: CreateWithAIProps)
           {showGenerationReferences && (
             <GenerationReferences
               references={generationReferences}
-              materials={materials}
+              resources={resources}
               isGenerating={isGenerating}
             />
           )}
         </div>
       </div>
-      <MaterialSelectorDialog
-        materials={materials}
-        selectedMaterials={selectedMaterials}
-        setSelectedMaterials={setSelectedMaterials}
-        showMaterialSelector={showMaterialSelector}
-        setShowMaterialSelector={setShowMaterialSelector}
-        toggleMaterialSelection={toggleMaterialSelection}
-        getMaterialIcon={getMaterialIcon}
+      <ResourceSelectorDialog
+        resources={resources}
+        selectedResources={selectedResources}
+        setSelectedResources={setSelectedResources}
+        showResourceSelector={showResourceSelector}
+        setShowResourceSelector={setShowResourceSelector}
+        toggleResourceSelection={toggleResourceSelection}
+        getResourceIcon={getResourceIcon}
       />
     </TabsContent>
   )

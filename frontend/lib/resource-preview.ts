@@ -6,15 +6,15 @@ function createCanvas(width: number, height: number) {
   canvas.width = Math.max(1, Math.round(width));
   canvas.height = Math.max(1, Math.round(height));
   const context = canvas.getContext("2d");
-  if (!context) throw new Error("Canvas indisponível");
+  if (!context) throw new Error("Canvas unavailable");
   return { canvas, context };
 }
 
-export async function renderMaterialPreview(url: string, fileType: string, signal: AbortSignal): Promise<string> {
+export async function renderResourcePreview(url: string, fileType: string, signal: AbortSignal): Promise<string> {
   signal.throwIfAborted();
   if (fileType !== "application/pdf") {
     const response = await fetch(url, { signal, credentials: "omit" });
-    if (!response.ok) throw new Error("Arquivo indisponível");
+    if (!response.ok) throw new Error("File unavailable");
     const image = await createImageBitmap(await response.blob());
     try {
       signal.throwIfAborted();

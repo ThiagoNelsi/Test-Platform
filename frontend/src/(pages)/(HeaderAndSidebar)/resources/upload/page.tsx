@@ -24,9 +24,9 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert"
 import { Progress } from "@/src/components/ui/progress"
 import { FileIconComponent } from "../utils"
-import { useUploadMaterialsController } from "@/src/controllers/upload-materials-controller"
+import { useUploadResourcesController } from "@/src/controllers/upload-resources-controller"
 
-export default function UploadMaterialsPage() {
+export default function UploadResourcesPage() {
 
   const {
     addTagToEditingFile,
@@ -53,19 +53,19 @@ export default function UploadMaterialsPage() {
     uploadComplete,
     uploadError,
     openEditDialog,
-  } = useUploadMaterialsController()
+  } = useUploadResourcesController()
 
   return (
     <div className="flex bg-gray-50 dark:bg-gray-900">
       <div className="flex flex-col flex-1 transition-all duration-300 ease-in-out">
         <main className="flex-1 p-6">
-          {/* Cabeçalho da página */}
+          {/* Page header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold">Upload de Materiais</h1>
             <p className="text-muted-foreground">Faça upload de materiais para compartilhar com seus alunos</p>
           </div>
 
-          {/* Instrução sobre tags */}
+          {/* Tag instructions */}
           <Alert className="mb-6">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Dica de organização</AlertTitle>
@@ -75,7 +75,7 @@ export default function UploadMaterialsPage() {
             </AlertDescription>
           </Alert>
 
-          {/* Área de upload */}
+          {/* Upload area */}
           <div
             className={`
               border-2 border-dashed rounded-lg p-8 mb-6 text-center
@@ -110,7 +110,7 @@ export default function UploadMaterialsPage() {
             </div>
           </div>
 
-          {/* Lista de arquivos selecionados */}
+          {/* Selected files list */}
           {files.length > 0 && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
@@ -126,7 +126,7 @@ export default function UploadMaterialsPage() {
                 </div>
               </div>
 
-              {/* Alerta de upload concluído */}
+              {/* Upload completed notice */}
               {uploadComplete && (
                 <Alert className="mb-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
                   <Save className="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -229,7 +229,7 @@ export default function UploadMaterialsPage() {
                           )}
                         </div>
                       </div>
-                      {/* Barra de progresso de upload */}
+                      {/* Upload progress bar */}
                       {isUploading && (
                         <div className="mb-4">
                           <div className="flex justify-between text-sm mb-1">
@@ -246,7 +246,7 @@ export default function UploadMaterialsPage() {
             </div>
           )}
 
-          {/* Mensagem quando não há arquivos */}
+          {/* Empty file list message */}
           {files.length === 0 && !uploadComplete && (
             <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center border">
               <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -259,7 +259,7 @@ export default function UploadMaterialsPage() {
         </main>
       </div>
 
-      {/* Diálogo para editar nome e tags do arquivo */}
+      {/* Dialog for editing the file name and tags */}
       <Dialog open={!!editingFile} onOpenChange={(open) => !open && setEditingFile(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

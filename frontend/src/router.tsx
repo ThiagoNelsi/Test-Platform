@@ -17,28 +17,28 @@ const LoginPage = lazy(() => import("@/src/(pages)/login/page"));
 const HomePage = lazy(() =>
   import("@/src/(pages)/(HeaderAndSidebar)/home/page"),
 );
-const MaterialsPage = lazy(() =>
-  import("@/src/(pages)/(HeaderAndSidebar)/materiais/page"),
+const ResourcesPage = lazy(() =>
+  import("@/src/(pages)/(HeaderAndSidebar)/resources/page"),
 );
-const UploadMaterialsPage = lazy(() =>
-  import("@/src/(pages)/(HeaderAndSidebar)/materiais/upload/page"),
+const UploadResourcesPage = lazy(() =>
+  import("@/src/(pages)/(HeaderAndSidebar)/resources/upload/page"),
 );
 const QuestionsPage = lazy(() =>
-  import("@/src/(pages)/(HeaderAndSidebar)/questoes/page"),
+  import("@/src/(pages)/(HeaderAndSidebar)/questions/page"),
 );
 const ExploreQuestionsPage = lazy(() =>
-  import("@/src/(pages)/(HeaderAndSidebar)/questoes/explorar/page"),
+  import("@/src/(pages)/(HeaderAndSidebar)/questions/explore/page"),
 );
 const CreateQuestionPage = lazy(() =>
-  import("@/src/(pages)/(HeaderAndSidebar)/questoes/criar/page"),
+  import("@/src/(pages)/(HeaderAndSidebar)/questions/create/page"),
 );
 const TestsPage = lazy(() =>
-  import("@/src/(pages)/(HeaderAndSidebar)/provas/page"),
+  import("@/src/(pages)/(HeaderAndSidebar)/tests/page"),
 );
 const CreateTestPage = lazy(() =>
-  import("@/src/(pages)/(HeaderAndSidebar)/provas/criar/page"),
+  import("@/src/(pages)/(HeaderAndSidebar)/tests/create/page"),
 );
-const TestPage = lazy(() => import("@/src/(pages)/prova/[testId]/page"));
+const TestPage = lazy(() => import("@/src/(pages)/test/[testId]/page"));
 
 function RootRedirect() {
   const { user, isLoading } = useAuth();
@@ -89,10 +89,10 @@ export default function AppRouter() {
           <Route element={<ProtectedRoute />}>
             <Route element={<AuthenticatedLayout />}>
               <Route path="home" element={<HomePage />} />
-              <Route path="materiais" element={<MaterialsPage />} />
+              <Route path="materiais" element={<ResourcesPage />} />
               <Route
                 path="materiais/upload"
-                element={<UploadMaterialsPage />}
+                element={<UploadResourcesPage />}
               />
               <Route path="questoes" element={<QuestionsPage />} />
               <Route

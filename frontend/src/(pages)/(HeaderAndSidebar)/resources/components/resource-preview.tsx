@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Resource } from "@/lib/types";
 import { getResourceFile } from "@/lib/resource-service";
-import { renderMaterialPreview } from "@/lib/material-preview";
+import { renderResourcePreview } from "@/lib/resource-preview";
 import { FileIconComponent } from "../utils";
 
-export default function MaterialPreview({ resource }: { resource: Resource }) {
+export default function ResourcePreview({ resource }: { resource: Resource }) {
   const container = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const supported = ["application/pdf", "image/png", "image/jpeg", "image/webp"].includes(resource.fileType);
@@ -22,12 +22,12 @@ export default function MaterialPreview({ resource }: { resource: Resource }) {
   }, [available]);
 
   const preview = useQuery({
-    queryKey: ["material-preview", resource.ownerId, resource.id, resource.objectKey],
+    queryKey: ["resource-preview", resource.ownerId, resource.id, resource.objectKey],
     enabled: available && visible,
     queryFn: async ({ signal }) => {
       const timeout = AbortSignal.any([signal, AbortSignal.timeout(15_000)]);
       const { url } = await getResourceFile(resource.id, false, timeout);
-      return renderMaterialPreview(url, resource.fileType, timeout);
+      return renderResourcePreview(url, resource.fileType, timeout);
     },
     staleTime: Infinity,
     gcTime: 5 * 60 * 1000,

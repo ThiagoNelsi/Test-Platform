@@ -64,7 +64,7 @@ export default function QuestionEditor({
       </Card>
       <Card className="lg:col-span-1 h-fit p-4">
         <div className="flex flex-col gap-8">
-          {/* Tipo e Dificuldade */}
+          {/* Type and difficulty */}
           <div className="flex flex-col gap-6">
             <div>
               <p className="text-sm mb-2">Tipo</p>

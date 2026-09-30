@@ -5,13 +5,13 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { AppLink as Link } from "@/src/components/router-helpers";
 import ResourceCard from "./components/resource-card";
-import { useMaterialsController } from "@/src/controllers/materials-controller";
+import { useResourcesController } from "@/src/controllers/resources-controller";
 import { QueryError, QueryLoading } from "@/src/components/query-state";
 
 export default function Page() {
   const [view, setView] = useState("library");
   const deleted = view === "trash";
-  const { resources, loading, error, refetch } = useMaterialsController(deleted);
+  const { resources, loading, error, refetch } = useResourcesController(deleted);
 
   return (
     <div>

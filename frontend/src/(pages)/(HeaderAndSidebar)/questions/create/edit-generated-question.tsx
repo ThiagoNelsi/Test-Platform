@@ -12,7 +12,7 @@
 // export default function EditGeneratedQuestion() {
 //   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
 
-//   // Manipuladores para edição de questão gerada
+//   // Handlers for editing a generated question.
 //   const saveEditedQuestion = () => {
 //     if (!editingQuestion) return
 
@@ -48,7 +48,7 @@
 
 //         {editingQuestion && (
 //           <div className="space-y-4 py-4">
-//             {/* Enunciado */}
+//             {/* Question statement */}
 //             <div className="space-y-2">
 //               <Label htmlFor="edit-question-text">Enunciado da questão</Label>
 //               <Textarea
@@ -59,7 +59,7 @@
 //               />
 //             </div>
 
-//             {/* Opções */}
+//             {/* Options */}
 //             <div className="space-y-3">
 //               <Label>Opções de resposta</Label>
 //               <RadioGroup value={editingQuestion.options.find((opt) => opt.isCorrect)?.id || ""}>
@@ -126,7 +126,7 @@
 //               </div>
 //             </div>
 
-//             {/* Dificuldade */}
+//             {/* Difficulty */}
 //             <div className="space-y-2">
 //               <Label htmlFor="edit-difficulty">Nível de dificuldade</Label>
 //               <Select

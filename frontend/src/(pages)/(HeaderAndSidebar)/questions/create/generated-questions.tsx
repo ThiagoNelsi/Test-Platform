@@ -176,7 +176,7 @@ export default function GeneratedQuestions({ generatedQuestions, isGenerating, i
           </Button>
         </CardFooter>
       )}
-      {/* Mensagem de sucesso */}
+      {/* Success message */}
       {saveSuccess && (
         <div className="fixed bottom-4 right-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 rounded-lg shadow-lg flex items-center gap-3 animate-in slide-in-from-bottom-5">
           <Check className="h-5 w-5 text-green-600 dark:text-green-400" />

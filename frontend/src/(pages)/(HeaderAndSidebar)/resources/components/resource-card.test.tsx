@@ -6,7 +6,7 @@ import type { Resource } from "@/lib/types";
 import ResourceCard from "./resource-card";
 
 function render(overrides: Partial<Resource> = {}) {
-  const material = {
+  const resource = {
     id: 11, documentId: "doc", filename: "Filosofia.pdf", tags: ["Filosofia"],
     objectKey: "original.pdf", status: "PROCESSED", fileType: "application/pdf",
     ownerId: 1, deletedAt: null, fileSize: 1024, fileHash: null, jobId: null,
@@ -14,13 +14,13 @@ function render(overrides: Partial<Resource> = {}) {
   } satisfies Resource;
   return renderToStaticMarkup(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter><ResourceCard resource={material} /></MemoryRouter>
+      <MemoryRouter><ResourceCard resource={resource} /></MemoryRouter>
     </QueryClientProvider>,
   );
 }
 
-describe("material actions", () => {
-  it("offers editing, original file access and generation for a ready material", () => {
+describe("resource actions", () => {
+  it("offers editing, original file access and generation for a ready resource", () => {
     const html = render();
     expect(html).toContain("Abrir");
     expect(html).toContain("Baixar");
@@ -30,7 +30,7 @@ describe("material actions", () => {
     expect(html).not.toContain("Restaurar");
   });
 
-  it("offers only restoration for materials in the trash", () => {
+  it("offers only restoration for resources in the trash", () => {
     const html = render({ deletedAt: new Date("2026-09-28T12:00:00Z") });
     expect(html).toContain("Restaurar");
     for (const text of ["Abrir", "Baixar", "Editar", "Gerar questões", "Excluir Filosofia.pdf"]) {
