@@ -14,7 +14,7 @@ function render(overrides: Partial<Resource> = {}) {
   } satisfies Resource;
   return renderToStaticMarkup(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter><ResourceCard resource={resource} /></MemoryRouter>
+      <MemoryRouter><ResourceCard resource={resource} onOpenPdf={() => {}} /></MemoryRouter>
     </QueryClientProvider>,
   );
 }
@@ -22,7 +22,8 @@ function render(overrides: Partial<Resource> = {}) {
 describe("resource actions", () => {
   it("offers editing, original file access and generation for a ready resource", () => {
     const html = render();
-    expect(html).toContain("Abrir");
+    expect(html).toContain('aria-label="Abrir Filosofia.pdf"');
+    expect(html).not.toContain(">Abrir</button>");
     expect(html).toContain("Baixar");
     expect(html).toContain("Editar");
     expect(html).toContain('href="/questoes/criar?tab=ai&amp;resourceId=11"');
@@ -40,7 +41,7 @@ describe("resource actions", () => {
 
   it("keeps failed originals accessible and removes the generation link", () => {
     const html = render({ status: "FAILED" });
-    expect(html).toContain("Abrir");
+    expect(html).toContain('aria-label="Abrir Filosofia.pdf"');
     expect(html).toContain("Baixar");
     expect(html).not.toContain('href="/questoes/criar');
   });

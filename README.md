@@ -537,6 +537,11 @@ acesso ao original. A geração via Socket.IO valida a sessão e exige que todos
 os materiais selecionados pertençam ao usuário, estejam processados e fora
 da lixeira.
 
+O título do material abre PDFs em um painel lateral redimensionável na página de
+materiais, com rolagem contínua entre páginas e zoom. O painel oferece acesso ao
+PDF original em uma nova aba. Outros formatos abrem em nova aba; **Baixar** salva
+o original.
+
 Os cards exibem uma miniatura da primeira página de PDFs ou da imagem original,
 carregada apenas quando entram na tela e mantida em cache na sessão. Arquivos
 indisponíveis, formatos sem preview e falhas de renderização mantêm o ícone do

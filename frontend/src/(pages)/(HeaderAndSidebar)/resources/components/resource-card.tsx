@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Resource, ResourceStatus } from "@/lib/types";
 import { Button } from "@/src/components/ui/button";
-import { Download, ExternalLink, Pencil, RotateCcw, Sparkles, Trash } from "lucide-react";
+import { Download, Pencil, RotateCcw, Sparkles, Trash } from "lucide-react";
 import Confirm from "@/src/components/ui/confirm";
 import { AppLink as Link } from "@/src/components/router-helpers";
 import { useDeleteResourceMutation, useRestoreResourceMutation } from "@/src/hooks/use-api-queries";
@@ -21,7 +21,7 @@ const badgeStyles: Record<ResourceStatus, string> = {
   FAILED: "bg-red-100 text-red-800", EXPIRED: "bg-gray-100 text-gray-800",
 };
 
-export default function ResourceCard({ resource }: { resource: Resource }) {
+export default function ResourceCard({ resource, onOpenPdf }: { resource: Resource; onOpenPdf: (resource: Resource) => void }) {
   const [editing, setEditing] = useState(false);
   const [fileAction, setFileAction] = useState<"open" | "download" | null>(null);
   const deletion = useDeleteResourceMutation();
@@ -43,6 +43,10 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
     } catch (error) { errorToast(getApiErrorMessage(error, "Não foi possível restaurar o material.")); }
   }
   async function accessFile(download: boolean) {
+    if (!download && resource.fileType === "application/pdf") {
+      onOpenPdf(resource);
+      return;
+    }
     // Open synchronously so the browser does not block the new tab after the request.
     const preview = download ? null : window.open("about:blank", "_blank");
     if (!download && !preview) { errorToast("Permita abrir uma nova aba para visualizar o material."); return; }
@@ -70,7 +74,13 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
       <ResourcePreview resource={resource} />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="min-w-0 truncate text-sm font-semibold" title={resource.filename}>{resource.filename}</h2>
+          <h2 className="min-w-0 truncate text-sm font-semibold" title={resource.filename}>
+            {deleted ? resource.filename : (
+              <button type="button" disabled={busy || !fileAvailable} onClick={() => accessFile(false)} aria-label={`Abrir ${resource.filename}`} className="block max-w-full truncate text-left hover:text-blue-600 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-default disabled:hover:text-inherit disabled:hover:no-underline">
+                {resource.filename}
+              </button>
+            )}
+          </h2>
           {!deleted && resource.status !== "PROCESSED" && <span className={`rounded-full px-3 py-1 text-center text-xs font-medium ${badgeStyles[resource.status]}`}>{statuses[resource.status]}</span>}
         </div>
         <div className="flex flex-wrap gap-2">{resource.tags.map((tag) => <span key={tag} className="max-w-full break-all rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">{tag}</span>)}</div>
@@ -79,7 +89,6 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
           {deleted ? (
             <Button variant="outline" className="gap-2 text-xs" disabled={busy} onClick={restore}><RotateCcw className="h-4 w-4" />{restoration.isPending ? "Restaurando..." : "Restaurar"}</Button>
           ) : (<>
-            <Button variant="outline" className="gap-2 text-xs" disabled={busy || !fileAvailable} onClick={() => accessFile(false)}><ExternalLink className="h-4 w-4" />{fileAction === "open" ? "Abrindo..." : "Abrir"}</Button>
             <Button variant="outline" className="gap-2 text-xs" disabled={busy || !fileAvailable} onClick={() => accessFile(true)}><Download className="h-4 w-4" />{fileAction === "download" ? "Preparando..." : "Baixar"}</Button>
             <Button variant="outline" className="gap-2 text-xs" disabled={busy} onClick={() => setEditing(true)}><Pencil className="h-4 w-4" />Editar</Button>
             {resource.status === "PROCESSED" ? (
